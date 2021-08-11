@@ -1,22 +1,44 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Login from '../views/Login.vue'
+import Index from '../views/Index.vue'
+import Home from "@/views/Home";
+import User from "@/views/sys/User"
+import Role from "@/views/sys/Role";
+import UserCenter from "@/views/UserCenter";
 
 Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/index',
-    name: 'Index',
-    component: () => import('../views/Index')
+    path: '/',
+    name: 'Home',
+    component: Home,
+    children:[    // 子页面列表
+      {
+        path:'/index',
+        name:'Index',
+        component:Index
+      },
+      {
+        path:'/sys/user',
+        name:'User',
+        component:User
+      },{
+        path:'/sys/role',
+        name:'Role',
+        component:Role
+      },
+      {
+        path:'/userCenter',
+        name:'UserCenter',
+        component:UserCenter
+      }
+    ]
   },
   {
-    path: '/Login',
+    path: '/login',
     name: 'Login',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: Login
+    component: () => import('../views/Login')
   }
 ]
 
