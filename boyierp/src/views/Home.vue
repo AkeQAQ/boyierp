@@ -18,17 +18,17 @@
         <div class="header_right">
           <el-dropdown>
             <span class="el-dropdown-link">
-              {{userInfo.username}}<i class="el-icon-arrow-down el-icon--right"></i>
+              {{ userInfo.username }}<i class="el-icon-arrow-down el-icon--right"></i>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>
                 <router-link :to="{name:'UserCenter'}"> <!-- 该种方式，只能用路由的name 来指定 -->
-                修改密码
+                  修改密码
                 </router-link>
               </el-dropdown-item>
 
               <el-dropdown-item @click.native="logout">
-                  退出
+                退出
               </el-dropdown-item>
 
             </el-dropdown-menu>
@@ -39,7 +39,11 @@
 
       <!-- 主体区域 -->
       <el-main>
-        <router-view/>  <!-- 显示子路由内容 -->
+        <!--        11111-->
+        <Tab></Tab>
+        <div style="margin: 0 15px;">
+          <router-view/>  <!-- 显示子路由内容 -->
+        </div>
       </el-main>
     </el-container>
   </el-container>
@@ -48,28 +52,31 @@
 <script>
 // <!-- 引入SideMenu.vue 公共组件 -->
 import SideMenu from "@/views/inc/SideMenu";
+import Tab from "@/views/inc/Tab";
+
 export default {
   name: "Home",
   data() {
     return {
-      userInfo:{
-        id:"",
-        username:""
+      userInfo: {
+        id: "",
+        username: ""
       }
     }
   },
-  components: {SideMenu},
-  methods:{
-    getUserInfo(){
+  components: {SideMenu, Tab},
+  methods: {
+    getUserInfo() {
       // 用户信息接口
-      this.$axios.post('/sys/getUserInfo').then(res=>{
+      this.$axios.post('/sys/getUserInfo').then(res => {
         this.userInfo = res.data.data;
       })
     },
-    logout(){
+    logout() {
       // 用户退出接口
-      this.$axios.post('/logout').then(res=>{
+      this.$axios.post('/logout').then(res => {
         this.$store.commit('LOGOUT')
+        this.$store.commit("reset")
         this.$router.push("/login")
       })
     }
@@ -84,7 +91,7 @@ export default {
 
 <style scoped>
 
-.header_right{
+.header_right {
   float: right;
   width: 200px;
   display: flex;
@@ -96,17 +103,18 @@ export default {
   cursor: pointer;
   color: #409EFF;
 }
+
 .el-icon-arrow-down {
   font-size: 12px;
 }
 
 
-.el-container{
+.el-container {
   height: 100%;
 }
 
 
-.el-header{
+.el-header {
   background-color: #B3C0D1;
   color: #333;
   text-align: center;
@@ -122,7 +130,7 @@ export default {
 .el-main {
   background-color: #E9EEF3;
   color: #333;
-  text-align: center;
+  padding: 0;
 }
 
 body > .el-container {
@@ -137,8 +145,9 @@ body > .el-container {
 .el-container:nth-child(7) .el-aside {
   line-height: 320px;
 }
+
 /*<!-- 删除超链接下划线 -->*/
-a{
-  text-decoration: none ;
+a {
+  text-decoration: none;
 }
 </style>
