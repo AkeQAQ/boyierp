@@ -108,11 +108,9 @@ export default {
   font-size: 12px;
 }
 
-
 .el-container {
   height: 100%;
 }
-
 
 .el-header {
   background-color: #B3C0D1;
@@ -128,7 +126,7 @@ export default {
 }
 
 .el-main {
-  background-color: #E9EEF3;
+  /*background-color: #E9EEF3;*/
   color: #333;
   padding: 0;
 }

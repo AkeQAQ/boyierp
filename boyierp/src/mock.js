@@ -104,8 +104,9 @@ Mock.mock('/sys/menu/navList', 'post', () => {
     return Result
 })
 
-// 获取菜单全部的列表数据
+// 菜单功能-获取菜单全部的列表数据
 Mock.mock('/sys/menu/list', 'post', () => {
+
     Result.data =
         [{
             id: 1,
@@ -133,11 +134,106 @@ Mock.mock('/sys/menu/list', 'post', () => {
             menuName: '系统工具',
             authority: '',
             icon: 'el-icon-setting',
-            type: '0',
+            type: 0,
             URL: '',
             component: '',
             orderType: '',
             status: 0
         }]
+    return Result
+})
+
+// 菜单功能-新增接口
+Mock.mock('/sys/menu/save', 'post', (param) => {
+    console.log("新增 参数",param)
+    return Result
+})
+
+// 菜单功能-修改接口
+Mock.mock('/sys/menu/update', 'post', () => {
+    return Result
+})
+
+// 菜单功能-根据id查询接口
+Mock.mock(RegExp('/sys/menu/queryById*'), 'get', (param) => {
+    console.log("queryById 方法入参 ",param)
+
+    Result.data = {
+        id: 2,
+        parentId:2,
+        menuName: '用户管理',
+        authority: '系统管理-用户管理',
+        icon: 'el-icon-user',
+        type: "1",
+        URL: '/sys/user',
+        component: 'sys/User',
+        orderType: '',
+        status: "1"
+    }
+    return Result
+})
+
+// 菜单功能-删除接口
+Mock.mock(RegExp('/sys/menu/del*'), 'get', () => {
+    return Result
+})
+
+
+
+// 角色功能-新增接口
+Mock.mock('/sys/role/save', 'post', (param) => {
+    console.log("新增 参数",param)
+    return Result
+})
+
+// 角色功能-修改接口
+Mock.mock('/sys/role/update', 'post', () => {
+    return Result
+})
+
+
+// 角色功能-根据id查询接口
+Mock.mock(RegExp('/sys/role/queryById*'), 'get', (param) => {
+    console.log("queryById 方法入参 ",param)
+
+    Result.data = {
+        id: 2,
+        code:'123231',
+        roleName: '超级管理员',
+        content: '拥有全部权限',
+        status: "1"
+    }
+    return Result
+})
+
+
+// 角色功能-获取列表数据
+Mock.mock('/sys/role/list', 'post', (param) => {
+    console.log("获取列表数据 ，请求入参:",param)
+    Result.data =
+        {
+            tableData: [{
+
+                id: 1,
+                code:'1',
+                roleName: "超级管理员",
+                content: '拥有全部权限',
+                status: 1
+            },{
+                id: 2,
+                code:'2',
+                roleName: '普通用户',
+                content: '部分权限',
+                status: 0
+            }],
+            totalNum:2
+        }
+
+    return Result
+})
+
+// 角色功能-删除接口
+Mock.mock(RegExp('/sys/role/del'), 'post', (param) => {
+    console.log("删除 入参:",param)
     return Result
 })
