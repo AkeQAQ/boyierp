@@ -61,6 +61,7 @@ export default {
     },
     // 选择tab 页，跳转页面
     selectTab(param){
+      console.log("当前tab 被选中，激活跳转页面",param)
       this.$router.push({name:param.name})
     }
 

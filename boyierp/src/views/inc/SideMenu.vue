@@ -48,7 +48,7 @@ export default {
   methods:{
     // 点击左侧菜单栏 ，添加tab页
     selectMenu(current){
-      console.log(current)
+      console.log("点击左侧菜单栏",current)
       this.$store.commit("addTab",current)
     }
 

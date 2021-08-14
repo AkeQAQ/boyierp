@@ -16,7 +16,7 @@ export default {
     mutations: {
         // 添加tab 数值，已存在则不加
         addTab(state, param) {
-            console.log(state.editableTabs)
+            console.log("添加tab ",param,state.editableTabs)
             let index = state.editableTabs.findIndex(item =>item.name === param.routerName)
             if(index === -1){
                 state.editableTabs.push({name:param.routerName,title:param.title})

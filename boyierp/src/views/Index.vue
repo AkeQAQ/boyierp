@@ -5,7 +5,10 @@
 <script>
 
 export default {
-  name: "Index"
+  name: "Index",
+  created() {
+    console.log("这是首页")
+  }
 }
 </script>
 

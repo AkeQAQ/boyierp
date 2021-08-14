@@ -12,6 +12,7 @@
       $route(to,from){
         if(to.path != '/login'){
           this.$store.commit("addTab", {routerName:to.name,title:to.meta.title})
+
         }
       }
     }

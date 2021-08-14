@@ -2,9 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Index from '../views/Index.vue'
 import Home from "@/views/Home";
-import User from "@/views/sys/User"
-import Role from "@/views/sys/Role";
 import UserCenter from "@/views/UserCenter";
+
 import axios from "@/axios";
 import store from "@/store"
 import ro from "element-ui/src/locale/lang/ro";
@@ -18,11 +17,22 @@ const routes = [
         name: 'Home',
         component: Home,
         children: [
-            /*{
+            {
                 path: '/index',
                 name: 'Index',
-                component: import('../views/Index')
-            }*/
+                component: Index,
+                meta:{
+                    title:'首页'
+                }
+            }, {
+                path: '/userCenter',
+                name: 'UserCenter',
+                component: UserCenter,
+                meta:{
+                    title:'个人中心'
+                }
+            }
+
         ]
     },
     {
@@ -39,8 +49,6 @@ const router = new VueRouter({
 })
 
 // 前置拦截
-
-
 router.beforeEach((to, from, next) => {
     // 1. 判断是否已经加载过路由,有则返回，无则继续
     console.log("menuInitFlag :"+store.state.menu.menuInitFlag )
@@ -54,19 +62,16 @@ router.beforeEach((to, from, next) => {
     {    next({path: "/index"})  }
     else if(store.state.menu.menuInitFlag === false){
         const newRoutes = router.options.routes;
-        console.log(newRoutes)
+        console.log("刚刚开始的路由信息:",router.options.routes)
         // 2. 获取路由信息
         axios.post('/sys/menu/navList', 'post').then(res => {
             // 根路由对象
-            var a = 1
             res.data.data.nav.forEach(menu => {
                 if (menu.children) {
                     console.log(menu.children)
 
                     menu.children.forEach(e => {
                         let route = menuToRoute(e)
-                        console.log(a)
-                        a++
                         if (route) {
                             newRoutes[0].children.push(route)
                             console.log(newRoutes[0])
@@ -77,9 +82,16 @@ router.beforeEach((to, from, next) => {
             // 3. 存储路由信息
 
             router.addRoutes(newRoutes)
-            console.log(newRoutes)
+            console.log("设置后的路由信息:",router.options.routes)
             store.commit("SET_MENULIST", res.data.data.nav)
             store.commit("SET_MENUINITFLAG",true)
+            console.log("store存储菜单信息",res.data.data.nav)
+
+            // 4. 存储权限信息
+            console.log("store存储权限信息",res.data.data.auth)
+            store.commit("SET_AUTHLIST",res.data.data.auth)
+
+
             next({path:to.path})
 
         })

@@ -21,10 +21,12 @@
               {{ userInfo.username }}<i class="el-icon-arrow-down el-icon--right"></i>
             </span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>
-                <router-link :to="{name:'UserCenter'}"> <!-- 该种方式，只能用路由的name 来指定 -->
+              <el-dropdown-item >
+                <router-link  :to="{name:'UserCenter'}"> <!-- 该种方式，只能用路由的name 来指定 -->
                   修改密码
                 </router-link>
+
+<!--                <span  @click="updatePassClick">修改密码</span>-->
               </el-dropdown-item>
 
               <el-dropdown-item @click.native="logout">
@@ -79,7 +81,11 @@ export default {
         this.$store.commit("reset")
         this.$router.push("/login")
       })
-    }
+    }/*,
+    updatePassClick(){
+      this.$store.commit("addTab",{routerName:"UserCenter",title:'个人中心'})
+      this.$router.push("/userCenter")
+    }*/
 
   }
   ,

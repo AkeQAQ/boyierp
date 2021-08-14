@@ -6,14 +6,14 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button @click="getMenuList()">搜索</el-button>
+        <el-button @click="getUserList()">搜索</el-button>
       </el-form-item>
 
-      <el-form-item>
+      <el-form-item v-if="hasAuth('sysManage:role:save')">
         <el-button type="primary" @click="dialogVisible = true">新增</el-button>
       </el-form-item>
 
-      <el-form-item>
+      <el-form-item v-if="hasAuth('sysManage:role:del')">
         <!-- 气泡确认框 -->
         <el-popconfirm @confirm="del(null)" title="确定删除吗？" >
           <el-button :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
@@ -26,6 +26,7 @@
         ref="multipleTable"
         :data="tableData"
         border
+        stripe
         tooltip-effect="dark"
         style="width: 100%"
         @selection-change="handleSelectionChange">
@@ -64,12 +65,12 @@
           label="操作">
         <template slot-scope="scope">
 
-          <el-button type="text" @click="edit(scope.row.id)">分配菜单权限</el-button>
-          <el-divider direction="vertical"></el-divider>
+          <el-button type="text" v-if="hasAuth('sysManage:role:authority')" @click="editRoleMenu(scope.row.id)">分配菜单</el-button>
+          <el-divider direction="vertical" v-if="hasAuth('sysManage:role:authority')"></el-divider>
 
-          <el-button type="text" @click="edit(scope.row.id)">编辑</el-button>
-          <el-divider direction="vertical"></el-divider>
-          <el-button type="text">
+          <el-button type="text" @click="edit(scope.row.id)" v-if="hasAuth('sysManage:role:update')">编辑</el-button>
+          <el-divider direction="vertical"  v-if="hasAuth('sysManage:role:update')"></el-divider>
+          <el-button type="text"  v-if="hasAuth('sysManage:role:del')">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"
@@ -88,7 +89,7 @@
 
     <!-- 弹窗 -->
     <el-dialog
-        title="提示"
+        title="角色管理"
         :visible.sync="dialogVisible"
         width="30%"
         :before-close="handleClose"
@@ -126,6 +127,36 @@
 
         </el-form-item>
       </el-form>
+
+    </el-dialog>
+
+    <!-- 分配菜单编辑页面 -->
+    <el-dialog
+        title="分配菜单权限"
+        :visible.sync="authorityDialogVisible"
+        width="30%"
+        @closed="authorityDialogVisible = false"
+    >
+      <el-form :model="authorityForm" ref="authorityForm" label-width="100px" class="demo-editForm">
+
+
+          <el-tree
+              ref="tree"
+              :data="authorityTreeData"
+              show-checkbox
+              default-expand-all
+              node-key="id"
+              :props="defaultProps">
+          </el-tree>
+
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="authorityDialogVisible = false">取消</el-button>
+
+        <el-button type="primary" @click="submitAuthorityForm('authorityForm')">完成</el-button>
+
+      </div>
 
     </el-dialog>
 
@@ -172,6 +203,14 @@ export default {
       tableData: [],
       multipleSelection: [] // 多选框数组
 
+      ,
+      authorityTreeData: [],
+      defaultProps: {
+        children: 'children',
+        label: 'menuName'
+      },
+      authorityDialogVisible:false,
+      authorityForm:{}
     }
   },
   methods: {
@@ -179,13 +218,13 @@ export default {
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize = val
-      this.getMenuList()
+      this.getUserList()
 
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.currentPage = val
-      this.getMenuList()
+      this.getUserList()
 
     },
     // 多选框方法
@@ -223,8 +262,26 @@ export default {
         }
       });
     },
+    submitAuthorityForm(formName) {
+        console.log("提交后的，被选中的菜单ID数组：",this.$refs.tree.getCheckedKeys())
+        this.$axios.post('/sys/role/updateOwnMenus',{
+          param:{
+            menuIds:this.$refs.tree.getCheckedKeys()
+          }
+        }).then(res => {
+          let result = res.data
+          this.$message({
+            message:'修改成功!',
+            type: 'success'
+          });
+
+          // 关闭弹窗并且重置内容
+          this.authorityDialogVisible = false;
+      });
+    },
+
     // 查询角色表单列表数据
-    getMenuList() {
+    getUserList() {
       this.$axios.post('/sys/role/list', {
           param:{
             currentPage: this.currentPage
@@ -251,6 +308,25 @@ export default {
 
       })
     },
+    // 分配菜单权限
+    editRoleMenu(id) {
+      // 1. 弹出分配权限窗口
+      this.authorityDialogVisible = true
+      // 2. 获取全部菜单列表
+      this.$axios.post('/sys/menu/list').then(res => {
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        // this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.authorityTreeData = res.data.data
+        // })
+      })
+      // 3. 获取该用户的菜单列表
+      this.$axios.get('/sys/role/queryMenusByRoleId?id=' + id).then(res => {
+        let result = res.data
+        // 4. 设置选中的节点
+          this.$refs.tree.setCheckedKeys(result.data);
+      })
+    },
     // 删除
     del(id) {
       let ids = []
@@ -271,7 +347,7 @@ export default {
           message: '删除成功!',
           type: 'success'
         });
-        this.getMenuList()
+        this.getUserList()
         console.log("删除后重新加载页面")
 
       })
@@ -289,7 +365,7 @@ export default {
   },
   // 页面初始化时调用的方法
   created() {
-    this.getMenuList()
+    this.getUserList()
     this.dialogVisible = false
 
   }

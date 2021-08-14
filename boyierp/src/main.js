@@ -17,6 +17,8 @@ Vue.prototype.$axios = request
 // // 引入mock，对请求进行拦截
 require("./mock.js")
 
+import global from './globalFun'
+
 
 
 Vue.config.productionTip = false

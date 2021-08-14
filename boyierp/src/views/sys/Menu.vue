@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-form  class="demo-form-inline">
-      <el-form-item>
+      <el-form-item v-if="hasAuth('sysManage:menu:save')">
         <el-button type="primary" @click="dialogVisible = true">新增</el-button>
       </el-form-item>
     </el-form>
@@ -11,6 +11,8 @@
         style="width: 100%;margin-bottom: 20px;"
         row-key="id"
         border
+        stripe
+        fit
         default-expand-all
         :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
       <el-table-column
@@ -68,11 +70,11 @@
 
       <el-table-column
           prop="action"
-          label="操作">
+          label="操作" style="float: right">
         <template slot-scope="scope">
-          <el-button type="text" @click="edit(scope.row.id)">编辑</el-button>
+          <el-button  type="text" v-if="hasAuth('sysManage:menu:update')" @click="edit(scope.row.id)">编辑</el-button>
           <el-divider direction="vertical"></el-divider>
-          <el-button type="text">
+          <el-button  type="text" v-if="hasAuth('sysManage:menu:del')">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"
@@ -100,9 +102,9 @@
       <el-form :model="editForm" :rules="rules" ref="editForm" label-width="100px" class="demo-editForm">
 
         <!-- 隐藏ID -->
-        <el-form-item v-show="false" label="id" prop="id">
+<!--        <el-form-item v-show="false" label="id" prop="id">
           <el-input v-model="editForm.id"></el-input>
-        </el-form-item>
+        </el-form-item>-->
 
         <el-form-item label="上级菜单" prop="parentId">
           <el-select v-model="editForm.parentId" placeholder="请选择上级菜单">
@@ -190,18 +192,9 @@ export default {
         authority: [
           {required: true, message: '请输入权限编码', trigger: 'blur'}
         ],
-        icon: [
-          {required: true, message: '请输入图标', trigger: 'blur'}
-        ],
         type: [
           {required: true, message: '请输入类型', trigger: 'blur'}
-        ],
-        URL: [
-          {required: true, message: '请输入菜单URL', trigger: 'blur'}
-        ],
-        component: [
-          {required: true, message: '请输入菜单组件', trigger: 'blur'}
-        ],
+        ] ,
         status: [
           {required: true, message: '请输入状态', trigger: 'blur'}
         ]
@@ -233,7 +226,7 @@ export default {
       });
     },
     // 查询菜单表单列表数据
-    getMenuList() {
+    getUserList() {
       this.$axios.post('/sys/menu/list').then(res => {
         this.tableData = res.data.data
       })
@@ -259,7 +252,7 @@ export default {
           message: '删除成功!',
           type: 'success'
         });
-        this.getMenuList()
+        this.getUserList()
         console.log("删除后重新加载页面")
 
       })
@@ -277,7 +270,7 @@ export default {
   },
   // 页面初始化时调用的方法
   created() {
-    this.getMenuList()
+    this.getUserList()
     this.dialogVisible = false
 
   }
