@@ -21,9 +21,8 @@
         <i :class="menu.icon"></i>
         <span>{{menu.title}}</span>
       </template>
-
       <router-link :to="item.path" v-for="item in menu.children">
-        <el-menu-item :index="item.routerName" @click="selectMenu(item)">
+        <el-menu-item :index="item.routerName"  >
           <template slot="title">
             <i :class="item.icon"></i>
             <span slot="title">{{item.title}}</span>
@@ -47,10 +46,10 @@ export default {
   },
   methods:{
     // 点击左侧菜单栏 ，添加tab页
-    selectMenu(current){
+    /*selectMenu(current){
       console.log("点击左侧菜单栏",current)
       this.$store.commit("addTab",current)
-    }
+    }*/
 
   },
   computed: {

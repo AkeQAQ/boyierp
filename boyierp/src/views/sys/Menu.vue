@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form  class="demo-form-inline">
+    <el-form class="demo-form-inline">
       <el-form-item v-if="hasAuth('sysManage:menu:save')">
         <el-button type="primary" @click="dialogVisible = true">新增</el-button>
       </el-form-item>
@@ -12,7 +12,7 @@
         row-key="id"
         border
         stripe
-        fit
+        size="mini"
         default-expand-all
         :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
       <el-table-column
@@ -70,17 +70,20 @@
 
       <el-table-column
           prop="action"
-          label="操作" style="float: right">
+          fixed="right"
+          width="150px"
+          label="操作" style="float: right;">
         <template slot-scope="scope">
-          <el-button  type="text" v-if="hasAuth('sysManage:menu:update')" @click="edit(scope.row.id)">编辑</el-button>
+          <el-button type="text" v-if="hasAuth('sysManage:menu:update')" size="small" @click="edit(scope.row.id)">编辑
+          </el-button>
           <el-divider direction="vertical"></el-divider>
-          <el-button  type="text" v-if="hasAuth('sysManage:menu:del')">
+          <el-button type="text" v-if="hasAuth('sysManage:menu:del')">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"
-                  title="确定删除吗？"
+                             title="确定删除吗？"
               >
-                <el-button type="text" slot="reference" >删除</el-button>
+                <el-button type="text" slot="reference" size="small">删除</el-button>
               </el-popconfirm>
             </template>
           </el-button>
@@ -93,7 +96,7 @@
 
     <!-- 弹窗 -->
     <el-dialog
-        title="提示"
+        title="菜单信息"
         :visible.sync="dialogVisible"
         width="30%"
         :before-close="handleClose"
@@ -102,9 +105,9 @@
       <el-form :model="editForm" :rules="rules" ref="editForm" label-width="100px" class="demo-editForm">
 
         <!-- 隐藏ID -->
-<!--        <el-form-item v-show="false" label="id" prop="id">
-          <el-input v-model="editForm.id"></el-input>
-        </el-form-item>-->
+        <!--        <el-form-item v-show="false" label="id" prop="id">
+                  <el-input v-model="editForm.id"></el-input>
+                </el-form-item>-->
 
         <el-form-item label="上级菜单" prop="parentId">
           <el-select v-model="editForm.parentId" placeholder="请选择上级菜单">
@@ -178,8 +181,8 @@ export default {
   data() {
     return {
       editForm: {
-        status:"0", // 编辑表单初始默认值
-        type:"0"
+        status: "0", // 编辑表单初始默认值
+        type: "0"
       },
       rules: {
 
@@ -194,7 +197,7 @@ export default {
         ],
         type: [
           {required: true, message: '请输入类型', trigger: 'blur'}
-        ] ,
+        ],
         status: [
           {required: true, message: '请输入状态', trigger: 'blur'}
         ]
@@ -208,10 +211,10 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$axios.post('/sys/menu/' +(this.editForm.id ? 'update': 'save' ),this.editForm).then(res=>{
-              let result = res.data
+          this.$axios.post('/sys/menu/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
+            let result = res.data
             this.$message({
-              message:  (this.editForm.id ? '编辑': '新增' )+'成功!',
+              message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
             });
 
@@ -232,22 +235,22 @@ export default {
       })
     },
     // 编辑
-    edit(id){
-      this.$axios.get('/sys/menu/queryById?id='+id).then(res => {
+    edit(id) {
+      this.$axios.get('/sys/menu/queryById?id=' + id).then(res => {
         let result = res.data.data
-        this.dialogVisible=true
+        this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
-        this.$nextTick(()=>{
+        this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          console.log("id="+id)
+          console.log("id=" + id)
         })
 
       })
     },
     // 删除
-    del(id){
-      this.$axios.get('/sys/menu/delById?id='+id).then(res => {
+    del(id) {
+      this.$axios.get('/sys/menu/delById?id=' + id).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'

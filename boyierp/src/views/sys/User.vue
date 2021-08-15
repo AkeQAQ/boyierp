@@ -27,6 +27,7 @@
         :data="tableData"
         border
         stripe
+        size="mini"
         tooltip-effect="dark"
         style="width: 100%"
         @selection-change="handleSelectionChange">
@@ -67,12 +68,16 @@
         </template>
       </el-table-column>
 
+      <!-- fixed 固定某一列，都会显示 ，并且横向内容可以有横向拉框-->
       <el-table-column
           prop="action"
-          label="操作">
+          label="操作"
+          width="230px"
+          fixed="right"
+      >
         <template slot-scope="scope">
 
-          <el-button type="text" v-if="hasAuth('sysManage:user:authority')"  @click="editRoleMenu(scope.row.id)">分配角色</el-button>
+          <el-button type="text" size="small" v-if="hasAuth('sysManage:user:authority')"  @click="editRoleMenu(scope.row.id)">分配角色</el-button>
           <el-divider direction="vertical" v-if="hasAuth('sysManage:user:authority')" ></el-divider>
 
           <el-button type="text" v-if="hasAuth('sysManage:user:resetPass')">
@@ -81,23 +86,23 @@
               <el-popconfirm @confirm="resetPass(scope.row.id,scope.row.userName)"
                              title="确定重置吗？"
               >
-                <el-button type="text" slot="reference">重置密码</el-button>
+                <el-button type="text" size="small" slot="reference">重置密码</el-button>
               </el-popconfirm>
             </template>
           </el-button>
 
           <el-divider direction="vertical" v-if="hasAuth('sysManage:user:resetPass')"></el-divider>
 
-          <el-button type="text" @click="edit(scope.row.id)" v-if="hasAuth('sysManage:user:update')">编辑</el-button>
+          <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('sysManage:user:update')">编辑</el-button>
           <el-divider direction="vertical" v-if="hasAuth('sysManage:user:del')"></el-divider>
 
-          <el-button type="text" v-if="hasAuth('sysManage:user:del')">
+          <el-button type="text"  v-if="hasAuth('sysManage:user:del')">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"
                              title="确定删除吗？"
               >
-                <el-button type="text" slot="reference">删除</el-button>
+                <el-button type="text" size="small" slot="reference">删除</el-button>
               </el-popconfirm>
             </template>
           </el-button>
@@ -110,7 +115,7 @@
 
     <!-- 弹窗 -->
     <el-dialog
-        title="用户管理"
+        title="用户信息"
         :visible.sync="dialogVisible"
         width="30%"
         :before-close="handleClose"
@@ -407,5 +412,6 @@ export default {
 <style scoped>
 .el-pagination {
   float: right;
+
 }
 </style>

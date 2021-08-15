@@ -27,6 +27,7 @@
         :data="tableData"
         border
         stripe
+        size="mini"
         tooltip-effect="dark"
         style="width: 100%"
         @selection-change="handleSelectionChange">
@@ -62,13 +63,16 @@
 
       <el-table-column
           prop="action"
-          label="操作">
+          label="操作"
+          width="160px"
+          fixed="right"
+      >
         <template slot-scope="scope">
 
-          <el-button type="text" v-if="hasAuth('sysManage:role:authority')" @click="editRoleMenu(scope.row.id)">分配菜单</el-button>
+          <el-button type="text" size="small" v-if="hasAuth('sysManage:role:authority')" @click="editRoleMenu(scope.row.id)">分配菜单</el-button>
           <el-divider direction="vertical" v-if="hasAuth('sysManage:role:authority')"></el-divider>
 
-          <el-button type="text" @click="edit(scope.row.id)" v-if="hasAuth('sysManage:role:update')">编辑</el-button>
+          <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('sysManage:role:update')">编辑</el-button>
           <el-divider direction="vertical"  v-if="hasAuth('sysManage:role:update')"></el-divider>
           <el-button type="text"  v-if="hasAuth('sysManage:role:del')">
             <!-- 气泡确认框 -->
@@ -76,7 +80,7 @@
               <el-popconfirm @confirm="del(scope.row.id)"
                              title="确定删除吗？"
               >
-                <el-button type="text" slot="reference">删除</el-button>
+                <el-button type="text" size="small" slot="reference">删除</el-button>
               </el-popconfirm>
             </template>
           </el-button>
@@ -89,7 +93,7 @@
 
     <!-- 弹窗 -->
     <el-dialog
-        title="角色管理"
+        title="角色信息"
         :visible.sync="dialogVisible"
         width="30%"
         :before-close="handleClose"

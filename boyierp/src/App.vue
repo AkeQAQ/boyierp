@@ -11,6 +11,7 @@
       // 解决刷新浏览器没有tab的问题
       $route(to,from){
         if(to.path != '/login'){
+          console.log("路由跳转to:",to)
           this.$store.commit("addTab", {routerName:to.name,title:to.meta.title})
 
         }
@@ -26,4 +27,10 @@ html, body, #app {
   padding: 0;
   margin: 0;
   font-size: 15px;
-}</style>
+
+}
+.el-table__row{
+td:not(.is-hidden):last-child{
+  right:-1px;}
+}
+</style>

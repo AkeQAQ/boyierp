@@ -44,13 +44,6 @@ Mock.mock('/sys/menu/navList', 'post', () => {
             title: '系统管理',
             icon: 'el-icon-s-operation',
             children: [
-             /*   {
-                    routerName: 'Index', // 首页的目前有地方是写死了，所以这个不能改
-                    title: '首页',
-                    icon: 'el-icon-user',
-                    path: '/index',
-                    component: 'Index'
-                },*/
                 {
                     routerName: 'User',
                     title: '用户管理',
@@ -73,15 +66,6 @@ Mock.mock('/sys/menu/navList', 'post', () => {
                     component: 'sys/Menu'// view的路径
 
                 }
-                /*,
-                {
-                    routerName: 'UserCenter',
-                    title: '修改密码',
-                    icon: 'el-icon-user-solid',
-                    path: '/userCenter',
-                    component: 'UserCenter'
-
-                }*/
             ]
         }, {
             title: '系统工具',
