@@ -9,7 +9,8 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        token: ''
+        token: '',
+        user_info:{}
 
     },
     mutations: {
@@ -19,8 +20,13 @@ export default new Vuex.Store({
         },
         LOGOUT: (state) => {
             state.token = ''
+            state.user_info = {}
             localStorage.clear()
             sessionStorage.clear()
+        },
+        SET_USERINFO:(state,user_info_p)=>{
+            state.user_info = user_info_p;
+            localStorage.setItem("user_info", user_info_p)
         }
 
 

@@ -15,7 +15,7 @@ import request from "./axios"
 Vue.prototype.$axios = request
 
 // // 引入mock，对请求进行拦截
-require("./mock.js")
+// require("./mock.js")
 
 import global from './globalFun'
 

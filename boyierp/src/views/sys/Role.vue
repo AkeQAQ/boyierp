@@ -2,7 +2,7 @@
   <div>
     <el-form :inline="true" class="demo-form-inline">
       <el-form-item>
-        <el-input v-model="searchName" placeholder="名称" clearable></el-input>
+        <el-input v-model="searchRoleName" placeholder="名称" clearable></el-input>
       </el-form-item>
 
       <el-form-item>
@@ -120,8 +120,8 @@
 
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="editForm.status">
-            <el-radio label=0>正常</el-radio>
-            <el-radio label=1>禁止</el-radio>
+            <el-radio :label=0>正常</el-radio>
+            <el-radio :label=1>禁止</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -169,10 +169,10 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="this.currentPage"
-        :page-sizes="[1, 20, 30, 40]"
+        :page-sizes="[10, 20, 30, 40]"
         :page-size="this.pageSize"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="this.totalNum">
+        :total="this.total">
     </el-pagination>
   </div>
 </template>
@@ -183,9 +183,9 @@ export default {
   data() {
     return {
       currentPage: 1 // 当前页
-      , pageSize: 1 // 一页多少条
-      , totalNum: 0 // 总共多少数据
-      ,searchName: '',
+      , pageSize: 10 // 一页多少条
+      , total: 0 // 总共多少数据
+      ,searchRoleName: '',
       // batchDelDisable: true,
       editForm: {
         status: "0" // 编辑表单初始默认值
@@ -269,7 +269,7 @@ export default {
     submitAuthorityForm(formName) {
         console.log("提交后的，被选中的菜单ID数组：",this.$refs.tree.getCheckedKeys())
         this.$axios.post('/sys/role/updateOwnMenus',{
-          param:{
+          params:{
             menuIds:this.$refs.tree.getCheckedKeys()
           }
         }).then(res => {
@@ -286,22 +286,22 @@ export default {
 
     // 查询角色表单列表数据
     getUserList() {
-      this.$axios.post('/sys/role/list', {
-          param:{
+      this.$axios.get('/sys/role/list', {
+          params:{
             currentPage: this.currentPage
             , pageSize: this.pageSize
-            , totalNum: this.totalNum
-            ,searchName: this.searchName
+            , total: this.total
+            ,searchRoleName: this.searchRoleName
         }}).then(res => {
-        this.tableData = res.data.data.tableData
-        this.totalNum = res.data.data.totalNum
-        console.log("获取角色表单数据", res.data.data.tableData)
+        this.tableData = res.data.tableData
+        this.total = res.data.total
+        console.log("获取角色表单数据", res.data.tableData)
       })
     },
     // 编辑
     edit(id) {
       this.$axios.get('/sys/role/queryById?id=' + id).then(res => {
-        let result = res.data.data
+        let result = res.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
         this.$nextTick(() => {

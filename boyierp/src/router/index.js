@@ -55,7 +55,7 @@ router.beforeEach((to, from, next) => {
     if(store.state.menu.menuInitFlag === true){
         console.log("已经初始化过路由")
         next()
-    }else if(to.path==='/login'){
+    }else if(to.path==='/login' || to.path==='/Login'){
         console.log("当前是login 路径，不需要")
         next()
     }else if (to.path == '/' || to.path == '')
@@ -64,7 +64,7 @@ router.beforeEach((to, from, next) => {
         const newRoutes = router.options.routes;
         console.log("刚刚开始的路由信息:",router.options.routes)
         // 2. 获取路由信息
-        axios.post('/sys/menu/navList', 'post').then(res => {
+        axios.get('/sys/menu/navList').then(res => {
             // 根路由对象
             res.data.data.nav.forEach(menu => {
                 if (menu.children) {

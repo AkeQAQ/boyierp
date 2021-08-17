@@ -1,8 +1,11 @@
 <template>
   <div style="text-align: center">
-    <h2>你好{{userInfo.username}}</h2>
+    <h2>你好{{userInfo.userName}}</h2>
     <el-form :model="userForm" status-icon :rules="rules" ref="userForm" label-width="100px" class="demo-userForm">
 
+      <el-form-item label="当前密码" prop="currentPass">
+        <el-input type="password" v-model="userForm.currentPass" autocomplete="off"></el-input>
+      </el-form-item>
       <el-form-item label="新密码" prop="pass">
         <el-input type="password" v-model="userForm.pass" autocomplete="off"></el-input>
       </el-form-item>
@@ -21,6 +24,13 @@
 export default {
   name: "UserCenter",
   data() {
+    var validateCurrentPass = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入旧密码'));
+      }
+      callback();
+
+    };
     var validatePass = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'));
@@ -42,10 +52,15 @@ export default {
     };
     return {
       userForm: {
+        currentPass:'',
         pass: '',
         checkPass: ''
       },
       rules: {
+        currentPass: [
+          {validator: validateCurrentPass, trigger: 'blur'},
+          { min: 6, max: 12, message: '长度在 6 到 12 个字符', trigger: 'blur' }
+        ],
         pass: [
           {validator: validatePass, trigger: 'blur'},
           { min: 6, max: 12, message: '长度在 6 到 12 个字符', trigger: 'blur' }
@@ -54,10 +69,7 @@ export default {
           {validator: validatePass2, trigger: 'blur'}
         ]
       },
-      userInfo:{
-        id:"",
-        username:""
-      }
+      userInfo:this.$store.state.user_info
     };
   },
   methods: {
@@ -82,16 +94,7 @@ export default {
     },
     resetForm(formName) {
       this.$refs[formName].resetFields();
-    },
-    getUserInfo(){
-      // 用户信息接口
-      this.$axios.post('/sys/getUserInfo').then(res=>{
-        this.userInfo = res.data.data;
-      })
     }
-  },
-  created() {
-    this.getUserInfo()
   }
 }
 </script>

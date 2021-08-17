@@ -44,8 +44,8 @@
       </el-table-column>
 
       <el-table-column
-          prop="URL"
-          label="菜单URL">
+          prop="url"
+          label="菜单url">
       </el-table-column>
 
       <el-table-column
@@ -105,9 +105,9 @@
       <el-form :model="editForm" :rules="rules" ref="editForm" label-width="100px" class="demo-editForm">
 
         <!-- 隐藏ID -->
-        <!--        <el-form-item v-show="false" label="id" prop="id">
-                  <el-input v-model="editForm.id"></el-input>
-                </el-form-item>-->
+        <el-form-item v-show="false" label="id" prop="id">
+          <el-input v-model="editForm.id"></el-input>
+        </el-form-item>
 
         <el-form-item label="上级菜单" prop="parentId">
           <el-select v-model="editForm.parentId" placeholder="请选择上级菜单">
@@ -137,8 +137,8 @@
           <el-input v-model="editForm.icon"></el-input>
         </el-form-item>
 
-        <el-form-item label="菜单URL" prop="URL">
-          <el-input v-model="editForm.URL"></el-input>
+        <el-form-item label="菜单url" prop="url">
+          <el-input v-model="editForm.url"></el-input>
         </el-form-item>
 
         <el-form-item label="菜单组件" prop="component">
@@ -151,16 +151,16 @@
 
         <el-form-item label="类型" prop="type">
           <el-radio-group v-model="editForm.type">
-            <el-radio label=0>目录</el-radio>
-            <el-radio label=1>菜单</el-radio>
-            <el-radio label=2>按钮</el-radio>
+            <el-radio :label=0>目录</el-radio>
+            <el-radio :label=1>菜单</el-radio>
+            <el-radio :label=2>按钮</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="editForm.status">
-            <el-radio label=0>正常</el-radio>
-            <el-radio label=1>禁止</el-radio>
+            <el-radio :label=0>正常</el-radio>
+            <el-radio :label=1>禁止</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -221,6 +221,8 @@ export default {
             // 关闭弹窗并且重置内容
             this.dialogVisible = false;
             this.resetForm("editForm")
+            this.getUserList();
+
           })
         } else {
           console.log('error submit!!');
@@ -237,6 +239,7 @@ export default {
     // 编辑
     edit(id) {
       this.$axios.get('/sys/menu/queryById?id=' + id).then(res => {
+        console.log("根据菜单id查询结果:",res.data.data)
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置

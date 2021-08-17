@@ -34,6 +34,7 @@
 </template>
 
 <script>
+import qs from 'qs'
 
 export default {
 
@@ -61,9 +62,10 @@ export default {
         if (valid) {
           console.log("校验通过")
           // 1. 发送登陆请求到后端进行登陆
-          this.$axios.post('/login',this.loginForm).then(res =>{
+          this.$axios.post('/login?'+qs.stringify(this.loginForm)).then(res =>{
 
             const jwt = res.headers['authorization']                     // 将jwt存储到应用store中
+            console.log("获的authorization jwt：",jwt)
             this.$store.commit("SET_TOKEN", jwt)  // 调用SET_TOKEN 方法，传入参数jwt
 
             this.$router.push("/index") // 跳转

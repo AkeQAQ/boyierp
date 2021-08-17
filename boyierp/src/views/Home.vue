@@ -18,7 +18,7 @@
         <div class="header_right">
           <el-dropdown>
             <span class="el-dropdown-link">
-              {{ userInfo.username }}<i class="el-icon-arrow-down el-icon--right"></i>
+              {{ userInfo.userName }}<i class="el-icon-arrow-down el-icon--right"></i>
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item >
@@ -58,20 +58,21 @@ import Tab from "@/views/inc/Tab";
 
 export default {
   name: "Home",
-  data() {
-    return {
-      userInfo: {
-        id: "",
-        username: ""
+  computed:{
+    userInfo:{
+      get(){
+        return this.$store.state.user_info;
       }
     }
-  },
+  }
+  ,
   components: {SideMenu, Tab},
   methods: {
     getUserInfo() {
       // 用户信息接口
-      this.$axios.post('/sys/getUserInfo').then(res => {
-        this.userInfo = res.data.data;
+      this.$axios.get('/sys/user/getUserInfo').then(res => {
+        console.log("设置userInfo,",res.data.data)
+        this.$store.commit("SET_USERINFO",res.data.data)
       })
     },
     logout() {

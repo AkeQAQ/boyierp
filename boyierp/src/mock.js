@@ -1,5 +1,5 @@
 // 引入mock
-const Mock = require('mockjs') //引入mock数据，关闭则注释该行
+// const Mock = require('mockjs') //引入mock数据，关闭则注释该行
 const Random = Mock.Random
 
 let Result = {
@@ -9,17 +9,20 @@ let Result = {
 }
 
 // 模拟登陆接口的返回
+/*
+
 Mock.mock('/login', 'post', () => {
     // Result.code = "400"
     // Result.msg="没有权限"
     Result.msg = ""
     return Result
 })
+*/
 
 // 模拟获取用户信息
-Mock.mock('/sys/getUserInfo', 'post', () => {
+Mock.mock('/sys/getUserInfo', 'get', () => {
     Result.data = {
-        id: "1",
+        id: 1,
         username: "孙克"
     }
     return Result
@@ -203,7 +206,7 @@ Mock.mock('/sys/menu/list', 'post', () => {
             authority: 'sysTool',
             icon: 'el-icon-setting',
             type: 0,
-            URL: '',
+            url: '',
             component: '',
             orderType: '',
             status: 0,
