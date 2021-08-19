@@ -2,11 +2,11 @@
   <div>
     <el-form :inline="true" class="demo-form-inline">
       <el-form-item>
-        <el-input v-model="searchName" placeholder="用户名称" clearable></el-input>
+        <el-input v-model="searchUserName" placeholder="用户名称" clearable></el-input>
       </el-form-item>
 
       <el-form-item>
-        <el-button @click="getUserList()">搜索</el-button>
+        <el-button @click="getUserList">搜索</el-button>
       </el-form-item>
 
       <el-form-item v-if="hasAuth('sysManage:user:save')">
@@ -41,9 +41,12 @@
           width="120">
       </el-table-column>
       <el-table-column
-          prop="roleName"
+          prop="sysRoles"
           label="角色名称"
           width="120">
+        <template slot-scope="scope">
+          <el-tag size="small" type="info" v-for="item in scope.row.sysRoles">{{item.roleName}}</el-tag>
+        </template>
       </el-table-column>
       <el-table-column
           prop="email"
@@ -77,10 +80,10 @@
       >
         <template slot-scope="scope">
 
-          <el-button type="text" size="small" v-if="hasAuth('sysManage:user:authority')"  @click="editRoleMenu(scope.row.id)">分配角色</el-button>
-          <el-divider direction="vertical" v-if="hasAuth('sysManage:user:authority')" ></el-divider>
+          <el-button type="text" size="small" v-if="hasAuth('sysManage:user:authority')  && scope.row.userName !='admin'"    @click="editRoleMenu(scope.row.id)">分配角色</el-button>
+          <el-divider direction="vertical" v-if="hasAuth('sysManage:user:authority')  && scope.row.userName !='admin'" ></el-divider>
 
-          <el-button type="text" v-if="hasAuth('sysManage:user:resetPass')">
+          <el-button type="text" v-if="hasAuth('sysManage:user:resetPass')  && scope.row.userName !='admin'">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="resetPass(scope.row.id,scope.row.userName)"
@@ -91,12 +94,12 @@
             </template>
           </el-button>
 
-          <el-divider direction="vertical" v-if="hasAuth('sysManage:user:resetPass')"></el-divider>
+          <el-divider direction="vertical" v-if="hasAuth('sysManage:user:resetPass')  && scope.row.userName !='admin'"></el-divider>
 
-          <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('sysManage:user:update')">编辑</el-button>
-          <el-divider direction="vertical" v-if="hasAuth('sysManage:user:del')"></el-divider>
+          <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('sysManage:user:update')  && scope.row.userName !='admin'">编辑</el-button>
+          <el-divider direction="vertical" v-if="hasAuth('sysManage:user:del')  && scope.row.userName !='admin'"></el-divider>
 
-          <el-button type="text"  v-if="hasAuth('sysManage:user:del')">
+          <el-button type="text"  v-if="hasAuth('sysManage:user:del')  && scope.row.userName !='admin'">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"
@@ -122,6 +125,10 @@
     >
 
       <el-form :model="editForm" :rules="rules" ref="editForm" label-width="100px" class="demo-editForm">
+        <!-- 隐藏ID -->
+        <el-form-item v-show="false" label="id" prop="id">
+          <el-input v-model="editForm.id"></el-input>
+        </el-form-item>
 
         <el-form-item label="用户名称" prop="userName">
           <el-input v-model="editForm.userName"></el-input>
@@ -141,8 +148,8 @@
 
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="editForm.status">
-            <el-radio label=0>正常</el-radio>
-            <el-radio label=1>禁止</el-radio>
+            <el-radio :label=0>正常</el-radio>
+            <el-radio :label=1>禁止</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -163,7 +170,10 @@
         @closed="authorityDialogVisible = false"
     >
       <el-form :model="authorityForm" ref="authorityForm" label-width="100px" class="demo-editForm">
-
+        <!-- 隐藏ID -->
+        <el-form-item v-show="false" label="id" prop="id">
+          <el-input v-model="authorityForm.id"></el-input>
+        </el-form-item>
 
         <el-tree
             ref="tree"
@@ -190,10 +200,10 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="this.currentPage"
-        :page-sizes="[1, 20, 30, 40]"
+        :page-sizes="[10, 20, 30, 40]"
         :page-size="this.pageSize"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="this.totalNum">
+        :total="this.total">
     </el-pagination>
   </div>
 </template>
@@ -204,16 +214,19 @@ export default {
   data() {
     return {
       currentPage: 1 // 当前页
-      , pageSize: 1 // 一页多少条
-      , totalNum: 0 // 总共多少数据
-      ,searchName: '',
+      , pageSize: 10 // 一页多少条
+      , total: 0 // 总共多少数据
+      ,searchUserName:'',
       // batchDelDisable: true,
       editForm: {
-        status: "0" // 编辑表单初始默认值
+        status: 0 // 编辑表单初始默认值
       },
       rules: {
         userName: [
           {required: true, message: '请输入用户名称', trigger: 'blur'}
+        ],
+        email: [
+          {required: true, message: '请输入邮箱', trigger: 'blur'}
         ],
         mobile: [
           {required: true, message: '请输入手机号', trigger: 'blur'}
@@ -262,14 +275,22 @@ export default {
     },
     handleSelectionChange(val) {
       console.log("多选框 val ", val)
-      this.multipleSelection = val;
+      this.multipleSelection = []
+
+      val.forEach(theId => {
+        if(theId.id === 1){
+          // 是超级管理员用户，不能删除
+        }else {
+          this.multipleSelection.push(theId.id)
+        }
+      })
+      console.log("多选框 选中的 ", this.multipleSelection)
     },
     // 表单提交
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$axios.post('/sys/user/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
-            let result = res.data
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -278,6 +299,8 @@ export default {
             // 关闭弹窗并且重置内容
             this.dialogVisible = false;
             this.resetForm("editForm")
+            this.getUserList();
+
           })
         } else {
           console.log('error submit!!');
@@ -287,12 +310,7 @@ export default {
     },
     submitAuthorityForm(formName) {
       console.log("提交后的，被选中的 角色 ID数组：",this.$refs.tree.getCheckedKeys())
-      this.$axios.post('/sys/user/updateOwnRoles',{
-        param:{
-
-          roleIds:this.$refs.tree.getCheckedKeys()
-        }
-      }).then(res => {
+      this.$axios.post('/sys/user/authority?userId='+this.authorityForm.id,this.$refs.tree.getCheckedKeys()).then(res => {
         let result = res.data
         this.$message({
           message:'修改成功!',
@@ -306,19 +324,19 @@ export default {
 
     // 查询角色表单列表数据
     getUserList() {
-      this.$axios.post('/sys/user/list', {
-        param:{
+      this.$axios.get('/sys/user/list', {
+        params:{
           currentPage: this.currentPage
           , pageSize: this.pageSize
-          , totalNum: this.totalNum
-          ,searchName: this.searchName
+          , total: this.total
+          ,searchUserName: this.searchUserName
         }}).then(res => {
-        this.tableData = res.data.data.tableData
-        this.totalNum = res.data.data.totalNum
-        console.log("获取用户表单数据", res.data.data.tableData)
+        this.tableData = res.data.data.records
+        this.total = res.data.data.total
+        console.log("获取用户表单数据", res.data.data.records)
       })
     },
-    // 编辑
+    // 编辑页面
     edit(id) {
       this.$axios.get('/sys/user/queryById?id=' + id).then(res => {
         let result = res.data.data
@@ -327,14 +345,14 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          console.log("role id=" + id)
+          console.log("user id=" + id)
         })
 
       })
     },
-    // 编辑
+    // 重置密码
     resetPass(id,username) {
-      this.$axios.post('/sys/user/resetPass',{
+      this.$axios.get('/sys/user/resetPass',{
         params:{
           id:id
         }
@@ -345,19 +363,22 @@ export default {
         });
       })
     },
-    // 分配菜单权限
+    // 点击分配角色
     editRoleMenu(id) {
+      // 设置id
+      this.authorityForm.id = id;
       // 1. 弹出分配权限窗口
       this.authorityDialogVisible = true
-      // 2. 获取全部菜单列表
-      this.$axios.post('/sys/role/listAll').then(res => {
+      // 2. 获取全部角色列表
+      this.$axios.post('/sys/role/listValide').then(res => {
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
-        // this.$nextTick(() => {
+        this.$nextTick(() => {
         // 赋值到编辑表单
         this.authorityTreeData = res.data.data
-        // })
+          console.log("权限tree 数据:",this.authorityTreeData)
+        })
       })
-      // 3. 获取该用户的菜单列表
+      // 3. 获取该用户的角色列表
       this.$axios.get('/sys/user/queryRolesByUserId?id=' + id).then(res => {
         let result = res.data
         // 4. 设置选中的节点
@@ -374,12 +395,10 @@ export default {
         ids.push(id)
       }else{
         // 批量删除
-        console.log("批量删除:id",id)
-        for (let theId in this.multipleSelection) {
-          ids.push(theId)
-        }
+        ids = this.multipleSelection
+        console.log("批量删除:id",ids)
       }
-      this.$axios.post('/sys/role/del', ids).then(res => {
+      this.$axios.post('/sys/user/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'

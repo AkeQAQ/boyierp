@@ -181,8 +181,7 @@ export default {
   data() {
     return {
       editForm: {
-        status: "0", // 编辑表单初始默认值
-        type: "0"
+        status: 0, // 编辑表单初始默认值
       },
       rules: {
 
@@ -221,7 +220,7 @@ export default {
             // 关闭弹窗并且重置内容
             this.dialogVisible = false;
             this.resetForm("editForm")
-            this.getUserList();
+            this.getMenuList();
 
           })
         } else {
@@ -231,7 +230,7 @@ export default {
       });
     },
     // 查询菜单表单列表数据
-    getUserList() {
+    getMenuList() {
       this.$axios.post('/sys/menu/list').then(res => {
         this.tableData = res.data.data
       })
@@ -258,7 +257,7 @@ export default {
           message: '删除成功!',
           type: 'success'
         });
-        this.getUserList()
+        this.getMenuList()
         console.log("删除后重新加载页面")
 
       })
@@ -276,7 +275,7 @@ export default {
   },
   // 页面初始化时调用的方法
   created() {
-    this.getUserList()
+    this.getMenuList()
     this.dialogVisible = false
 
   }

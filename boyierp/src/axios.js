@@ -27,8 +27,8 @@ request.interceptors.response.use(response=>{
 
     if(result.code === 200){
         return response
-    }else {
-
+    }
+    else {
         Element.Message.error(result.msg?result.msg:'系统异常',{duration:3*1000}) // 弹出框
         return Promise.reject(response.data.msg) // 拒绝请求后续执行
     }
@@ -37,7 +37,17 @@ request.interceptors.response.use(response=>{
     // 这里是响应状态码就是错误时，才进入
 
     console.log("服务器出错："+error)
-    Element.Message.error(error, {duration: 3 * 1000})
+    console.log(error)
+
+    if (error.response.data) {
+        error.massage = error.response.data.msg
+    }
+
+    if (error.response.status === 401) {
+        router.push("/login")
+    }
+
+    Element.Message.error(error.massage, {duration: 3000})
     return Promise.reject(error)
 })
 

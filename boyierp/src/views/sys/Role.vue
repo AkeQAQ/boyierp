@@ -70,17 +70,17 @@
         <template slot-scope="scope">
 
           <el-button type="text" size="small" v-if="hasAuth('sysManage:role:authority')" @click="editRoleMenu(scope.row.id)">分配菜单</el-button>
-          <el-divider direction="vertical" v-if="hasAuth('sysManage:role:authority')"></el-divider>
+          <el-divider direction="vertical" v-if="hasAuth('sysManage:role:authority')  && scope.row.roleName !='超级管理员'"></el-divider>
 
-          <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('sysManage:role:update')">编辑</el-button>
-          <el-divider direction="vertical"  v-if="hasAuth('sysManage:role:update')"></el-divider>
+          <el-button type="text" size="small" @click="edit(scope.row.id)"  v-if="hasAuth('sysManage:role:update') && scope.row.roleName !='超级管理员'">编辑</el-button>
+          <el-divider direction="vertical"  v-if="hasAuth('sysManage:role:update')  && scope.row.roleName !='超级管理员'"></el-divider>
           <el-button type="text"  v-if="hasAuth('sysManage:role:del')">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"
                              title="确定删除吗？"
               >
-                <el-button type="text" size="small" slot="reference">删除</el-button>
+                <el-button type="text" size="small"   v-if="scope.row.roleName !='超级管理员'" slot="reference">删除</el-button>
               </el-popconfirm>
             </template>
           </el-button>
@@ -142,6 +142,10 @@
         @closed="authorityDialogVisible = false"
     >
       <el-form :model="authorityForm" ref="authorityForm" label-width="100px" class="demo-editForm">
+        <!-- 隐藏ID -->
+        <el-form-item v-show="false" label="id" prop="id">
+          <el-input v-model="authorityForm.id"></el-input>
+        </el-form-item>
 
 
           <el-tree
@@ -150,6 +154,7 @@
               show-checkbox
               default-expand-all
               node-key="id"
+              :check-strictly = true
               :props="defaultProps">
           </el-tree>
 
@@ -188,7 +193,7 @@ export default {
       ,searchRoleName: '',
       // batchDelDisable: true,
       editForm: {
-        status: "0" // 编辑表单初始默认值
+        status: 0 // 编辑表单初始默认值
       },
       rules: {
 
@@ -243,7 +248,16 @@ export default {
     },
     handleSelectionChange(val) {
       console.log("多选框 val ", val)
-      this.multipleSelection = val;
+      this.multipleSelection = []
+      val.forEach(theId => {
+        if(theId.id ===6){
+          // 假如是超级管理员的ID，不能删除
+        }else {
+          this.multipleSelection.push(theId.id)
+
+        }
+      })
+      console.log("多选框 选中的 ", this.multipleSelection)
     },
     // 表单提交
     submitForm(formName) {
@@ -259,6 +273,7 @@ export default {
             // 关闭弹窗并且重置内容
             this.dialogVisible = false;
             this.resetForm("editForm")
+            this.getUserList();
           })
         } else {
           console.log('error submit!!');
@@ -268,11 +283,7 @@ export default {
     },
     submitAuthorityForm(formName) {
         console.log("提交后的，被选中的菜单ID数组：",this.$refs.tree.getCheckedKeys())
-        this.$axios.post('/sys/role/updateOwnMenus',{
-          params:{
-            menuIds:this.$refs.tree.getCheckedKeys()
-          }
-        }).then(res => {
+        this.$axios.post('/sys/role/authority?roleId='+this.authorityForm.id,this.$refs.tree.getCheckedKeys()).then(res => {
           let result = res.data
           this.$message({
             message:'修改成功!',
@@ -293,15 +304,15 @@ export default {
             , total: this.total
             ,searchRoleName: this.searchRoleName
         }}).then(res => {
-        this.tableData = res.data.tableData
-        this.total = res.data.total
-        console.log("获取角色表单数据", res.data.tableData)
+        this.tableData = res.data.data.records
+        this.total = res.data.data.total
+        console.log("获取角色表单数据", res.data.data)
       })
     },
-    // 编辑
+    // 点击编辑页面，弹出
     edit(id) {
       this.$axios.get('/sys/role/queryById?id=' + id).then(res => {
-        let result = res.data
+        let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
         this.$nextTick(() => {
@@ -313,23 +324,26 @@ export default {
       })
     },
     // 分配菜单权限
+
     editRoleMenu(id) {
+      this.authorityForm.id = id;
+
       // 1. 弹出分配权限窗口
       this.authorityDialogVisible = true
-      // 2. 获取全部菜单列表
-      this.$axios.post('/sys/menu/list').then(res => {
-        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
-        // this.$nextTick(() => {
+      // 2. 获取有效的菜单列表
+      this.$axios.post('/sys/menu/listValide').then(res => {
           // 赋值到编辑表单
+        console.log("设置树节点数据.",res.data.data)
           this.authorityTreeData = res.data.data
-        // })
+        // 3. 获取该用户的菜单列表
+        this.$axios.get('/sys/role/queryMenusByRoleId?id=' + id).then(res => {
+          let result = res.data
+          console.log("选中该用户拥有的菜单",result.data)
+          // 4. 设置选中的节点
+            this.$refs.tree.setCheckedKeys(result.data);
+        })
       })
-      // 3. 获取该用户的菜单列表
-      this.$axios.get('/sys/role/queryMenusByRoleId?id=' + id).then(res => {
-        let result = res.data
-        // 4. 设置选中的节点
-          this.$refs.tree.setCheckedKeys(result.data);
-      })
+
     },
     // 删除
     del(id) {
@@ -341,10 +355,9 @@ export default {
         ids.push(id)
       }else{
         // 批量删除
-        console.log("批量删除:id",id)
-        for (let theId in this.multipleSelection) {
-          ids.push(theId)
-        }
+        ids = this.multipleSelection
+        console.log("批量删除:id",ids)
+
       }
       this.$axios.post('/sys/role/del', ids).then(res => {
         this.$message({

@@ -349,7 +349,7 @@ Mock.mock(RegExp('/sys/role/queryMenusByRoleId*'), 'get', (param) => {
 })
 
 // 菜单功能- 修改该角色拥有的菜单 id数组
-Mock.mock('/sys/role/updateOwnMenus', 'post', (param) => {
+Mock.mock('/sys/role/authority', 'post', (param) => {
     console.log("updateOwnMenus 方法入参 ", param)
     return Result
 })
