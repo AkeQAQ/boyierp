@@ -19,7 +19,12 @@ Vue.prototype.$axios = request
 
 import global from './globalFun'
 
-
+// 引入了有双击事件的tree ：
+// 1. 前提：npm install dbltree -S
+// 2. 引入，
+// 3. 使用 dbltree
+import dbltree from 'dbltree'
+Vue.use(dbltree)
 
 Vue.config.productionTip = false
 

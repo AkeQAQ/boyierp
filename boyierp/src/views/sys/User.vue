@@ -218,8 +218,13 @@ export default {
       , total: 0 // 总共多少数据
       ,searchUserName:'',
       // batchDelDisable: true,
+      // 输入框的内容要写全，不然会发生，莫名其妙不能输入的问题
       editForm: {
-        status: 0 // 编辑表单初始默认值
+        status: 0, // 编辑表单初始默认值
+        userName:'',
+        email:'',
+        mobile:''
+
       },
       rules: {
         userName: [
