@@ -74,7 +74,7 @@
 
           <el-button type="text" size="small" @click="edit(scope.row.id)"  v-if="hasAuth('sysManage:role:update') && scope.row.roleName !='超级管理员'">编辑</el-button>
           <el-divider direction="vertical"  v-if="hasAuth('sysManage:role:update')  && scope.row.roleName !='超级管理员'"></el-divider>
-          <el-button type="text"  v-if="hasAuth('sysManage:role:del')">
+          <el-button type="text" style="padding: 0px"   v-if="hasAuth('sysManage:role:del')">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"

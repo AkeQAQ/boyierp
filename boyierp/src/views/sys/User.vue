@@ -28,6 +28,8 @@
         border
         stripe
         size="mini"
+        :cell-style="{padding:'0'}"
+
         tooltip-effect="dark"
         style="width: 100%"
         @selection-change="handleSelectionChange">
@@ -99,7 +101,7 @@
           <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('sysManage:user:update')  && scope.row.userName !='admin'">编辑</el-button>
           <el-divider direction="vertical" v-if="hasAuth('sysManage:user:del')  && scope.row.userName !='admin'"></el-divider>
 
-          <el-button type="text"  v-if="hasAuth('sysManage:user:del')  && scope.row.userName !='admin'">
+          <el-button type="text" style="padding: 0px" v-if="hasAuth('sysManage:user:del')  && scope.row.userName !='admin'">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"
@@ -324,6 +326,7 @@ export default {
 
         // 关闭弹窗并且重置内容
         this.authorityDialogVisible = false;
+        this.getUserList()
       });
     },
 

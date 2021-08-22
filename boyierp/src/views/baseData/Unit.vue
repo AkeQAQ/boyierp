@@ -14,6 +14,7 @@
         stripe
         fit
         size="mini"
+        :cell-style="{padding:'0'}"
         default-expand-all
         :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
       <el-table-column
@@ -47,7 +48,7 @@
           <el-button type="text" v-if="hasAuth('baseData:unit:update')" size="small" @click="edit(scope.row.id)">编辑
           </el-button>
           <el-divider direction="vertical"></el-divider>
-          <el-button type="text" v-if="hasAuth('baseData:unit:del')">
+          <el-button style="padding: 0px"  type="text" v-if="hasAuth('baseData:unit:del')">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"

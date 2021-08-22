@@ -23,7 +23,7 @@
                node-key="id"
                :default-expanded-keys="defaulExpandedKeys"
                style="font-weight: bold"
-               highlight-current=true
+               :highlight-current=true
                :data="groupData" :props="groupDefaultProps" @node-click="handleNodeClick"
                 @node-dblClick="nodeDbClick"
        >
@@ -78,8 +78,9 @@
                 <div style="margin-top: 0px;">
                   <el-input placeholder="请输入搜索关键字" v-model="searchStr" clearable class="input-with-select">
                     <el-select v-model="select" style="width: 120px"  slot="prepend" placeholder="搜索字段">
+                      <el-option label="唯一编码" value="id"></el-option>
                       <el-option label="分组编码" value="groupId"></el-option>
-                      <el-option label="编码" value="id"></el-option>
+                      <el-option label="子编码" value="subId"></el-option>
                       <el-option label="名称" value="name"></el-option>
                     </el-select>
                     <el-button slot="append" icon="el-icon-search"  @click="getMaterialList"></el-button>
@@ -102,27 +103,35 @@
             </el-form>
 
             <el-table
+
                 ref="multipleTable"
                 :data="tableData"
                 border
                 stripe
+                fit
                 size="mini"
                 tooltip-effect="dark"
                 style="width: 100%"
+                :cell-style="{padding:'0'}"
                 @selection-change="handleSelectionChange">
               <el-table-column
                   type="selection"
                   width="55">
               </el-table-column>
               <el-table-column
-                  label="分组编码"
-                  prop="groupId"
-                  width="120">
+                  label="唯一编码"
+                  prop="id"
+                  >
               </el-table-column>
               <el-table-column
-                  label="编码"
-                  prop="id"
-                  width="120">
+                  label="分组编码"
+                  prop="groupId">
+              </el-table-column>
+              <el-table-column
+                  label="子编码"
+                  prop="subId"
+                  sortable
+              >
               </el-table-column>
 
               <el-table-column
@@ -157,23 +166,22 @@
               <el-table-column
                   prop="action"
                   label="操作"
-                  width="230px"
+                  width="100px"
                   fixed="right"
               >
                 <template slot-scope="scope">
                   <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('baseData:material:update')   ">编辑</el-button>
                   <el-divider direction="vertical" v-if="hasAuth('baseData:material:del')   "></el-divider>
 
-                  <el-button type="text"  v-if="hasAuth('baseData:material:del')   ">
+                  <el-button style="padding: 0px" type="text"v-if="hasAuth('baseData:material:del')   ">
                     <template>
-                      <el-popconfirm @confirm="del(scope.row.id)"
+                      <el-popconfirm  @confirm="del(scope.row.id)"
                                      title="确定删除吗？"
                       >
                         <el-button type="text" size="small" slot="reference">删除</el-button>
                       </el-popconfirm>
                     </template>
                   </el-button>
-
 
                 </template>
               </el-table-column>
@@ -191,10 +199,14 @@
               <el-form :model="editForm" :rules="rules" ref="editForm" label-width="100px" class="demo-editForm">
 
 
-                <el-form-item label="编码" prop="id">
+                <el-form-item  v-if="false" label="唯一编码" prop="id">
+                  <el-input   v-model="editForm.id" ></el-input>
+                </el-form-item>
+
+                <el-form-item label="子编码" prop="subId">
                   <el-input style="width: 80px"  v-model="editForm.groupId" :disabled="true" ></el-input>
 
-                  <el-input style="width: 40%"  v-model="editForm.id" :disabled="this.addOrUpdate==='update'" ></el-input>
+                  <el-input style="width: 40%"  v-model="editForm.subId" :disabled="this.addOrUpdate==='update'" ></el-input>
                 </el-form-item>
 
                 <el-form-item label="名称" prop="name">
@@ -229,7 +241,6 @@
 
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
-                  <el-button @click="resetForm('editForm')">重置</el-button>
 
                 </el-form-item>
               </el-form>
@@ -259,7 +270,7 @@ export default {
   data() {
     return {
       select:'',
-      defaulExpandedKeys: [],
+      defaulExpandedKeys: [0],
       currentPage: 1 // 当前页
       , pageSize: 100 // 一页多少条
       , total: 0 // 总共多少数据
@@ -269,12 +280,15 @@ export default {
       editForm: {
         status: 0, // 编辑表单初始默认值
         id:'',
+        groupId:'',
+        subId:'',
         name:'',
         unit:'',
+        specs:''
       },
       rules: {
-        id: [
-          {required: true, message: '请输入编码', trigger: 'blur'}
+        subId: [
+          {required: true, message: '请输入子编码', trigger: 'blur'}
         ],
         name: [
           {required: true, message: '请输入名称', trigger: 'blur'}
@@ -328,11 +342,11 @@ export default {
 
       // 搜索框列表数据存放
       restaurants: [
-      ],
+      ]/*,
       // 搜索字段 数据存放
       restaurants2: [
-        {value:'分组编码'},{value:'编码'},{value:'名称'}
-      ]
+        {value:'唯一编码'},{value:'分组编码'},{value:'子编码'},{value:'名称'}
+      ]*/
     }
   },
   methods: {
@@ -349,6 +363,14 @@ export default {
       }).then(res => {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
+
+        this.select = "groupId"
+        if(data.code ==='全部'){
+          this.searchStr=''
+        }else {
+          this.searchStr=data.code
+        }
+
       })
     },
 
@@ -358,14 +380,14 @@ export default {
           this.restaurants = res.data.data
       })
     },
-
+/*
     // 查询搜索字段类型
     querySearch2(queryString, cb) {
       var restaurants2 = this.restaurants2;
       var results = queryString ? restaurants2.filter(this.createFilter(queryString)) : restaurants2;
       // 调用 callback 返回建议列表的数据
       cb(results);
-    },
+    },*/
 
     // 查询搜索框列表数据
     querySearch(queryString, cb) {
@@ -481,11 +503,7 @@ export default {
       this.multipleSelection = []
 
       val.forEach(theId => {
-        if (theId.id === 1) {
-          // 是超级管理员用户，不能删除
-        } else {
           this.multipleSelection.push(theId.id)
-        }
       })
       console.log("多选框 选中的 ", this.multipleSelection)
     },
@@ -596,7 +614,6 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          console.log("user id=" + id)
         })
 
       })
