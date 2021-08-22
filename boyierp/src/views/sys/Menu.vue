@@ -12,19 +12,21 @@
         row-key="id"
         border
         stripe
+        fit
+        :row-style="{height:10}"
+        :cell-style="{padding:0}"
         size="mini"
         default-expand-all
         :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
       <el-table-column
           prop="menuName"
           label="名称"
-          sortable
-          width="180">
+          width="230"
+          >
       </el-table-column>
       <el-table-column
           prop="authority"
           label="权限编码"
-          sortable
           width="180">
       </el-table-column>
       <el-table-column
@@ -182,7 +184,13 @@ export default {
     return {
       editForm: {
         status: 0, // 编辑表单初始默认值
-        type:2
+        type:2,
+        menuName: '',
+        url:'',
+        authority: '',
+        component:'',
+        icon:'',
+        orderType:''
       },
       rules: {
 

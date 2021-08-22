@@ -4,11 +4,11 @@
     <el-aside width="200px">
 
 
-      <!-- 物料分组按钮 -->
-      <el-button type="text" size="small" v-if="hasAuth('baseData:material:save')" @click="addGroup()">新增分组</el-button>
-      <el-button type="text" size="small" v-if="hasAuth('baseData:material:update')" @click="updateGroup()">修改分组
+      <!-- 供应商分组按钮 -->
+      <el-button type="text" size="small" v-if="hasAuth('baseData:supplier:save')" @click="addGroup()">新增分组</el-button>
+      <el-button type="text" size="small" v-if="hasAuth('baseData:supplier:update')" @click="updateGroup()">修改分组
       </el-button>
-      <el-button type="text" v-if="hasAuth('baseData:material:del') ">
+      <el-button type="text" v-if="hasAuth('baseData:supplier:del') ">
         <!-- 气泡确认框 -->
         <template>
           <el-popconfirm @confirm="del2()"
@@ -18,7 +18,7 @@
         </template>
       </el-button>
 
-      <!-- 物料分组Tree -->
+      <!-- 供应商分组Tree -->
       <dbltree  ref="groupTree"
                node-key="id"
                :default-expanded-keys="defaulExpandedKeys"
@@ -30,9 +30,9 @@
 
       </dbltree>
 
-      <!-- 物料分组弹框 -->
+      <!-- 供应商分组弹框 -->
       <el-dialog
-          title="物料分组信息"
+          title="供应商分组信息"
           :visible.sync="groupDialogVisible"
           width="30%"
           :before-close="handleClose_group"
@@ -70,7 +70,7 @@
 
 
     </el-aside>
-        <!-- 右侧物料列表 -->
+        <!-- 右侧供应商列表 -->
         <el-main>
             <el-form :inline="true" class="demo-form-inline">
 
@@ -83,18 +83,18 @@
                       <el-option label="子编码" value="subId"></el-option>
                       <el-option label="名称" value="name"></el-option>
                     </el-select>
-                    <el-button slot="append" icon="el-icon-search"  @click="getMaterialList"></el-button>
+                    <el-button slot="append" icon="el-icon-search"  @click="getSupplierList"></el-button>
 
                   </el-input>
 
                 </div>
               </el-form-item>
 
-              <el-form-item v-if="hasAuth('baseData:material:save')">
-                <el-button type="primary" v-if="hasAuth('baseData:material:save')"  @click="addMaterial()">新增</el-button>
+              <el-form-item v-if="hasAuth('baseData:supplier:save')">
+                <el-button type="primary" v-if="hasAuth('baseData:supplier:save')"  @click="addSupplier()">新增</el-button>
               </el-form-item>
 
-              <el-form-item v-if="hasAuth('baseData:material:del')">
+              <el-form-item v-if="hasAuth('baseData:supplier:del')">
                 <el-popconfirm @confirm="del(null)" title="确定删除吗？" >
                   <el-button :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
                 </el-popconfirm>
@@ -140,18 +140,24 @@
                   show-overflow-tooltip>
               </el-table-column>
 
+
               <el-table-column
-                  prop="specs"
-                  label="规格型号"
+                  prop="groupName"
+                  label="分组名称"
                   show-overflow-tooltip>
               </el-table-column>
 
               <el-table-column
-                  prop="unit"
-                  label="基本单位"
+                  prop="mobile"
+                  label="联系电话"
                   show-overflow-tooltip>
               </el-table-column>
 
+              <el-table-column
+                  prop="address"
+                  label="地址"
+                  show-overflow-tooltip>
+              </el-table-column>
 
               <el-table-column
                   prop="status"
@@ -170,10 +176,10 @@
                   fixed="right"
               >
                 <template slot-scope="scope">
-                  <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('baseData:material:update')   ">编辑</el-button>
-                  <el-divider direction="vertical" v-if="hasAuth('baseData:material:del')   "></el-divider>
+                  <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('baseData:supplier:update')   ">编辑</el-button>
+                  <el-divider direction="vertical" v-if="hasAuth('baseData:supplier:del')   "></el-divider>
 
-                  <el-button style="padding: 0px" type="text"v-if="hasAuth('baseData:material:del')   ">
+                  <el-button style="padding: 0px" type="text"v-if="hasAuth('baseData:supplier:del')   ">
                     <template>
                       <el-popconfirm  @confirm="del(scope.row.id)"
                                      title="确定删除吗？"
@@ -188,9 +194,9 @@
 
             </el-table>
 
-            <!-- 物料列表 弹窗 -->
+            <!-- 供应商列表 弹窗 -->
             <el-dialog
-                title="物料信息"
+                title="供应商信息"
                 :visible.sync="dialogVisible"
                 width="30%"
                 :before-close="handleClose"
@@ -212,23 +218,12 @@
                   <el-input v-model="editForm.name"></el-input>
                 </el-form-item>
 
-                <el-form-item label="规格型号" prop="specs">
-                  <el-input v-model="editForm.specs"></el-input>
+                <el-form-item label="联系电话" prop="mobile">
+                  <el-input v-model="editForm.mobile"></el-input>
                 </el-form-item>
 
-                <el-form-item label="基本单位" prop="unit">
-
-                  <!-- 搜索框 -->
-                  <el-autocomplete
-                      class="inline-input"
-                      v-model="editForm.unit"
-                      :fetch-suggestions="querySearch"
-                      placeholder="请输入内容"
-                      @select="handleSelect"
-                  >
-
-                  </el-autocomplete>
-
+                <el-form-item label="地址" prop="address">
+                  <el-input v-model="editForm.address"></el-input>
                 </el-form-item>
 
                 <el-form-item label="状态" prop="status">
@@ -246,7 +241,7 @@
 
             </el-dialog>
 
-            <!--物料列表 分页组件 -->
+            <!--供应商列表 分页组件 -->
             <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -264,7 +259,7 @@
 
 <script>
 export default {
-  name: "Material",
+  name: "Supplier",
 
   data() {
     return {
@@ -274,16 +269,17 @@ export default {
       , pageSize: 100 // 一页多少条
       , total: 0 // 总共多少数据
       , searchStr: '',
-      searchMaterialField:'',
+      searchSupplierField:'',
       addOrUpdate: 'save',
       editForm: {
         status: 0, // 编辑表单初始默认值
         id:'',
         groupId:'',
         subId:'',
+        groupName:'',
         name:'',
-        unit:'',
-        specs:''
+        address:'',
+        mobile:''
       },
       rules: {
         subId: [
@@ -292,19 +288,19 @@ export default {
         name: [
           {required: true, message: '请输入名称', trigger: 'blur'}
         ],
-        unit: [
-          {required: true, message: '请输入单位', change: 'blur'}
+        mobile: [
+          {required: true, message: '请输入联系电话', change: 'blur'}
         ],
         status: [
           {required: true, message: '请输入状态', trigger: 'blur'}
         ]
       }
       ,
-      // 物料分组 编辑表单
+      // 供应商分组 编辑表单
       groupEditForm: {
         parentId: 0 // 初始默认值
       },
-      // 物料分组 校验规则
+      // 供应商分组 校验规则
       groupRules: {
         name: [
           {required: true, message: '请输入分组名称', trigger: 'blur'}
@@ -314,7 +310,7 @@ export default {
         ]
       },
       dialogVisible: false,
-      groupDialogVisible: false, // 物料分组的弹窗标识
+      groupDialogVisible: false, // 供应商分组的弹窗标识
       tableData: [],
       multipleSelection: [] // 多选框数组
       ,
@@ -324,19 +320,19 @@ export default {
       },
       authorityDialogVisible: false,
       authorityForm: {},
-      // 物料分组 Tree数据
+      // 供应商分组 Tree数据
       groupData: [
         {
           parentId: '',
           code: ''
         }
       ],
-      // 物料分组 Tree 配置
+      // 供应商分组 Tree 配置
       groupDefaultProps: {
         children: 'children',
         label: 'label'
       },
-      // 物料分组 上次点击的TreeNode
+      // 供应商分组 上次点击的TreeNode
       lastClickTreeNode: {},
 
       // 搜索框列表数据存放
@@ -352,7 +348,7 @@ export default {
 
     nodeDbClick(event,data){
       console.log("双击获取分组的ID：",data.id)
-      this.$axios.get('/baseData/material/listByGroupId', {
+      this.$axios.get('/baseData/supplier/listByGroupId', {
         params: {
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -404,8 +400,8 @@ export default {
       console.log(item);
     },
 
-    // 物料列表 点击添加按钮
-    addMaterial(){
+    // 供应商列表 点击添加按钮
+    addSupplier(){
 
       if(this.lastClickTreeNode.id===undefined ){
         this.$message({
@@ -420,13 +416,14 @@ export default {
       }
       else {
         this.editForm.groupId = this.lastClickTreeNode.code;
+        this.editForm.groupName = this.lastClickTreeNode.name;
         this.dialogVisible = true
         this.addOrUpdate='save'
 
       }
     },
 
-    // 物料分组 点击添加按钮
+    // 供应商分组 点击添加按钮
     addGroup() {
 
       if(this.lastClickTreeNode.id === undefined){
@@ -452,7 +449,7 @@ export default {
         });
       }
     },
-    // 物料分组 点击修改按钮
+    // 供应商分组 点击修改按钮
     updateGroup() {
       console.log("上一次选中的TreeNode:", this.lastClickTreeNode)
       if (this.lastClickTreeNode.id != undefined) {
@@ -478,13 +475,13 @@ export default {
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize = val
-      this.getMaterialList()
+      this.getSupplierList()
 
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.currentPage = val
-      this.getMaterialList()
+      this.getSupplierList()
 
     },
     // 多选框方法
@@ -509,9 +506,10 @@ export default {
     // 表单提交
     submitForm(formName,methodName) {
       this.$refs[formName].validate((valid) => {
-        console.log("当前物料id:",this.editForm.id)
+        console.log("当前供应商id:",this.editForm.id)
+        console.log("当前分组groupName:",this)
         if (valid) {
-          this.$axios.post('/baseData/material/'+methodName, this.editForm).then(res => {
+          this.$axios.post('/baseData/supplier/'+methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -520,7 +518,7 @@ export default {
             // 关闭弹窗并且重置内容
             this.dialogVisible = false;
             this.resetForm("editForm")
-            this.getMaterialList();
+            this.getSupplierList();
 
           })
         } else {
@@ -529,7 +527,7 @@ export default {
         }
       });
     },
-    // 物料分组 表单提交
+    // 供应商分组 表单提交
     groupSubmitForm(formName) {
       this.$refs[formName].validate((valid) => {
 
@@ -538,7 +536,7 @@ export default {
           if (valid) {
             console.log("提交前的参数:parentId:", this.groupEditForm.parentId)
 
-            this.$axios.post('/baseData/materialGroup/' + (this.groupEditForm.id ? 'update' : 'save'), this.groupEditForm).then(res => {
+            this.$axios.post('/baseData/supplierGroup/' + (this.groupEditForm.id ? 'update' : 'save'), this.groupEditForm).then(res => {
               this.$message({
                 message: (this.groupEditForm.id ? '编辑' : '新增') + '成功!',
                 type: 'success'
@@ -577,10 +575,10 @@ export default {
       });
     },
 
-    // 查询物料表单列表数据
-    getMaterialList() {
+    // 查询供应商表单列表数据
+    getSupplierList() {
       console.log("搜索字段:",this.select)
-      this.$axios.get('/baseData/material/list', {
+      this.$axios.get('/baseData/supplier/list', {
         params: {
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -594,19 +592,19 @@ export default {
         console.log("获取用户表单数据", res.data.data.records)
       })
     },
-    // 物料分组 查询分组列表数据
+    // 供应商分组 查询分组列表数据
     getMaterialGroupList() {
-      this.$axios.post('/baseData/materialGroup/listValide').then(res => {
+      this.$axios.post('/baseData/supplierGroup/listValide').then(res => {
         this.$nextTick(() => {
           this.groupData = res.data.data
-          console.log("查询物料分组", res.data.data)
+          console.log("查询供应商分组", res.data.data)
         })
       })
     },
     // 编辑页面
     edit(id) {
       this.addOrUpdate = "update"
-      this.$axios.get('/baseData/material/queryById?id=' + id).then(res => {
+      this.$axios.get('/baseData/supplier/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -617,7 +615,28 @@ export default {
 
       })
     },
-
+    // 点击分配角色
+    editRoleMenu(id) {
+      // 设置id
+      this.authorityForm.id = id;
+      // 1. 弹出分配权限窗口
+      this.authorityDialogVisible = true
+      // 2. 获取全部角色列表
+      this.$axios.post('/sys/role/listValide').then(res => {
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.authorityTreeData = res.data.data
+          console.log("权限tree 数据:", this.authorityTreeData)
+        })
+      })
+      // 3. 获取该用户的角色列表
+      this.$axios.get('/sys/user/queryRolesByUserId?id=' + id).then(res => {
+        let result = res.data
+        // 4. 设置选中的节点
+        this.$refs.tree.setCheckedKeys(result.data);
+      })
+    },
     // 删除
     del(id) {
       let ids = []
@@ -631,17 +650,17 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
-      this.$axios.post('/baseData/material/del', ids).then(res => {
+      this.$axios.post('/baseData/supplier/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
         });
-        this.getMaterialList()
+        this.getSupplierList()
         console.log("删除后重新加载页面")
 
       })
     },
-    // 物料分组-删除事件
+    // 供应商分组-删除事件
     del2() {
       let delId = this.lastClickTreeNode.id
 
@@ -655,7 +674,7 @@ export default {
       let parentId = this.lastClickTreeNode.parentId
 
       console.log("选中删除分组id:", delId)
-      this.$axios.get('/baseData/materialGroup/delById?id=' + delId).then(res => {
+      this.$axios.get('/baseData/supplierGroup/delById?id=' + delId).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -674,7 +693,7 @@ export default {
       console.log("关闭窗口")
       done();
     },
-    // 物料分组 关闭弹窗处理动作
+    // 供应商分组 关闭弹窗处理动作
     handleClose_group(done) {
       this.$refs['groupEditForm'].resetFields();
       console.log("关闭分组窗口")
@@ -703,7 +722,7 @@ export default {
   },
   // 页面初始化时调用的方法
   created() {
-    this.getMaterialList()
+    this.getSupplierList()
     this.getMaterialGroupList()
     this.loadUnitAll()
   }
