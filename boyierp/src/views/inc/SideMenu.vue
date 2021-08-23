@@ -16,13 +16,13 @@
     </router-link>
 
 
-    <el-submenu  :index="menu.title" v-for="menu in menuList">
-      <template slot="title">
+    <el-submenu   :index="menu.title" v-for="menu in menuList">
+      <template  slot="title">
         <i :class="menu.icon"></i>
         <span>{{menu.title}}</span>
       </template>
       <router-link :to="item.path" v-for="item in menu.children">
-        <el-menu-item :index="item.routerName"  >
+        <el-menu-item v-if="item.status === 0"  :index="item.routerName"  >
           <template slot="title">
             <i :class="item.icon"></i>
             <span slot="title">{{item.title}}</span>

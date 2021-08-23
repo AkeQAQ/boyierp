@@ -40,7 +40,8 @@
       <el-table-column
           prop="id"
           label="编码"
-          >
+          sortable
+      >
       </el-table-column>
       <el-table-column
           label="部门名称"

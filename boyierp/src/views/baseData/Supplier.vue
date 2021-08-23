@@ -1,7 +1,7 @@
 <template>
 
   <el-container>
-    <el-aside width="200px">
+    <el-aside width="180px">
 
 
       <!-- 供应商分组按钮 -->
@@ -121,7 +121,9 @@
               <el-table-column
                   label="唯一编码"
                   prop="id"
-                  >
+                  sortable
+
+              >
               </el-table-column>
               <el-table-column
                   label="分组编码"
@@ -130,7 +132,6 @@
               <el-table-column
                   label="子编码"
                   prop="subId"
-                  sortable
               >
               </el-table-column>
 

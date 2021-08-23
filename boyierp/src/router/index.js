@@ -67,7 +67,7 @@ router.beforeEach((to, from, next) => {
         axios.get('/sys/menu/navList').then(res => {
             // 根路由对象
             res.data.data.nav.forEach(menu => {
-                if (menu.children) {
+                if (menu.children && menu.status === 0) {
                     console.log(menu.children)
 
                     menu.children.forEach(e => {
@@ -104,7 +104,7 @@ router.beforeEach((to, from, next) => {
 
 
 const menuToRoute = (menu) => {
-    if (!menu.component) {
+    if (!menu.component ) {
         return null
     }
 

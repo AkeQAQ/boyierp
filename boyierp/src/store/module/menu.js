@@ -19,7 +19,7 @@ export default {
         },
         SET_AUTHLIST: (state, authList_p) => {
             state.authList = authList_p
-            localStorage.setItem("menuList", authList_p)
+            localStorage.setItem("authList", authList_p)
         },
         reset(state){
             console.log("menu 重置")

@@ -121,6 +121,7 @@
               <el-table-column
                   label="唯一编码"
                   prop="id"
+                  sortable
                   >
               </el-table-column>
               <el-table-column
@@ -130,7 +131,7 @@
               <el-table-column
                   label="子编码"
                   prop="subId"
-                  sortable
+
               >
               </el-table-column>
 

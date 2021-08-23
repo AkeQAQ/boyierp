@@ -20,13 +20,11 @@
       <el-table-column
           prop="code"
           label="编码"
-          sortable
           >
       </el-table-column>
       <el-table-column
           prop="name"
           label="名称"
-          sortable
           >
       </el-table-column>
 

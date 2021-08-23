@@ -79,6 +79,7 @@
           label="操作"
           width="230px"
           fixed="right"
+
       >
         <template slot-scope="scope">
 
