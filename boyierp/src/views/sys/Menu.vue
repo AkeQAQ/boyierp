@@ -2,7 +2,7 @@
   <div>
     <el-form class="demo-form-inline">
       <el-form-item v-if="hasAuth('sysManage:menu:save')">
-        <el-button type="primary" @click="dialogVisible = true">新增</el-button>
+        <el-button  size="mini" icon="el-icon-plus" type="primary" @click="dialogVisible = true">新增</el-button>
       </el-form-item>
     </el-form>
 
@@ -190,7 +190,8 @@ export default {
         authority: '',
         component:'',
         icon:'',
-        orderType:''
+        orderType:'',
+        parentId:''
       },
       rules: {
 

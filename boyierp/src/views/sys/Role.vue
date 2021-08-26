@@ -2,21 +2,21 @@
   <div>
     <el-form :inline="true" class="demo-form-inline">
       <el-form-item>
-        <el-input v-model="searchRoleName" placeholder="名称" clearable></el-input>
+        <el-input size="mini" v-model="searchRoleName" placeholder="名称" clearable></el-input>
       </el-form-item>
 
       <el-form-item>
-        <el-button @click="getUserList()">搜索</el-button>
+        <el-button size="mini" icon="el-icon-search" @click="getUserList()">搜索</el-button>
       </el-form-item>
 
       <el-form-item v-if="hasAuth('sysManage:role:save')">
-        <el-button type="primary" @click="dialogVisible = true">新增</el-button>
+        <el-button type="primary" size="mini" icon="el-icon-plus" @click="dialogVisible = true">新增</el-button>
       </el-form-item>
 
       <el-form-item v-if="hasAuth('sysManage:role:del')">
         <!-- 气泡确认框 -->
         <el-popconfirm @confirm="del(null)" title="确定删除吗？" >
-          <el-button :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
+          <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
         </el-popconfirm>
       </el-form-item>
 
@@ -29,7 +29,7 @@
         stripe
         size="mini"
         tooltip-effect="dark"
-        style="width: 100%"
+        style="width: 100%;color:black"
         @selection-change="handleSelectionChange">
       <el-table-column
           type="selection"

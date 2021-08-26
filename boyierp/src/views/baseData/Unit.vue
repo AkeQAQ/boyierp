@@ -2,7 +2,7 @@
   <div>
     <el-form class="demo-form-inline">
       <el-form-item v-if="hasAuth('baseData:unit:save')">
-        <el-button type="primary" @click="dialogVisible = true">新增</el-button>
+        <el-button  size="mini" icon="el-icon-plus" type="primary" @click="dialogVisible = true">新增</el-button>
       </el-form-item>
     </el-form>
 
@@ -40,7 +40,7 @@
       <el-table-column
           prop="action"
           fixed="right"
-          width="150px"
+          width="220"
           label="操作" style="float: right;">
         <template slot-scope="scope">
           <el-button type="text" v-if="hasAuth('baseData:unit:update')" size="small" @click="edit(scope.row.id)">编辑

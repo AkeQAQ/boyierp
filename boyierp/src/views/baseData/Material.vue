@@ -75,12 +75,12 @@
             <el-form :inline="true" class="demo-form-inline">
 
               <el-form-item>
-                <div style="margin-top: 0px;">
-                  <el-input placeholder="请输入搜索关键字" v-model="searchStr" clearable class="input-with-select">
+                <div style="margin-top: 6px;margin-bottom: 0px">
+                  <el-input size="mini" placeholder="请输入搜索关键字" v-model="searchStr" clearable class="input-with-select">
                     <el-select v-model="select" style="width: 120px"  slot="prepend" placeholder="搜索字段">
                       <el-option label="唯一编码" value="id"></el-option>
-                      <el-option label="分组编码" value="groupId"></el-option>
-                      <el-option label="子编码" value="subId"></el-option>
+                      <el-option label="分组编码" value="groupCode"></el-option>
+<!--                      <el-option label="子编码" value="subId"></el-option>-->
                       <el-option label="名称" value="name"></el-option>
                     </el-select>
                     <el-button slot="append" icon="el-icon-search"  @click="getMaterialList"></el-button>
@@ -91,12 +91,12 @@
               </el-form-item>
 
               <el-form-item v-if="hasAuth('baseData:material:save')">
-                <el-button type="primary" v-if="hasAuth('baseData:material:save')"  @click="addMaterial()">新增</el-button>
+                <el-button  size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('baseData:material:save')"  @click="addMaterial()">新增</el-button>
               </el-form-item>
 
               <el-form-item v-if="hasAuth('baseData:material:del')">
                 <el-popconfirm @confirm="del(null)" title="确定删除吗？" >
-                  <el-button :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
+                  <el-button  size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
                 </el-popconfirm>
               </el-form-item>
 
@@ -111,7 +111,7 @@
                 fit
                 size="mini"
                 tooltip-effect="dark"
-                style="width: 100%"
+                style="width: 100%;color:black"
                 :cell-style="{padding:'0'}"
                 @selection-change="handleSelectionChange">
               <el-table-column
@@ -122,34 +122,39 @@
                   label="唯一编码"
                   prop="id"
                   sortable
+                  width="120px"
                   >
               </el-table-column>
-              <el-table-column
+<!--              <el-table-column
                   label="分组编码"
-                  prop="groupId">
+                  prop="groupCode">
               </el-table-column>
               <el-table-column
                   label="子编码"
                   prop="subId"
-
               >
-              </el-table-column>
+              </el-table-column>-->
 
               <el-table-column
                   prop="name"
                   label="名称"
+                  width="300px"
                   show-overflow-tooltip>
               </el-table-column>
 
               <el-table-column
                   prop="specs"
                   label="规格型号"
+                  width="100px"
+
                   show-overflow-tooltip>
               </el-table-column>
 
               <el-table-column
                   prop="unit"
                   label="基本单位"
+                  width="100px"
+
                   show-overflow-tooltip>
               </el-table-column>
 
@@ -203,10 +208,9 @@
                   <el-input   v-model="editForm.id" ></el-input>
                 </el-form-item>
 
-                <el-form-item label="子编码" prop="subId">
-                  <el-input style="width: 80px"  v-model="editForm.groupId" :disabled="true" ></el-input>
-
-                  <el-input style="width: 40%"  v-model="editForm.subId" :disabled="this.addOrUpdate==='update'" ></el-input>
+                <el-form-item label="唯一编码" prop="subId" >
+                  <el-input style="width: 80px"  v-model="editForm.groupCode" :disabled="true" ></el-input>
+                 <el-input style="width: 40%" placeholder="保存自动生成" v-model="editForm.subId" :disabled="true" ></el-input>
                 </el-form-item>
 
                 <el-form-item label="名称" prop="name">
@@ -280,16 +284,13 @@ export default {
       editForm: {
         status: 0, // 编辑表单初始默认值
         id:'',
-        groupId:'',
+        groupCode:'',
         subId:'',
         name:'',
         unit:'',
         specs:''
       },
       rules: {
-        subId: [
-          {required: true, message: '请输入子编码', trigger: 'blur'}
-        ],
         name: [
           {required: true, message: '请输入名称', trigger: 'blur'}
         ],
@@ -353,7 +354,7 @@ export default {
 
     nodeDbClick(event,data){
       console.log("双击获取分组的ID：",data.id)
-      this.$axios.get('/baseData/material/listByGroupId', {
+      this.$axios.get('/baseData/material/listByGroupCode', {
         params: {
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -364,7 +365,7 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
 
-        this.select = "groupId"
+        this.select = "groupCode"
         if(data.code ==='全部'){
           this.searchStr=''
         }else {
@@ -376,7 +377,7 @@ export default {
 
     // 获取基本单位的所有数据
     loadUnitAll() {
-      this.$axios.post('/baseData/unit/getSearchAllData', this.editForm).then(res => {
+      this.$axios.post('/baseData/unit/getSearchAllData').then(res => {
           this.restaurants = res.data.data
       })
     },
@@ -420,7 +421,7 @@ export default {
         });
       }
       else {
-        this.editForm.groupId = this.lastClickTreeNode.code;
+        this.editForm.groupCode = this.lastClickTreeNode.code;
         this.dialogVisible = true
         this.addOrUpdate='save'
 
