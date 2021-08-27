@@ -68,8 +68,9 @@
           :data="tableData"
           :span-method="objectSpanMethod"
           border
-          stripe
           fit
+          :summary-method="getSummaries"
+          show-summary
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
@@ -78,7 +79,7 @@
           @selection-change="handleSelectionChange">
         <el-table-column
             type="selection"
-            width="40">
+            width="50">
         </el-table-column>
         <el-table-column
             label="单据编号"
@@ -116,23 +117,38 @@
 
         <el-table-column
             prop="unit"
-            label="基本单位">
+            label="基本单位"
+            width="80px"
+        >
         </el-table-column>
 
-        <el-table-column
+<!--        <el-table-column
             prop="specs"
             label="规格型号">
+        </el-table-column>-->
+
+        <el-table-column
+            prop="num"
+            label="数量"
+            width="100px"
+
+        >
         </el-table-column>
 
         <el-table-column
             prop="price"
-            label="单价">
+            label="单价"
+            width="100px"
+
+        >
         </el-table-column>
 
+
         <el-table-column
-            prop="num"
-            label="数量">
+            prop="amount"
+            label="金额">
         </el-table-column>
+
 
         <el-table-column
             prop="status"
@@ -190,12 +206,12 @@
       <el-dialog
           title="采购入库信息"
           :visible.sync="dialogVisible"
-          width="95%"
+          width="75%"
           :before-close="handleClose"
 
           style="margin-top:-60px"
       >
-        <el-form style="width: 50%;margin-top: -30px;margin-bottom: -15px" size="small" :inline="true" label-width="100px"
+        <el-form style="width: 70%;margin-top: -30px;margin-bottom: -15px" size="small" :inline="true" label-width="100px"
                  :model="editForm" :rules="rules" ref="editForm"
                  class="demo-editForm" >
 
@@ -241,7 +257,7 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item style="margin-left: 90px">
+          <el-form-item style="margin-left: 100px">
             <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">保存单据</el-button>
 
           </el-form-item>
@@ -312,6 +328,7 @@
 
       <!--价目列表 分页组件 -->
       <el-pagination
+
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
@@ -803,6 +820,35 @@ export default {
       }
 
     },
+    getSummaries(param) {
+      const { columns, data } = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 7|| index === 8 || index === 9) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] += '';
+          } else {
+            sums[index] = 'N/A';
+          }
+        }
+
+      });
+
+      return sums;
+    }
 
   },
   created() {
@@ -816,7 +862,8 @@ export default {
 </script>
 
 <style scoped>
-.el-dialog__body{
-  padding: 5px 20px;
+.el-pagination {
+  float: right;
+
 }
 </style>

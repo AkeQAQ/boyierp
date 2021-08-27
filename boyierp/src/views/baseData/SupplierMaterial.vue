@@ -2,7 +2,6 @@
 
   <el-container>
     <el-main>
-      <!-- 右侧价目列表 -->
       <el-form :inline="true" class="demo-form-inline">
 
         <el-form-item>
@@ -50,12 +49,14 @@
           <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('baseData:supplierMaterial:save')" @click="addSupplierMaterial()">新增
           </el-button>
         </el-form-item>
+<!--
 
         <el-form-item v-if="hasAuth('baseData:supplierMaterial:del')">
           <el-popconfirm @confirm="del(null)" title="确定删除吗？">
             <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
           </el-popconfirm>
         </el-form-item>
+-->
 
       </el-form>
 
@@ -135,8 +136,8 @@
             prop="status"
             label="状态">
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.status === 0" type="success">正常</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">禁止</el-tag>
+            <el-tag size="small" v-if="scope.row.status === 0" type="success">审核通过</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">待审核</el-tag>
 
           </template>
         </el-table-column>
@@ -144,29 +145,41 @@
         <el-table-column
             prop="action"
             label="操作"
-            width="140px"
+            width="230px"
             fixed="right"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('baseData:supplierMaterial:update')   ">编辑
+                       v-if="hasAuth('baseData:supplierMaterial:update') && scope.row.status ===1  ">编辑
             </el-button>
 
-            <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:del')   "></el-divider>
+           <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:del')   ">
+            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:del')  ">
               <template>
-                <el-popconfirm @confirm="statusStop(scope.row.id)"
-                               title="确定禁用吗？"
+                <el-popconfirm @confirm="statusPass(scope.row.id)"
+                               title="确定设置审核通过吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">禁用</el-button>
+                  <el-button type="text" size="small" slot="reference">审核通过</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
 
             <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:del')   "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:del')   ">
+            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:del')  ">
+              <template>
+                <el-popconfirm @confirm="statusReturn(scope.row.id)"
+                               title="确定反审核吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">反审核</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1 "></el-divider>
+
+            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1  ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
                                title="确定删除吗？"
@@ -206,7 +219,7 @@
             <el-autocomplete
                 class="inline-input"
                 v-model="editForm.supplierName"
-                :fetch-suggestions="querySearch"
+                :fetch-suggestions="querySupplierSearchValide"
                 placeholder="请输入内容"
                 @select="handleSelect"
                 @change="moveMouse"
@@ -224,7 +237,7 @@
             <el-autocomplete
                 class="inline-input"
                 v-model="editForm.materialName"
-                :fetch-suggestions="querySearch2"
+                :fetch-suggestions="queryMaterialSearchValide"
                 placeholder="请输入内容"
                 @select="handleSelect2"
                 @change="moveMaterialMouse"
@@ -260,17 +273,6 @@
                 placeholder="默认2100-01-01">
             </el-date-picker>
           </el-form-item>
-
-
-
-
-                          <el-form-item label="状态" prop="status">
-                            <el-radio-group v-model="editForm.status">
-                              <el-radio :label=0>正常</el-radio>
-                              <el-radio :label=1>禁止</el-radio>
-                            </el-radio-group>
-                          </el-form-item>
-
 
           <el-form-item style="margin-left: 100px">
             <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
@@ -312,8 +314,10 @@ export default {
       searchStr: '',
       searchField: '',
       restaurants: [],// 搜索框列表数据存放
-      restaurants2: []
-      ,
+      restaurants2: [],
+      supplierSearchDatas:[], // 用于搜索的建议框
+      materialSearchDatas:[], // 用于搜索的建议框
+
 
       // 分页字段
       currentPage: 1 // 当前页
@@ -326,6 +330,8 @@ export default {
         status: 0, // 编辑表单初始默认值
         id: '',
         supplierId: '',
+        supplierName:'',
+        materialName: '',
         materialId: '',
         startDate: '',
         endDate: '',
@@ -359,6 +365,17 @@ export default {
         }
       },
     },*/
+    loadMaterialValideAll() {
+      this.$axios.post('/baseData/material/getSearchAllValideData').then(res => {
+        this.materialSearchDatas = res.data.data
+      })
+    },
+    loadSupplierValideAll() {
+      this.$axios.post('/baseData/supplier/getSearchAllValideData').then(res => {
+        this.supplierSearchDatas = res.data.data
+      })
+    },
+
     loadSupplierAll() {
       this.$axios.post('/baseData/supplier/getSearchAllData').then(res => {
         this.restaurants = res.data.data
@@ -370,6 +387,20 @@ export default {
       this.$axios.post('/baseData/material/getSearchAllData').then(res => {
         this.restaurants2 = res.data.data
       })
+    },
+    // 查询搜索框列表数据
+    queryMaterialSearchValide(queryString, cb) {
+      var restaurants = this.materialSearchDatas;
+      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    // 查询搜索框列表数据
+    querySupplierSearchValide(queryString, cb) {
+      var restaurants = this.supplierSearchDatas;
+      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
     },
     // 查询搜索框列表数据
     querySearch2(queryString, cb) {
@@ -523,11 +554,21 @@ export default {
 
       })
     },
-    // 状态禁用
-    statusStop(id){
-      this.$axios.get('/baseData/supplierMaterial/statusStop?id='+id).then(res => {
+    // 状态待审核
+    statusPass(id){
+      this.$axios.get('/baseData/supplierMaterial/statusPass?id='+id).then(res => {
         this.$message({
-          message: '禁用成功!',
+          message: '审核通过!',
+          type: 'success'
+        });
+        this.getSupplierMaterialList()
+      })
+    },
+    // 状态反审核
+    statusReturn(id){
+      this.$axios.get('/baseData/supplierMaterial/statusReturn?id='+id).then(res => {
+        this.$message({
+          message: '反审核完成!',
           type: 'success'
         });
         this.getSupplierMaterialList()
@@ -597,7 +638,8 @@ export default {
     this.getSupplierMaterialList()
     this.loadSupplierAll()
     this.loadMaterialAll()
-
+    this.loadSupplierValideAll()
+    this.loadMaterialValideAll()
   }
 
 }

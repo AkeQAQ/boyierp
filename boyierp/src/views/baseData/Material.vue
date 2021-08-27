@@ -54,7 +54,7 @@
           </el-form-item>
 
           <el-form-item label="编码" prop="code">
-            <el-input v-model="groupEditForm.code"></el-input>
+            <el-input v-model="groupEditForm.code" :disabled="groupEditForm.id"></el-input>
           </el-form-item>
 
           <el-form-item label="名称" prop="name">
@@ -430,7 +430,6 @@ export default {
 
     // 物料分组 点击添加按钮
     addGroup() {
-
       if(this.lastClickTreeNode.id === undefined){
         this.$message({
           message: '请选择一层菜单!',
@@ -456,7 +455,11 @@ export default {
     },
     // 物料分组 点击修改按钮
     updateGroup() {
-      console.log("上一次选中的TreeNode:", this.lastClickTreeNode)
+      if(this.lastClickTreeNode.id === 0){
+        return
+      }
+
+        console.log("上一次选中的TreeNode:", this.lastClickTreeNode)
       if (this.lastClickTreeNode.id != undefined) {
         this.groupEditForm =
             {
@@ -645,6 +648,13 @@ export default {
     },
     // 物料分组-删除事件
     del2() {
+      if(this.lastClickTreeNode.id === 0){
+        this.$message({
+          message: '不允许删除!',
+          type: 'error'
+        });
+        return
+      }
       let delId = this.lastClickTreeNode.id
 
       if(!delId){
@@ -657,7 +667,7 @@ export default {
       let parentId = this.lastClickTreeNode.parentId
 
       console.log("选中删除分组id:", delId)
-      this.$axios.get('/baseData/materialGroup/delById?id=' + delId).then(res => {
+      this.$axios.get('/baseData/materialGroup/delById?id=' + delId+'&&groupCode='+this.lastClickTreeNode.code).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
