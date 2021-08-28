@@ -153,9 +153,9 @@
                        v-if="hasAuth('baseData:supplierMaterial:update') && scope.row.status ===1  ">编辑
             </el-button>
 
-           <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1   "></el-divider>
+           <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:valid') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:del')  ">
+            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
                                title="确定设置审核通过吗？"
@@ -165,9 +165,9 @@
               </template>
             </el-button>
 
-            <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:del')   "></el-divider>
+            <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0   "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:del')  ">
+            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"

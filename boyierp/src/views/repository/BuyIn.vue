@@ -46,19 +46,19 @@
         </el-form-item>
 
 
-        <el-form-item v-if="hasAuth('repository:buyIn:list')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:buyIn:list')"
+        <el-form-item v-if="hasAuth('repository:buyIn:save')">
+          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:buyIn:save')"
                      @click="addSupplierMaterial()">新增
           </el-button>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('repository:buyIn:list')">
-          <el-popconfirm @confirm="del(null)" title="确定删除吗？">
-            <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger"
-                       slot="reference">批量删除
-            </el-button>
-          </el-popconfirm>
-        </el-form-item>
+  <!--        <el-form-item v-if="hasAuth('repository:buyIn:del')">
+            <el-popconfirm @confirm="del(null)" title="确定删除吗？">
+              <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger"
+                         slot="reference">批量删除
+              </el-button>
+            </el-popconfirm>
+          </el-form-item>-->
 
       </el-form>
 
@@ -83,6 +83,7 @@
         </el-table-column>
         <el-table-column
             label="单据编号"
+
             prop="id" width="70px"
 
         >
@@ -91,21 +92,33 @@
         <el-table-column
             prop="buyInDate"
             label="入库日期"
+            width="90px"
         >
-          <template slot-scope="scope">
-            <i class="el-icon-time"></i>
-            <span style="margin-left: 10px">{{ scope.row.buyInDate }}</span>
-          </template>
         </el-table-column>
 
         <el-table-column
             label="供应商"
-            prop="supplierName">
+            prop="supplierName"
+            width="110px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+
+
+        <el-table-column
+            prop="status"
+            label="状态">
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.status === 0" type="success">审核完成</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">待审核</el-tag>
+          </template>
         </el-table-column>
 
         <el-table-column
             label="物料编码"
             prop="materialId"
+            width="90px"
+            show-overflow-tooltip
         >
         </el-table-column>
 
@@ -130,7 +143,7 @@
         <el-table-column
             prop="num"
             label="数量"
-            width="100px"
+            width="80px"
 
         >
         </el-table-column>
@@ -138,7 +151,7 @@
         <el-table-column
             prop="price"
             label="单价"
-            width="100px"
+            width="80px"
 
         >
         </el-table-column>
@@ -149,42 +162,45 @@
             label="金额">
         </el-table-column>
 
-
-        <el-table-column
-            prop="status"
-            label="状态">
-          <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.status === 0" type="success">暂存</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">提交</el-tag>
-          </template>
-        </el-table-column>
-
         <el-table-column
             prop="action"
             label="操作"
-            width="140px"
+            width="230px"
             fixed="right"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('repository:buyIn:list')   ">编辑
+                       v-if="hasAuth('repository:buyIn:update')  && scope.row.status ===1  ">编辑
             </el-button>
 
-            <el-divider direction="vertical" v-if="hasAuth('repository:buyIn:list')   "></el-divider>
+            <el-divider direction="vertical" v-if="hasAuth('repository:buyIn:update') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('repository:buyIn:list')   ">
+            <el-button style="padding: 0px" type="text" v-if="hasAuth('repository:buyIn:valid')  && scope.row.status ===1   ">
               <template>
-                <el-popconfirm @confirm="statusStop(scope.row.id)"
-                               title="确定禁用吗？"
+                <el-popconfirm @confirm="statusPass(scope.row.id)"
+                               title="确定设置审核通过吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">禁用</el-button>
+                  <el-button type="text" size="small" slot="reference">审核通过</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
 
-            <el-divider direction="vertical" v-if="hasAuth('repository:buyIn:list')   "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('repository:buyIn:list')   ">
+            <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  "></el-divider>
+
+            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
+              <template>
+                <el-popconfirm @confirm="statusReturn(scope.row.id)"
+                               title="确定反审核吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">反审核</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-divider direction="vertical" v-if="hasAuth('repository:buyIn:del')  && scope.row.status ===1  "></el-divider>
+
+            <el-button style="padding: 0px" type="text" v-if="hasAuth('repository:buyIn:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
                                title="确定删除吗？"
@@ -220,7 +236,7 @@
           </el-form-item>
 
           <el-form-item  label="状态" prop="status">
-            <el-input style="width: 220px" disabled="true" placeholder="暂存" v-model="editForm.status">{{editForm.status ===0 ? '暂存':'提交'}}</el-input>
+            <el-input style="width: 220px" disabled="true" placeholder="待审核" v-model="editForm.status">{{editForm.status ===0 ? '审核完成':'待审核'}}</el-input>
           </el-form-item>
 
           <el-form-item v-if="false" prop="supplierId">
@@ -232,7 +248,7 @@
                 style="width: 220px"
                 class="inline-input"
                 v-model="editForm.supplierName"
-                :fetch-suggestions="querySearch"
+                :fetch-suggestions="querySupplierSearchValide"
                 placeholder="请输入供应商"
                 @select="handleSelect"
                 @change="moveMouse"
@@ -365,6 +381,7 @@ export default {
       restaurants: [],// 搜索框列表数据存放
       restaurants2: [], //
       restaurants3: [], //用于增量表格的搜索框内容
+      supplierSearchDatas:[], // 用于搜索的建议框
 
       // 分页字段
       currentPage: 1 // 当前页
@@ -450,13 +467,23 @@ export default {
       this.editForm.rowList = undefined;
     },
 
-
+    loadSupplierValideAll() {
+      this.$axios.post('/baseData/supplier/getSearchAllValideData').then(res => {
+        this.supplierSearchDatas = res.data.data
+      })
+    },
     loadSupplierAll() {
       this.$axios.post('/baseData/supplier/getSearchAllData').then(res => {
         this.restaurants = res.data.data
       })
     },
-
+// 查询搜索框列表数据
+    querySupplierSearchValide(queryString, cb) {
+      var restaurants = this.supplierSearchDatas;
+      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
     loadTableSearchMaterialDetailAll() {
       this.$axios.post('/baseData/material/loadTableSearchMaterialDetailAll').then(res => {
         this.restaurants3 = res.data.data
@@ -723,11 +750,21 @@ export default {
 
       })
     },
-    // 状态禁用
-    statusStop(id) {
-      this.$axios.get('/repository/buyIn/statusStop?id=' + id).then(res => {
+    // 状态待审核
+    statusPass(id){
+      this.$axios.get('/repository/buyIn/statusPass?id='+id).then(res => {
         this.$message({
-          message: '禁用成功!',
+          message: '审核通过!',
+          type: 'success'
+        });
+        this.getBuyInDocumentList()
+      })
+    },
+    // 状态反审核
+    statusReturn(id){
+      this.$axios.get('/repository/buyIn/statusReturn?id='+id).then(res => {
+        this.$message({
+          message: '反审核完成!',
           type: 'success'
         });
         this.getBuyInDocumentList()
@@ -803,7 +840,7 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      }else if(columnIndex === 10){
+      }else if(columnIndex === 4){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -828,7 +865,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 7|| index === 8 || index === 9) {
+        if (index === 8|| index === 9 || index === 10) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -856,6 +893,7 @@ export default {
     this.loadSupplierAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+    this.loadSupplierValideAll()
   }
 }
 
