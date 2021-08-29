@@ -1,5 +1,8 @@
 <template>
+
   <el-container>
+
+
     <el-main>
       <!-- 右侧价目列表 -->
       <el-form :inline="true" class="demo-form-inline">
@@ -52,13 +55,13 @@
           </el-button>
         </el-form-item>
 
-  <!--        <el-form-item v-if="hasAuth('repository:buyIn:del')">
-            <el-popconfirm @confirm="del(null)" title="确定删除吗？">
-              <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger"
-                         slot="reference">批量删除
-              </el-button>
-            </el-popconfirm>
-          </el-form-item>-->
+        <!--        <el-form-item v-if="hasAuth('repository:buyIn:del')">
+                  <el-popconfirm @confirm="del(null)" title="确定删除吗？">
+                    <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger"
+                               slot="reference">批量删除
+                    </el-button>
+                  </el-popconfirm>
+                </el-form-item>-->
 
       </el-form>
 
@@ -135,10 +138,10 @@
         >
         </el-table-column>
 
-<!--        <el-table-column
-            prop="specs"
-            label="规格型号">
-        </el-table-column>-->
+        <!--        <el-table-column
+                    prop="specs"
+                    label="规格型号">
+                </el-table-column>-->
 
         <el-table-column
             prop="num"
@@ -173,9 +176,11 @@
                        v-if="hasAuth('repository:buyIn:update')  && scope.row.status ===1  ">编辑
             </el-button>
 
-            <el-divider direction="vertical" v-if="hasAuth('repository:buyIn:update') && scope.row.status ===1   "></el-divider>
+            <el-divider direction="vertical"
+                        v-if="hasAuth('repository:buyIn:update') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('repository:buyIn:valid')  && scope.row.status ===1   ">
+            <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('repository:buyIn:valid')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
                                title="确定设置审核通过吗？"
@@ -186,9 +191,8 @@
             </el-button>
 
 
-            <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  "></el-divider>
-
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
+            <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"
@@ -198,9 +202,11 @@
               </template>
             </el-button>
 
-            <el-divider direction="vertical" v-if="hasAuth('repository:buyIn:del')  && scope.row.status ===1  "></el-divider>
+            <el-divider direction="vertical"
+                        v-if="hasAuth('repository:buyIn:del')  && scope.row.status ===1  "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('repository:buyIn:del') && scope.row.status ===1   ">
+            <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('repository:buyIn:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
                                title="确定删除吗？"
@@ -220,6 +226,84 @@
       <!-- :fullscreen=true // 弹窗全屏 -->
 
       <el-dialog
+          title=""
+          :visible.sync="dialogVisiblePrint"
+          width="70%"
+
+        >
+        <el-button v-print="'#printDiv'" size="mini" icon="el-icon-plus" type="primary"
+        >打印
+        </el-button>
+        <div   align="center" id="printDiv" style="width: 100%">
+          <h1 style="font-size: 20px;">采  购  物  料  入  库  单</h1>
+          <el-row :gutter="24" align="left" style="font-size: 10px">
+            <el-col :span="6"><div class="grid-content bg-purple" style="text-align: left">日期：2020年04月14日</div></el-col>
+            <el-col :span="8"><div class="grid-content bg-purple" style="text-align: left">供应商：中国古月口山玄幻有限公司</div></el-col>
+            <el-col :span="4"><div class="grid-content bg-purple" style="text-align: left">单号：1</div></el-col>
+            <el-col :span="6"><div class="grid-content bg-purple" style="text-align: left">供应商单号：NBHDSAK1231</div></el-col>
+          </el-row>
+          <div style="height: 300px">
+            <el-table  :data="editForm.rowList" style="margin-top: 10px" border="true">
+              <el-table-column prop="encode" label="材料编号"  width="100px">
+                <template slot-scope="scope">
+                  <span>{{scope.row.materialId}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="name" label="材料名称" width="130">
+                <template slot-scope="scope">
+                  <span>{{scope.row.materialName}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="discription" label="规格" width="100">
+                <template slot-scope="scope">
+                  <span>{{scope.row.specs}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="unit" label="订单号" width="80">
+
+              </el-table-column>
+              <el-table-column prop="quantity" label="计价数量" width="100">
+                <template slot-scope="scope">
+                  <span>{{scope.row.num}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="unitPrice" label="单位" width="80">
+                <template slot-scope="scope">
+                  <span>{{scope.row.unit}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="amount" label="单价" width="80">
+                <template slot-scope="scope">
+                  <span>{{scope.row.price}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="remark" label="金额" width="100">
+                <template slot-scope="scope">
+                  <span>{{scope.row.price * scope.row.num}}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="remark" label="备注" >
+                <template slot-scope="scope">
+                  <span>{{scope.row.comment}}</span>
+                </template>
+              </el-table-column>
+
+            </el-table>
+          </div>
+
+          <p align="left">制单人：XXX  </p>
+          <el-divider></el-divider>
+          <el-row :gutter="24" align="left">
+            <el-col :span="12"><div class="grid-content bg-purple" style="text-align: left">注：一式两联</div></el-col>
+            <el-col :span="12"><div class="grid-content bg-purple" style="text-align: right">日期：2021-08-29</div></el-col>
+          </el-row>
+
+
+        </div>
+
+      </el-dialog>
+
+      <el-dialog
           title="采购入库信息"
           :visible.sync="dialogVisible"
           width="75%"
@@ -227,20 +311,23 @@
 
           style="margin-top:-60px"
       >
-        <el-form style="width: 70%;margin-top: -30px;margin-bottom: -15px" size="small" :inline="true" label-width="100px"
+        <el-form style="width: 70%;margin-top: -30px;margin-bottom: -15px" size="small" :inline="true"
+                 label-width="100px"
                  :model="editForm" :rules="rules" ref="editForm"
-                 class="demo-editForm" >
+                 class="demo-editForm">
 
-          <el-form-item  label="单据编号" prop="id">
+          <el-form-item label="单据编号" prop="id">
             <el-input style="width: 220px" disabled="true" placeholder="保存自动生成" v-model="editForm.id"></el-input>
           </el-form-item>
 
-          <el-form-item  label="状态" prop="status">
-            <el-input style="width: 220px" disabled="true" placeholder="待审核" v-model="editForm.status">{{editForm.status ===0 ? '审核完成':'待审核'}}</el-input>
+          <el-form-item label="状态" prop="status">
+            <el-input style="width: 220px" disabled="true" placeholder="待审核" v-model="editForm.status">
+              {{ editForm.status === 0 ? '审核完成' : '待审核' }}
+            </el-input>
           </el-form-item>
 
           <el-form-item v-if="false" prop="supplierId">
-            <el-input  v-model="editForm.supplierId"></el-input>
+            <el-input v-model="editForm.supplierId"></el-input>
           </el-form-item>
           <el-form-item label="供应商" prop="supplierName">
             <!-- 搜索框 -->
@@ -248,7 +335,7 @@
                 style="width: 220px"
                 class="inline-input"
                 v-model="editForm.supplierName"
-                :fetch-suggestions="querySupplierSearchValide"
+                :fetch-suggestions="querySearch"
                 placeholder="请输入供应商"
                 @select="handleSelect"
                 @change="moveMouse"
@@ -259,17 +346,17 @@
           </el-form-item>
 
           <el-form-item label="供应商单号" prop="supplierDocumentNum">
-            <el-input clearable style="width: 220px" v-model="editForm.supplierDocumentNum" >
+            <el-input clearable style="width: 220px" v-model="editForm.supplierDocumentNum">
             </el-input>
           </el-form-item>
 
           <el-form-item label="入库日期" prop="buyInDate">
             <el-date-picker style="width: 220px"
-                value-format="yyyy-MM-dd"
-                v-model="editForm.buyInDate"
-                type="date"
-                clearable
-                placeholder="选择日期">
+                            value-format="yyyy-MM-dd"
+                            v-model="editForm.buyInDate"
+                            type="date"
+                            clearable
+                            placeholder="选择日期">
             </el-date-picker>
           </el-form-item>
 
@@ -277,8 +364,15 @@
             <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">保存单据</el-button>
 
           </el-form-item>
+
+          <el-form-item>
+            <el-button  @click="dialogVisiblePrint=true" size="mini" icon="el-icon-plus" type="primary"
+            >打印预览
+            </el-button>
+
+          </el-form-item>
         </el-form>
-        <el-divider content-position="left" >明细信息</el-divider>
+        <el-divider content-position="left">明细信息</el-divider>
 
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails">添加</el-button>
         <el-button type="success" icon="el-icon-delete" size="mini" @click="handleDeleteDetails">删除</el-button>
@@ -295,9 +389,9 @@
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column label="物料编码" align="center" width="250" prop="materialId">
+          <el-table-column label="物料编码" align="center" width="150" prop="materialId">
             <template slot-scope="scope">
-              <el-autocomplete size="mini"  clearable
+              <el-autocomplete size="mini" clearable
                                class="inline-input"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
@@ -310,9 +404,10 @@
 
           </el-table-column>
 
-          <el-table-column label="物料名称" align="center" prop="materialName" width="200">
+          <el-table-column label="物料名称" align="center" prop="materialName" width="180">
             <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].materialName"></el-input>
+              <el-input size="mini" :disabled="true"
+                        v-model="editForm.rowList[scope.row.seqNum-1].materialName"></el-input>
             </template>
           </el-table-column>
           <el-table-column label="规格型号" align="center" prop="specs" width="100">
@@ -332,9 +427,16 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="入库数量" align="center" width="150" prop="num">
+          <el-table-column label="入库数量" align="center" width="100" prop="num">
             <template slot-scope="scope">
-              <el-input size="mini"  v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+            </template>
+          </el-table-column>
+
+
+          <el-table-column label="备注" align="center" width="150" prop="comment">
+            <template slot-scope="scope">
+              <el-input size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
             </template>
           </el-table-column>
 
@@ -364,6 +466,12 @@ export default {
   name: 'BuyIn',
   data() {
     return {
+      /* printObj:{
+         id:'printDiv',
+         popTitle:'title',
+         extraHead: '<meta http-equiv="Content-Language"content="zh-cn"/>'
+       },*/
+
       //选中的从表数据
       checkedDetail: [],
 
@@ -376,12 +484,11 @@ export default {
       ],
       select: 'supplierName', // 搜索默认值
       searchStr: '',
-      searchStrList:[],
+      searchStrList: [],
       searchField: '',
       restaurants: [],// 搜索框列表数据存放
       restaurants2: [], //
       restaurants3: [], //用于增量表格的搜索框内容
-      supplierSearchDatas:[], // 用于搜索的建议框
 
       // 分页字段
       currentPage: 1 // 当前页
@@ -394,13 +501,13 @@ export default {
         status: 0, // 编辑表单初始默认值
         id: '',
         supplierId: '',
-        supplierName:'',
-        materialName:'',
+        supplierName: '',
+        materialName: '',
         materialId: '',
         buyInDate: '',
         endDate: '',
         price: '',
-        rowList:[]
+        rowList: []
       },
       rules: {
         supplierName: [
@@ -415,9 +522,11 @@ export default {
       }
       ,
       dialogVisible: false,
+      dialogVisiblePrint:false,
       tableData: [],
-      spanArr:[],
-      pos:'',
+      printTableData:[],
+      spanArr: [],
+      pos: '',
       multipleSelection: [] // 多选框数组
 
     }
@@ -447,16 +556,17 @@ export default {
       obj.materialId = '';
       obj.price = '';
       obj.num = ''
-      obj.specs=''
+      obj.specs = ''
+      obj.comment=''
 
       this.editForm.rowList.push(obj);
-      console.log("现有的数据:",this.editForm.rowList)
+      console.log("现有的数据:", this.editForm.rowList)
     },
     // 采购入库详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
         this.$message({
-          message:  '请先选择要删除的数据!',
+          message: '请先选择要删除的数据!',
           type: 'error'
         });
       } else {
@@ -467,23 +577,12 @@ export default {
       this.editForm.rowList = undefined;
     },
 
-    loadSupplierValideAll() {
-      this.$axios.post('/baseData/supplier/getSearchAllValideData').then(res => {
-        this.supplierSearchDatas = res.data.data
-      })
-    },
     loadSupplierAll() {
       this.$axios.post('/baseData/supplier/getSearchAllData').then(res => {
         this.restaurants = res.data.data
       })
     },
-// 查询搜索框列表数据
-    querySupplierSearchValide(queryString, cb) {
-      var restaurants = this.supplierSearchDatas;
-      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-      // 调用 callback 返回建议列表的数据
-      cb(results);
-    },
+
     loadTableSearchMaterialDetailAll() {
       this.$axios.post('/baseData/material/loadTableSearchMaterialDetailAll').then(res => {
         this.restaurants3 = res.data.data
@@ -539,47 +638,47 @@ export default {
       this.searchStr = item.name
       console.log("选中：", item);
     },
-    moveMouse(text){
-      try{
+    moveMouse(text) {
+      try {
         // foreach 只能抛出异常结束
-        this.restaurants.forEach(item =>{
-          if(text === item.name){
-            console.log("匹配到:",text,item.name,this.editForm.supplierId,item.id)
+        this.restaurants.forEach(item => {
+          if (text === item.name) {
+            console.log("匹配到:", text, item.name, this.editForm.supplierId, item.id)
             this.editForm.supplierId = item.id
-            this.editForm.supplierName=item.name
+            this.editForm.supplierName = item.name
             throw new Error();
-          }else {
+          } else {
             this.editForm.supplierId = ''
-            console.log("没有匹配到",text,item.name)
-            this.editForm.supplierName=''
+            console.log("没有匹配到", text, item.name)
+            this.editForm.supplierName = ''
           }
         })
-      }catch (err){
+      } catch (err) {
       }
     },
-    tableMoveMouse(selectItem,rowObj){
-      console.log("tableMoveMouse",selectItem,rowObj)
-      try{
+    tableMoveMouse(selectItem, rowObj) {
+      console.log("tableMoveMouse", selectItem, rowObj)
+      try {
 
         // foreach 只能抛出异常结束
-        this.restaurants3.forEach(item =>{
-          if(selectItem === item.id){
-            console.log("匹配到:",selectItem,item.id)
+        this.restaurants3.forEach(item => {
+          if (selectItem === item.id) {
+            console.log("匹配到:", selectItem, item.id)
             rowObj.materialId = item.id;
             rowObj.materialName = item.obj.name
             rowObj.unit = item.obj.unit
             rowObj.specs = item.obj.specs
             throw new Error();
-          }else {
-            console.log("没有匹配到",selectItem,item.id)
-            rowObj={}
+          } else {
+            console.log("没有匹配到", selectItem, item.id)
+            rowObj = {}
           }
         })
-      }catch (err){
+      } catch (err) {
       }
     },
-    tableSelectSearch(selectItem,param) {
-      console.log("每个表格项选中：", selectItem,param);
+    tableSelectSearch(selectItem, param) {
+      console.log("每个表格项选中：", selectItem, param);
       param.materialId = selectItem.id;
       param.materialName = selectItem.obj.name
       param.unit = selectItem.obj.unit
@@ -632,7 +731,7 @@ export default {
 
         console.log("当前供应商id:", this.editForm.supplierId)
         if (valid) {
-          if(this.editForm.rowList===undefined || this.editForm.rowList.length ===0){
+          if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
             this.$message({
               message: '请录入至少一个采购物料信息',
               type: 'error'
@@ -643,15 +742,15 @@ export default {
           let validateFlag = true;
           let validateMaterial = true;
           console.log(this.editForm.rowList)
-          this.editForm.rowList.forEach(obj=>{
-            if(obj.num === undefined || obj.num === ''){
+          this.editForm.rowList.forEach(obj => {
+            if (obj.num === undefined || obj.num === '') {
               validateFlag = false
             }
-            if(obj.materialId ===''){
-              validateMaterial=false
+            if (obj.materialId === '') {
+              validateMaterial = false
             }
           })
-          if(validateMaterial ===false){
+          if (validateMaterial === false) {
             this.$message({
               message: '物料不能为空!',
               type: 'error'
@@ -659,7 +758,7 @@ export default {
             return
           }
 
-          if(validateFlag ===false){
+          if (validateFlag === false) {
             this.$message({
               message: '入库数量不能为空!',
               type: 'error'
@@ -715,11 +814,11 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          this.restaurants3.forEach(obj=>{
-            console.log("obj:",obj,result.rowList.materialId)
+          this.restaurants3.forEach(obj => {
+            console.log("obj:", obj, result.rowList.materialId)
 
-            if(obj.id === result.materialId){
-              console.log("obj:",obj,result.materialId)
+            if (obj.id === result.materialId) {
+              console.log("obj:", obj, result.materialId)
             }
           })
         })
@@ -751,8 +850,8 @@ export default {
       })
     },
     // 状态待审核
-    statusPass(id){
-      this.$axios.get('/repository/buyIn/statusPass?id='+id).then(res => {
+    statusPass(id) {
+      this.$axios.get('/repository/buyIn/statusPass?id=' + id).then(res => {
         this.$message({
           message: '审核通过!',
           type: 'success'
@@ -761,8 +860,8 @@ export default {
       })
     },
     // 状态反审核
-    statusReturn(id){
-      this.$axios.get('/repository/buyIn/statusReturn?id='+id).then(res => {
+    statusReturn(id) {
+      this.$axios.get('/repository/buyIn/statusReturn?id=' + id).then(res => {
         this.$message({
           message: '反审核完成!',
           type: 'success'
@@ -811,7 +910,7 @@ export default {
       }
     },
     // 同ID的，单元格合并，数据库配合返回根据ID排序
-    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+    objectSpanMethod({row, column, rowIndex, columnIndex}) {
       if (columnIndex === 0) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
@@ -819,35 +918,35 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      }else if(columnIndex === 1){
+      } else if (columnIndex === 1) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
           rowspan: _row,
           colspan: _col
         }
-      }else if(columnIndex === 2){
+      } else if (columnIndex === 2) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
           rowspan: _row,
           colspan: _col
         }
-      }else if(columnIndex === 3){
+      } else if (columnIndex === 3) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
           rowspan: _row,
           colspan: _col
         }
-      }else if(columnIndex === 4){
+      } else if (columnIndex === 4) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
           rowspan: _row,
           colspan: _col
         }
-      }else if(columnIndex === 11){
+      } else if (columnIndex === 11) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -858,14 +957,14 @@ export default {
 
     },
     getSummaries(param) {
-      const { columns, data } = param;
+      const {columns, data} = param;
       const sums = [];
       columns.forEach((column, index) => {
         if (index === 0) {
           sums[index] = '求和';
           return;
         }
-        if (index === 8|| index === 9 || index === 10) {
+        if (index === 8 || index === 9 || index === 10) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -885,7 +984,15 @@ export default {
       });
 
       return sums;
-    }
+    }/*,
+    prt(){
+      let newstr = document.getElementById("printContent").innerHTML;
+      let oldstr = document.body.innerHTML;
+      document.body.innerHTML = newstr;
+      window.print();
+      document.body.innerHTML = oldstr;
+      return false;
+    }*/
 
   },
   created() {
@@ -893,15 +1000,33 @@ export default {
     this.loadSupplierAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
-    this.loadSupplierValideAll()
   }
 }
 
 </script>
 
+<style lang="css">
+@media print {
+  .el-table{
+  .el-table__body{
+    width:100%!important;
+  }
+  th{
+    display: table-cell !important;
+  }
+  .cell{
+    width:100%!important;
+  }
+}
+}
+</style>
+
 <style scoped>
+
+
 .el-pagination {
   float: right;
 
 }
+
 </style>

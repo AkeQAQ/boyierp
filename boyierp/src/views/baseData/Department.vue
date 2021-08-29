@@ -48,16 +48,6 @@
           prop="name">
       </el-table-column>
 
-      <el-table-column
-          prop="status"
-          label="状态">
-        <template slot-scope="scope">
-          <el-tag size="small" v-if="scope.row.status === 0" type="success">正常</el-tag>
-          <el-tag size="small" v-else-if="scope.row.status===1" type="danger">禁止</el-tag>
-
-        </template>
-      </el-table-column>
-
       <!-- fixed 固定某一列，都会显示 ，并且横向内容可以有横向拉框-->
       <el-table-column
           prop="action"
@@ -105,13 +95,6 @@
           <el-input v-model="editForm.name"></el-input>
         </el-form-item>
 
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="editForm.status">
-            <el-radio :label=0>正常</el-radio>
-            <el-radio :label=1>禁止</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
         <el-form-item>
           <el-button type="primary" @click="submitForm('editForm')">完成</el-button>
           <el-button @click="resetForm('editForm')">重置</el-button>
@@ -146,15 +129,11 @@ export default {
       // batchDelDisable: true,
       // 输入框的内容要写全，不然会发生，莫名其妙不能输入的问题
       editForm: {
-        status: 0, // 编辑表单初始默认值
         name:''
       },
       rules: {
         name: [
           {required: true, message: '请输入部门名称', trigger: 'blur'}
-        ],
-        status: [
-          {required: true, message: '请输入状态', trigger: 'blur'}
         ]
       }
       ,

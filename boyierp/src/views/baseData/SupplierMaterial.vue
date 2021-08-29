@@ -21,7 +21,7 @@
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'" clearable
                            class="inline-input"
                            v-model="searchStr"
-                           :fetch-suggestions="querySearch"
+                           :fetch-suggestions="querySupplierSearchValide"
                            placeholder="请输入内容"
                            @select="searchSelect"
 
@@ -32,7 +32,7 @@
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
                            class="inline-input"
                            v-model="searchStr"
-                           :fetch-suggestions="querySearch2"
+                           :fetch-suggestions="queryMaterialSearchValide"
                            placeholder="请输入内容"
                            @select="searchSelect"
           >
@@ -165,7 +165,6 @@
               </template>
             </el-button>
 
-            <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0   "></el-divider>
 
             <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
               <template>
@@ -366,26 +365,13 @@ export default {
       },
     },*/
     loadMaterialValideAll() {
-      this.$axios.post('/baseData/material/getSearchAllValideData').then(res => {
+      this.$axios.post('/baseData/material/getSearchAllData').then(res => {
         this.materialSearchDatas = res.data.data
       })
     },
     loadSupplierValideAll() {
-      this.$axios.post('/baseData/supplier/getSearchAllValideData').then(res => {
-        this.supplierSearchDatas = res.data.data
-      })
-    },
-
-    loadSupplierAll() {
       this.$axios.post('/baseData/supplier/getSearchAllData').then(res => {
-        this.restaurants = res.data.data
-      })
-    },
-
-
-    loadMaterialAll() {
-      this.$axios.post('/baseData/material/getSearchAllData').then(res => {
-        this.restaurants2 = res.data.data
+        this.supplierSearchDatas = res.data.data
       })
     },
     // 查询搜索框列表数据
@@ -398,20 +384,6 @@ export default {
     // 查询搜索框列表数据
     querySupplierSearchValide(queryString, cb) {
       var restaurants = this.supplierSearchDatas;
-      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-      // 调用 callback 返回建议列表的数据
-      cb(results);
-    },
-    // 查询搜索框列表数据
-    querySearch2(queryString, cb) {
-      var restaurants = this.restaurants2;
-      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-      // 调用 callback 返回建议列表的数据
-      cb(results);
-    },
-    // 查询搜索框列表数据
-    querySearch(queryString, cb) {
-      var restaurants = this.restaurants;
       var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
       // 调用 callback 返回建议列表的数据
       cb(results);
@@ -636,8 +608,6 @@ export default {
   // 页面初始化时调用的方法
   created() {
     this.getSupplierMaterialList()
-    this.loadSupplierAll()
-    this.loadMaterialAll()
     this.loadSupplierValideAll()
     this.loadMaterialValideAll()
   }

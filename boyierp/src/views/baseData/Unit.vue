@@ -28,15 +28,6 @@
           >
       </el-table-column>
 
-<!--      <el-table-column
-          prop="status"
-          label="状态">
-        <template slot-scope="scope">
-          <el-tag size="small" v-if="scope.row.status === 0" type="success">正常</el-tag>
-          <el-tag size="small" v-else-if="scope.row.status===1" type="danger">禁止</el-tag>
-        </template>
-      </el-table-column>-->
-
       <el-table-column
           prop="action"
           fixed="right"
@@ -86,15 +77,6 @@
         <el-form-item label="名称" prop="name">
           <el-input v-model="editForm.name"></el-input>
         </el-form-item>
-<!--
-
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="editForm.status">
-            <el-radio :label=0>正常</el-radio>
-            <el-radio :label=1>禁止</el-radio>
-          </el-radio-group>
-        </el-form-item>
--->
 
         <el-form-item>
           <el-button type="primary" @click="submitForm('editForm')">完成</el-button>
@@ -113,7 +95,6 @@ export default {
   data() {
     return {
       editForm: {
-        // status: 0, // 编辑表单初始默认值
         code:'',
         name:''
       },
@@ -124,10 +105,7 @@ export default {
         ],
         code: [
           {required: true, message: '请输入编码', trigger: 'blur'}
-        ]/*,
-        status: [
-          {required: true, message: '请输入状态', trigger: 'blur'}
-        ]*/
+        ]
       }
       ,
       dialogVisible: false,

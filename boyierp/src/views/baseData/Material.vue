@@ -153,20 +153,8 @@
               <el-table-column
                   prop="unit"
                   label="基本单位"
-                  width="100px"
 
                   show-overflow-tooltip>
-              </el-table-column>
-
-
-              <el-table-column
-                  prop="status"
-                  label="状态">
-                <template slot-scope="scope">
-                  <el-tag size="small" v-if="scope.row.status === 0" type="success">正常</el-tag>
-                  <el-tag size="small" v-else-if="scope.row.status===1" type="danger">禁止</el-tag>
-
-                </template>
               </el-table-column>
 
               <el-table-column
@@ -236,13 +224,6 @@
 
                 </el-form-item>
 
-                <el-form-item label="状态" prop="status">
-                  <el-radio-group v-model="editForm.status">
-                    <el-radio :label=0>正常</el-radio>
-                    <el-radio :label=1>禁止</el-radio>
-                  </el-radio-group>
-                </el-form-item>
-
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
 
@@ -282,7 +263,6 @@ export default {
       searchMaterialField:'',
       addOrUpdate: 'save',
       editForm: {
-        status: 0, // 编辑表单初始默认值
         id:'',
         groupCode:'',
         subId:'',
@@ -296,9 +276,6 @@ export default {
         ],
         unit: [
           {required: true, message: '请输入单位', change: 'blur'}
-        ],
-        status: [
-          {required: true, message: '请输入状态', trigger: 'blur'}
         ]
       }
       ,
