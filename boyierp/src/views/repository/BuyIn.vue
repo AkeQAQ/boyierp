@@ -225,81 +225,20 @@
       <!-- 入库单据编辑 弹窗 -->
       <!-- :fullscreen=true // 弹窗全屏 -->
 
+      <!-- 打印弹窗 -->
       <el-dialog
           title=""
           :visible.sync="dialogVisiblePrint"
           width="70%"
 
-        >
-        <el-button v-print="'#printDiv'" size="mini" icon="el-icon-plus" type="primary"
-        >打印
-        </el-button>
-        <div   align="center" id="printDiv" style="width: 100%">
-          <h1 style="font-size: 20px;">采  购  物  料  入  库  单</h1>
-          <el-row :gutter="24" align="left" style="font-size: 10px">
-            <el-col :span="6"><div class="grid-content bg-purple" style="text-align: left">日期：2020年04月14日</div></el-col>
-            <el-col :span="8"><div class="grid-content bg-purple" style="text-align: left">供应商：中国古月口山玄幻有限公司</div></el-col>
-            <el-col :span="4"><div class="grid-content bg-purple" style="text-align: left">单号：1</div></el-col>
-            <el-col :span="6"><div class="grid-content bg-purple" style="text-align: left">供应商单号：NBHDSAK1231</div></el-col>
-          </el-row>
-          <div style="height: 300px">
-            <el-table  :data="editForm.rowList" style="margin-top: 10px" border="true">
-              <el-table-column prop="encode" label="材料编号"  width="100px">
-                <template slot-scope="scope">
-                  <span>{{scope.row.materialId}}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="name" label="材料名称" width="130">
-                <template slot-scope="scope">
-                  <span>{{scope.row.materialName}}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="discription" label="规格" width="100">
-                <template slot-scope="scope">
-                  <span>{{scope.row.specs}}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="unit" label="订单号" width="80">
+      >
+        <el-button @click="printDemo" size="mini" icon="el-icon-plus" type="primary">打印</el-button>
 
-              </el-table-column>
-              <el-table-column prop="quantity" label="计价数量" width="100">
-                <template slot-scope="scope">
-                  <span>{{scope.row.num}}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="unitPrice" label="单位" width="80">
-                <template slot-scope="scope">
-                  <span>{{scope.row.unit}}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="amount" label="单价" width="80">
-                <template slot-scope="scope">
-                  <span>{{scope.row.price}}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="remark" label="金额" width="100">
-                <template slot-scope="scope">
-                  <span>{{scope.row.price * scope.row.num}}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="remark" label="备注" >
-                <template slot-scope="scope">
-                  <span>{{scope.row.comment}}</span>
-                </template>
-              </el-table-column>
-
-            </el-table>
-          </div>
-
-          <p align="left">制单人：XXX  </p>
-          <el-divider></el-divider>
-          <el-row :gutter="24" align="left">
-            <el-col :span="12"><div class="grid-content bg-purple" style="text-align: left">注：一式两联</div></el-col>
-            <el-col :span="12"><div class="grid-content bg-purple" style="text-align: right">日期：2021-08-29</div></el-col>
-          </el-row>
-
-
-        </div>
+        <vue-easy-print tableShow ref="easyPrint" >
+          <template slot-scope="func">
+            <demo :tableData="editForm" :getChineseNumber="func.getChineseNumber"></demo>
+          </template>
+        </vue-easy-print>
 
       </el-dialog>
 
@@ -366,7 +305,7 @@
           </el-form-item>
 
           <el-form-item>
-            <el-button  @click="dialogVisiblePrint=true" size="mini" icon="el-icon-plus" type="primary"
+            <el-button @click="dialogVisiblePrint=true" size="mini" icon="el-icon-plus" type="primary"
             >打印预览
             </el-button>
 
@@ -462,8 +401,17 @@
 </template>
 
 <script>
+// 引入打印基础组件，和打印模块demo页面
+import vueEasyPrint from "vue-easy-print";
+import demo from "@/views/demo";
+
 export default {
   name: 'BuyIn',
+  // 引入打印模块基础组件和该打印模块的模板页面
+  components:{
+    vueEasyPrint,
+    demo
+  },
   data() {
     return {
       /* printObj:{
@@ -522,9 +470,9 @@ export default {
       }
       ,
       dialogVisible: false,
-      dialogVisiblePrint:false,
+      dialogVisiblePrint: false,
       tableData: [],
-      printTableData:[],
+      printTableData: [],
       spanArr: [],
       pos: '',
       multipleSelection: [] // 多选框数组
@@ -532,6 +480,10 @@ export default {
     }
   },
   methods: {
+    // 打印按钮事件
+    printDemo(){
+      this.$refs.easyPrint.print()
+    },
     // 设置每一行的seqNum = 游标+1
     rowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
@@ -557,7 +509,7 @@ export default {
       obj.price = '';
       obj.num = ''
       obj.specs = ''
-      obj.comment=''
+      obj.comment = ''
 
       this.editForm.rowList.push(obj);
       console.log("现有的数据:", this.editForm.rowList)
@@ -964,7 +916,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 8 || index === 9 || index === 10) {
+        if (index === 8 || index === 10) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -975,7 +927,7 @@ export default {
                 return prev;
               }
             }, 0);
-            sums[index] += '';
+            sums[index] = sums[index].toFixed(2);
           } else {
             sums[index] = 'N/A';
           }
@@ -1005,21 +957,6 @@ export default {
 
 </script>
 
-<style lang="css">
-@media print {
-  .el-table{
-  .el-table__body{
-    width:100%!important;
-  }
-  th{
-    display: table-cell !important;
-  }
-  .cell{
-    width:100%!important;
-  }
-}
-}
-</style>
 
 <style scoped>
 

@@ -26,9 +26,6 @@ import global from './globalFun'
 import dbltree from 'dbltree'
 Vue.use(dbltree)
 
-// 引入打印组件
-import Print from 'vue-print-nb'
-Vue.use(Print);
 
 Vue.config.productionTip = false
 
