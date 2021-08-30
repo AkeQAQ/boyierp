@@ -1,11 +1,12 @@
 <template>
-  <div>
+  <!-- 打印入库单据24cm的适配宽度 -->
+  <div style="width: 750px">
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
-      <div class='tab_company_out'>
-        <h3 style="font-size: 20px;margin-bottom: 10px">采  购  物  料  入  库  单</h3>
+      <div  class='tab_company_out'>
+        <h3 style="font-size: 20px;margin-bottom: 5px">采  购  物  料  入  库  单</h3>
 
-        <el-row :gutter="20" style="padding-bottom: 10px;text-align: center">
+        <el-row :gutter="20" style="padding-bottom: 0px;margin-bottom: -10px;text-align: center">
           <el-col :span="6"><div class="grid-content bg-purple"></div>
             <time>日期：{{tableData.buyInDate}}</time>
           </el-col>
@@ -22,32 +23,33 @@
           </div>
           </el-col>
         </el-row>
-        <table cellpadding='0' cellspacing='0'>
+        <table cellpadding='0' cellspacing='0' >
           <tr>
-            <th width='5%'>材料编号</th>
-            <th width='25%'>材料名称</th>
-            <th width='10%'>规格</th>
-            <th width='8%'>订单号</th>
-            <th width='12%'>计价数量</th>
+            <th width='10%'>材料编号</th>
+            <th width='26%'>材料名称</th>
+            <th width='7%'>规格</th>
+            <th width='10%'>订单号</th>
+            <th width='7%'>计价数量</th>
             <th width='5%'>单位</th>
             <th width='8%'>单价</th>
             <th width='12%'>总金额</th>
             <th width='15%'>说明</th>
+
           </tr>
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.rowList.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
-            <td>{{row.id}}</td>
-            <td>{{row.materialName}}</td>
-            <td>{{row.specs}}</td>
-            <td>{{row.orderNum}}</td>
-            <td>{{row.num}}</td>
-            <td>{{row.unit}}</td>
-            <td>{{row.price}}</td>
-            <td>{{(row.price * row.num).toFixed(2)}}</td>
-            <td>{{row.comment}}</td>
+            <td style="text-align: left">{{row.materialId}}</td>
+            <td style="text-align: left">{{row.materialName}}</td>
+            <td style="text-align: center">{{row.specs}}</td>
+            <td style="text-align: center">{{row.orderNum}}</td>
+            <td style="text-align: center">{{row.num}}</td>
+            <td style="text-align: center">{{row.unit}}</td>
+            <td style="text-align: center">{{row.price}}</td>
+            <td style="text-align: center">{{(row.price * row.num).toFixed(2)}}</td>
+            <td style="text-align: center">{{row.comment}}</td>
           </tr>
           <!-- 插入空白行 -->
-          <template v-if="blankLines===true && tableData.rowList.slice((page-1)*onePageRow,page*onePageRow).length<5">
+<!--          <template v-if="blankLines===true && tableData.rowList.slice((page-1)*onePageRow,page*onePageRow).length<5">
             <tr v-for="d in (5-tableData.rowList.slice((page-1)*onePageRow,page*onePageRow).length)" :key="`_${d}_`">
               <td></td>
               <td></td>
@@ -59,26 +61,20 @@
               <td></td>
               <td></td>
             </tr>
-          </template>
+          </template>-->
           <!-- page:当前页，pages最大页 -->
           <tr v-if="page==pages">
-            <td colspan='1'>合计</td>
-            <td colspan='3'>{{chineseTotal}}</td>
-            <td colspan='2'>{{tableData.totalNum}}</td>
+            <td style="text-align: center" colspan='1'>合计</td>
+            <td style="text-align: center" colspan='3'>{{chineseTotal}}</td>
+            <td style="text-align: center" colspan='2'>{{tableData.totalNum}}</td>
             <td colspan='1'></td>
 
-            <td id='total'>{{tableData.totalAmount}}</td>
-            <td></td>
-          </tr>
-          <tr v-else>
-            <td colspan='2'>合计</td>
-            <td colspan='5'>(合计打印到最后一页)</td>
-            <td id=''></td>
+            <td style="text-align: center" id='total'>{{tableData.totalAmount}}</td>
             <td></td>
           </tr>
 
         </table>
-        <el-row :gutter="20" style="padding-top: 10px;margin-bottom: 10px">
+        <el-row :gutter="20" style="padding-top: 5px;margin-bottom: 5px">
           <el-col :span="6"><div class="grid-content bg-purple"></div>
             <time>制单人：{{tableData.createdUser}}</time>
           </el-col>
@@ -334,7 +330,6 @@ table tr th:nth-child(2) {
 .lu li {
   float: left;
   text-align: left;
-  margin-right: 15px;
 }
 .lu li label {
   width: 100px;
@@ -347,6 +342,16 @@ table tr th:nth-child(2) {
 @media print {
     body{
       text-align: center;
+    }
+    table{
+      table-layout:auto!important;
+      width:100%!important;
+    }
+    th,td{
+      display: table-cell !important;
+    }
+    .cell{
+      width:100%!important;
     }
 }
 

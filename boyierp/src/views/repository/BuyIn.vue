@@ -72,6 +72,7 @@
           :span-method="objectSpanMethod"
           border
           fit
+
           :summary-method="getSummaries"
           show-summary
           size="mini"
@@ -229,7 +230,7 @@
       <el-dialog
           title=""
           :visible.sync="dialogVisiblePrint"
-          width="70%"
+          width="55%"
           style="padding-top: 0px"
           :before-close="printClose"
       >
@@ -248,28 +249,29 @@
           :visible.sync="dialogVisible"
           width="75%"
           :before-close="handleClose"
-
-          style="margin-top:-60px"
+          fullscreen
+          style=""
       >
-        <el-form style="width: 70%;margin-top: -30px;margin-bottom: -15px" size="small" :inline="true"
+        <el-form style="width: 70%;margin-bottom: -20px;margin-top: -30px"
+                 size="mini" :inline="true"
                  label-width="100px"
                  :model="editForm" :rules="rules" ref="editForm"
                  class="demo-editForm">
 
-          <el-form-item label="单据编号" prop="id">
+          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0px">
             <el-input style="width: 220px" :disabled=true placeholder="保存自动生成" v-model="editForm.id"></el-input>
           </el-form-item>
 
-          <el-form-item label="状态" prop="status">
+          <el-form-item label="状态" prop="status" style="margin-bottom: 0px">
             <el-input style="width: 220px" :disabled=true placeholder="待审核" v-model="editForm.status">
               {{ editForm.status === 0 ? '审核完成' : '待审核' }}
             </el-input>
           </el-form-item>
 
-          <el-form-item v-if="false" prop="supplierId">
+          <el-form-item v-if="false" prop="supplierId"   style="margin-bottom: 0px">
             <el-input v-model="editForm.supplierId"></el-input>
           </el-form-item>
-          <el-form-item label="供应商" prop="supplierName">
+          <el-form-item label="供应商" prop="supplierName"  style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
                 style="width: 220px"
@@ -285,8 +287,8 @@
             </el-autocomplete>
           </el-form-item>
 
-          <el-form-item label="供应商单号" prop="supplierDocumentNum">
-            <el-input clearable style="width: 220px" v-model="editForm.supplierDocumentNum">
+          <el-form-item label="供应商单号" prop="supplierDocumentNum" style="padding: -20px 0 ;margin-bottom: -20px">
+            <el-input size="mini" clearable style="width: 220px" v-model="editForm.supplierDocumentNum">
             </el-input>
           </el-form-item>
 
@@ -302,13 +304,14 @@
 
           <el-form-item style="margin-left: 100px">
             <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">保存单据</el-button>
+            <el-button @click="preViewPrint()"  icon="el-icon-printer" type="primary"
+            >打印预览
+            </el-button>
 
           </el-form-item>
 
           <el-form-item>
-            <el-button @click="preViewPrint()"  icon="el-icon-printer" type="primary"
-            >打印预览
-            </el-button>
+
 
           </el-form-item>
         </el-form>
@@ -323,13 +326,13 @@
             :row-class-name="rowClassName"
             @selection-change="handleDetailSelectionChange"
             ref="tb"
-            height="400"
+            height="500"
             size="mini"
         >
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column label="物料编码" align="center" width="150" prop="materialId">
+          <el-table-column label="物料编码" align="center" width="200" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete size="mini" clearable
                                class="inline-input"
