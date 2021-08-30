@@ -228,13 +228,19 @@ export default {
       default: true
     },
     getChineseNumber: Function, // 求数字的中文写法，从easyPrint组件传入
-    tableData:''// 传入的参数
+    tableData: {
+    }
   },
-  data() {
-    return {};
+  data: {
+    td:{}
   },
   computed: {
     pages() {
+      if(!this.tableData.rowList){
+        console.log("rowList 无值")
+        return 1;
+      }
+
       // 求当前数据能打印的页数
       var pages_ = Math.ceil(
           this.tableData.rowList.length / this.onePageRow
@@ -251,9 +257,6 @@ export default {
   created() {
     let totalNum = 0
     let totalAmount= 0
-    this.tableData.rowList.forEach(obj=>{
-      obj.price
-    })
     console.log("传入参数:",this.tableData)
   }
 };

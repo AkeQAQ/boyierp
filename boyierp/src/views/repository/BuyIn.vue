@@ -230,9 +230,10 @@
           title=""
           :visible.sync="dialogVisiblePrint"
           width="70%"
-
+          style="padding-top: 0px"
+          :before-close="printClose"
       >
-        <el-button @click="printDemo" size="mini" icon="el-icon-plus" type="primary">打印</el-button>
+        <el-button @click="printDemo" size="mini" icon="el-icon-printer" type="primary">打印</el-button>
 
         <vue-easy-print tableShow ref="easyPrint" >
           <template slot-scope="func">
@@ -256,11 +257,11 @@
                  class="demo-editForm">
 
           <el-form-item label="单据编号" prop="id">
-            <el-input style="width: 220px" disabled="true" placeholder="保存自动生成" v-model="editForm.id"></el-input>
+            <el-input style="width: 220px" :disabled=true placeholder="保存自动生成" v-model="editForm.id"></el-input>
           </el-form-item>
 
           <el-form-item label="状态" prop="status">
-            <el-input style="width: 220px" disabled="true" placeholder="待审核" v-model="editForm.status">
+            <el-input style="width: 220px" :disabled=true placeholder="待审核" v-model="editForm.status">
               {{ editForm.status === 0 ? '审核完成' : '待审核' }}
             </el-input>
           </el-form-item>
@@ -305,7 +306,7 @@
           </el-form-item>
 
           <el-form-item>
-            <el-button @click="dialogVisiblePrint=true" size="mini" icon="el-icon-plus" type="primary"
+            <el-button @click="preViewPrint()"  icon="el-icon-printer" type="primary"
             >打印预览
             </el-button>
 
@@ -472,7 +473,6 @@ export default {
       dialogVisible: false,
       dialogVisiblePrint: false,
       tableData: [],
-      printTableData: [],
       spanArr: [],
       pos: '',
       multipleSelection: [] // 多选框数组
@@ -490,7 +490,7 @@ export default {
     },
     //单选框选中数据
     handleDetailSelectionChange(selection) {
-      if (selection.length > 1) {
+      if ( selection.length > 1) {
         this.$refs.tb.clearSelection();
         this.$refs.tb.toggleRowSelection(selection.pop());
       } else {
@@ -824,8 +824,16 @@ export default {
     // 关闭弹窗处理动作
     handleClose(done) {
       this.$refs['editForm'].resetFields();
+      this.editForm={}
       this.handleDeleteAllDetails()
       console.log("关闭窗口")
+      done();
+    },
+    // 关闭打印弹窗弹窗处理动作
+    printClose(done) {
+      console.log("打印弹窗关闭...")
+
+      this.$refs.easyPrint.tableShow=false;
       done();
     },
     // 重置表单
@@ -936,15 +944,28 @@ export default {
       });
 
       return sums;
-    }/*,
-    prt(){
-      let newstr = document.getElementById("printContent").innerHTML;
-      let oldstr = document.body.innerHTML;
-      document.body.innerHTML = newstr;
-      window.print();
-      document.body.innerHTML = oldstr;
-      return false;
-    }*/
+    },
+    preViewPrint(){
+      if(this.editForm){
+        console.log("打印时的easyPrint：",this.$refs.easyPrint)
+        console.log("打印时的editForm：",this.editForm)
+        if(this.$refs.easyPrint ){
+          console.log("设置前打印内容",this.$refs.easyPrint.tableData)
+
+          this.$refs.easyPrint.tableData=this.editForm
+          console.log("设置后打印内容",this.$refs.easyPrint.tableData)
+
+        }
+        this.$nextTick(() => {
+          this.dialogVisiblePrint=true
+        })
+      }else {
+        this.$message({
+          message: '没有内容!',
+          type: 'error'
+        });
+      }
+    }
 
   },
   created() {
