@@ -1,12 +1,9 @@
 <template>
 
   <el-container>
-
-
     <el-main>
-      <!-- 右侧价目列表 -->
+      <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline">
-
         <el-form-item>
           <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
@@ -20,27 +17,58 @@
         </el-form-item>
 
         <el-form-item>
-          <!-- 字段搜索框 -->
-          <el-autocomplete size="mini" v-if="selectedName==='supplierName'" clearable
+          <!-- 列表界面-供应商搜索 -->
+          <el-autocomplete size="mini" v-if="selectedName==='supplierName'"
+                           clearable
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch"
-                           placeholder="请输入内容"
+                           placeholder="请输入搜索内容"
                            @select="searchSelect"
-
           >
           </el-autocomplete>
 
-          <!-- 字段搜索框 -->
+          <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
-                           placeholder="请输入内容"
+                           placeholder="请输入搜索内容"
                            @select="searchSelect"
 
           >
           </el-autocomplete>
+
+          <!-- 列表界面-单据编号搜索 -->
+          <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
+                    placeholder="请输入搜索内容"></el-input>
+
+        </el-form-item>
+
+        <el-form-item>
+
+          <!-- 列表界面-日期搜索 -->
+          <el-date-picker style="width: 130px"
+                          size="mini"
+                          value-format="yyyy-MM-dd"
+                          v-model="searchStartDate"
+                          type="date"
+                          clearable
+                          placeholder="开始日期">
+          </el-date-picker>
+
+        </el-form-item>
+
+        <el-form-item>
+          <el-date-picker style="width: 130px"
+                          size="mini"
+                          value-format="yyyy-MM-dd"
+                          v-model="searchEndDate"
+                          type="date"
+                          clearable
+                          placeholder="结束日期">
+          </el-date-picker>
+
         </el-form-item>
 
 
@@ -51,7 +79,9 @@
 
         <el-form-item v-if="hasAuth('repository:buyIn:save')">
           <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:buyIn:save')"
-                     @click="addSupplierMaterial()">新增
+                     @click="addSupplierMaterial()"
+
+          >新增
           </el-button>
         </el-form-item>
 
@@ -89,8 +119,13 @@
             label="单据编号"
 
             prop="id" width="70px"
-
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.id }}
+            </el-button>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -107,7 +142,6 @@
             show-overflow-tooltip
         >
         </el-table-column>
-
 
         <el-table-column
             prop="status"
@@ -174,7 +208,7 @@
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('repository:buyIn:update')  && scope.row.status ===1  ">编辑
+                       v-if="hasAuth('repository:buyIn:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
             </el-button>
 
             <el-divider direction="vertical"
@@ -223,9 +257,6 @@
 
       </el-table>
 
-      <!-- 入库单据编辑 弹窗 -->
-      <!-- :fullscreen=true // 弹窗全屏 -->
-
       <!-- 打印弹窗 -->
       <el-dialog
           title=""
@@ -234,47 +265,51 @@
           style="padding-top: 0px"
           :before-close="printClose"
       >
-        <el-button @click="printDemo" size="mini" icon="el-icon-printer" type="primary">打印</el-button>
-
-        <vue-easy-print tableShow ref="easyPrint" >
+        <el-button v-if="dialogVisiblePrint"
+                   @click="printDemo"
+                   v-focus ref="printBtn"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="easyPrint">
           <template slot-scope="func">
-            <demo :tableData="editForm" :getChineseNumber="func.getChineseNumber"></demo>
+            <print :tableData="editForm" :getChineseNumber="func.getChineseNumber"></print>
           </template>
         </vue-easy-print>
 
       </el-dialog>
 
+      <!-- 采购入库弹窗 -->
+
       <el-dialog
           title="采购入库信息"
           :visible.sync="dialogVisible"
-          width="75%"
           :before-close="handleClose"
           fullscreen
-          style=""
       >
-        <el-form style="width: 70%;margin-bottom: -20px;margin-top: -30px"
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
                  size="mini" :inline="true"
                  label-width="100px"
                  :model="editForm" :rules="rules" ref="editForm"
                  class="demo-editForm">
 
           <el-form-item label="单据编号" prop="id" style="margin-bottom: 0px">
-            <el-input style="width: 220px" :disabled=true placeholder="保存自动生成" v-model="editForm.id"></el-input>
-          </el-form-item>
+            <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
 
-          <el-form-item label="状态" prop="status" style="margin-bottom: 0px">
-            <el-input style="width: 220px" :disabled=true placeholder="待审核" v-model="editForm.status">
-              {{ editForm.status === 0 ? '审核完成' : '待审核' }}
             </el-input>
           </el-form-item>
+          <!--
+                    <el-form-item label="状态" prop="status" style="margin-bottom: 0px">
+                      <el-input style="width: 220px" :disabled=true v-model="editForm.status" >
+                      </el-input>
+                    </el-form-item>-->
 
-          <el-form-item v-if="false" prop="supplierId"   style="margin-bottom: 0px">
+          <el-form-item v-if="false" prop="supplierId" style="margin-bottom: 0px">
             <el-input v-model="editForm.supplierId"></el-input>
           </el-form-item>
-          <el-form-item label="供应商" prop="supplierName"  style="margin-bottom: 10px">
+          <el-form-item label="供应商" prop="supplierName" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
-                style="width: 220px"
+                style="width: 150px"
                 class="inline-input"
                 v-model="editForm.supplierName"
                 :fetch-suggestions="querySearch"
@@ -288,12 +323,12 @@
           </el-form-item>
 
           <el-form-item label="供应商单号" prop="supplierDocumentNum" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input size="mini" clearable style="width: 220px" v-model="editForm.supplierDocumentNum">
+            <el-input size="mini" clearable style="width: 150px" v-model="editForm.supplierDocumentNum">
             </el-input>
           </el-form-item>
 
           <el-form-item label="入库日期" prop="buyInDate">
-            <el-date-picker style="width: 220px"
+            <el-date-picker style="width: 150px"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.buyInDate"
                             type="date"
@@ -303,8 +338,10 @@
           </el-form-item>
 
           <el-form-item style="margin-left: 100px">
-            <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">保存单据</el-button>
-            <el-button @click="preViewPrint()"  icon="el-icon-printer" type="primary"
+            <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
+              保存单据
+            </el-button>
+            <el-button @click="preViewPrint()" icon="el-icon-printer" type="primary"
             >打印预览
             </el-button>
 
@@ -317,9 +354,15 @@
         </el-form>
         <el-divider content-position="left">明细信息</el-divider>
 
-        <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails">添加</el-button>
-        <el-button type="success" icon="el-icon-delete" size="mini" @click="handleDeleteDetails">删除</el-button>
-        <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteAllDetails">清空</el-button>
+        <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails"
+                   v-show="this.editForm.status===1">添加
+        </el-button>
+        <el-button type="success" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
+                   v-show="this.editForm.status===1">删除
+        </el-button>
+        <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteAllDetails"
+                   v-show="this.editForm.status===1">清空
+        </el-button>
 
         <el-table
             :data="editForm.rowList"
@@ -328,11 +371,15 @@
             ref="tb"
             height="500"
             size="mini"
+            :cell-style="cellStyle"
+            fit
+            show-summary
+            :summary-method="getDetailSummaries"
         >
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column label="物料编码" align="center" width="200" prop="materialId">
+          <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="200" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete size="mini" clearable
                                class="inline-input"
@@ -358,21 +405,27 @@
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].specs"></el-input>
             </template>
           </el-table-column>
-          <el-table-column label="物料单位" align="center" prop="unit" width="100">
+          <el-table-column label="物料单位" align="center" prop="unit" width="75">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].unit"></el-input>
             </template>
           </el-table-column>
 
-          <el-table-column label="入库单价" align="center" width="150" prop="price">
+          <el-table-column label="入库单价" align="center" width="75" prop="price">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].price"/>
             </template>
           </el-table-column>
 
-          <el-table-column label="入库数量" align="center" width="100" prop="num">
+          <el-table-column label="入库数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
               <el-input size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="金额" align="center" width="115" prop="amount">
+            <template slot-scope="scope">
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].amount"/>
             </template>
           </el-table-column>
 
@@ -405,16 +458,16 @@
 </template>
 
 <script>
-// 引入打印基础组件，和打印模块demo页面
+// 引入打印基础组件，和打印模块print页面
 import vueEasyPrint from "vue-easy-print";
-import demo from "@/views/demo";
+import print from "@/views/print";
 
 export default {
   name: 'BuyIn',
   // 引入打印模块基础组件和该打印模块的模板页面
-  components:{
+  components: {
     vueEasyPrint,
-    demo
+    print
   },
   data() {
     return {
@@ -432,10 +485,13 @@ export default {
       selectedName: 'supplierName',// 搜索默认值
       options: [
         {value: 'supplierName', label: '供应商名称'},
-        {value: 'materialName', label: '物料名称'}
+        {value: 'materialName', label: '物料名称'},
+        {value: 'id', label: '单据编号'}
       ],
       select: 'supplierName', // 搜索默认值
       searchStr: '',
+      searchStartDate: '',
+      searchEndDate: '',
       searchStrList: [],
       searchField: '',
       restaurants: [],// 搜索框列表数据存放
@@ -484,7 +540,7 @@ export default {
   },
   methods: {
     // 打印按钮事件
-    printDemo(){
+    printDemo() {
       this.$refs.easyPrint.print()
     },
     // 设置每一行的seqNum = 游标+1
@@ -493,7 +549,7 @@ export default {
     },
     //单选框选中数据
     handleDetailSelectionChange(selection) {
-      if ( selection.length > 1) {
+      if (selection.length > 1) {
         this.$refs.tb.clearSelection();
         this.$refs.tb.toggleRowSelection(selection.pop());
       } else {
@@ -503,6 +559,7 @@ export default {
     // 采购入库详细信息-添加
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
+        console.log("editForm 初始化")
         this.editForm.rowList = new Array();
       }
       let obj = {};
@@ -529,7 +586,7 @@ export default {
       }
     },
     handleDeleteAllDetails() {
-      this.editForm.rowList = undefined;
+      this.editForm.rowList = [];
     },
 
     loadSupplierAll() {
@@ -562,7 +619,7 @@ export default {
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
-    // 查询搜索框列表数据
+
     querySearch(queryString, cb) {
       var restaurants = this.restaurants;
       var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
@@ -571,12 +628,12 @@ export default {
     },
     createFilter(queryString) {
       return (restaurant) => {
-        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
     },
     createFilter2(queryString) {
       return (restaurant) => {
-        return (restaurant.obj.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        return (restaurant.obj.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
     },
     handleSelect(item) {
@@ -642,10 +699,22 @@ export default {
 
     },
 
-    // 价目列表 点击添加按钮
+    // 入库列表 点击添加按钮
     addSupplierMaterial() {
-      this.dialogVisible = true
       this.addOrUpdate = 'save'
+      this.editForm = {
+        status: 0, // 编辑表单初始默认值
+        id: '',
+        supplierId: '',
+        supplierName: '',
+        materialName: '',
+        materialId: '',
+        buyInDate: '',
+        endDate: '',
+        price: '',
+        rowList: []
+      }
+      this.dialogVisible = true
     },
 
     // 分页方法
@@ -750,6 +819,8 @@ export default {
           , pageSize: this.pageSize
           , total: this.total
           , searchStr: this.searchStr
+          , searchStartDate: this.searchStartDate
+          , searchEndDate: this.searchEndDate
           , searchField: this.select
         }
       }).then(res => {
@@ -827,7 +898,7 @@ export default {
     // 关闭弹窗处理动作
     handleClose(done) {
       this.$refs['editForm'].resetFields();
-      this.editForm={}
+
       this.handleDeleteAllDetails()
       console.log("关闭窗口")
       done();
@@ -836,7 +907,7 @@ export default {
     printClose(done) {
       console.log("打印弹窗关闭...")
 
-      this.$refs.easyPrint.tableShow=false;
+      this.$refs.easyPrint.tableShow = false;
       done();
     },
     // 重置表单
@@ -919,6 +990,35 @@ export default {
       }
 
     },
+    getDetailSummaries(param) {
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 7 || index === 8) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+        }
+
+      });
+
+      return sums;
+    },
     getSummaries(param) {
       const {columns, data} = param;
       const sums = [];
@@ -948,26 +1048,29 @@ export default {
 
       return sums;
     },
-    preViewPrint(){
-      if(this.editForm){
-        console.log("打印时的easyPrint：",this.$refs.easyPrint)
-        console.log("打印时的editForm：",this.editForm)
-        if(this.$refs.easyPrint ){
-          console.log("设置前打印内容",this.$refs.easyPrint.tableData)
+    preViewPrint() {
+      if (this.editForm) {
+        console.log("打印时的easyPrint：", this.$refs.easyPrint)
+        console.log("打印时的editForm：", this.editForm)
+        if (this.$refs.easyPrint) {
+          console.log("设置前打印内容", this.$refs.easyPrint.tableData)
 
-          this.$refs.easyPrint.tableData=this.editForm
-          console.log("设置后打印内容",this.$refs.easyPrint.tableData)
+          this.$refs.easyPrint.tableData = this.editForm
+          console.log("设置后打印内容", this.$refs.easyPrint.tableData)
 
         }
-        this.$nextTick(() => {
-          this.dialogVisiblePrint=true
-        })
-      }else {
+        this.dialogVisiblePrint = true
+      } else {
         this.$message({
           message: '没有内容!',
           type: 'error'
         });
       }
+    },
+
+    // el-table 单元格样式修改
+    cellStyle() {
+      return 'padding:0 0'
     }
 
   },
@@ -977,6 +1080,18 @@ export default {
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
   }
+  // 自定义指令，，insert在DOM加入的时候才生效
+  , directives: {
+    // 声明自定义指令v-focus
+    focus: {
+      // v-foucs指令的钩子函数
+      inserted: function (el, binding) {
+        console.log("聚焦...")
+        el.focus();
+      },
+    },
+  }
+
 }
 
 </script>
@@ -988,6 +1103,10 @@ export default {
 .el-pagination {
   float: right;
 
+}
+
+.el-table--mini td {
+  padding: 0 0;
 }
 
 </style>
