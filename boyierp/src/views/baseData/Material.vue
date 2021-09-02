@@ -224,6 +224,23 @@
 
                 </el-form-item>
 
+<!--                <el-form-item >
+                  <el-upload
+                      style="margin-left: 0px"
+                      class="upload-demo"
+                      drag
+                      :headers="headers"
+                      :auto-upload="false"
+                      :file-list="picList"
+                      :on-change="picChange"
+                      action="#"
+                      multiple>
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                    <div class="el-upload__tip" slot="tip">上传图片文件</div>
+                  </el-upload>
+                </el-form-item>-->
+
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
 
@@ -249,6 +266,8 @@
 </template>
 
 <script>
+import {request} from "@/axios";
+
 export default {
   name: "Material",
 
@@ -331,7 +350,7 @@ export default {
 
     nodeDbClick(event,data){
       console.log("双击获取分组的ID：",data.id)
-      this.$axios.get('/baseData/material/listByGroupCode', {
+      request.get('/baseData/material/listByGroupCode', {
         params: {
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -354,7 +373,7 @@ export default {
 
     // 获取基本单位的所有数据
     loadUnitAll() {
-      this.$axios.post('/baseData/unit/getSearchAllData').then(res => {
+      request.post('/baseData/unit/getSearchAllData').then(res => {
           this.restaurants = res.data.data
       })
     },
@@ -493,7 +512,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         console.log("当前物料id:",this.editForm.id)
         if (valid) {
-          this.$axios.post('/baseData/material/'+methodName, this.editForm).then(res => {
+          request.post('/baseData/material/'+methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -520,7 +539,7 @@ export default {
           if (valid) {
             console.log("提交前的参数:parentId:", this.groupEditForm.parentId)
 
-            this.$axios.post('/baseData/materialGroup/' + (this.groupEditForm.id ? 'update' : 'save'), this.groupEditForm).then(res => {
+            request.post('/baseData/materialGroup/' + (this.groupEditForm.id ? 'update' : 'save'), this.groupEditForm).then(res => {
               this.$message({
                 message: (this.groupEditForm.id ? '编辑' : '新增') + '成功!',
                 type: 'success'
@@ -547,7 +566,7 @@ export default {
     },
     submitAuthorityForm(formName) {
       console.log("提交后的，被选中的 角色 ID数组：", this.$refs.tree.getCheckedKeys())
-      this.$axios.post('/sys/user/authority?userId=' + this.authorityForm.id, this.$refs.tree.getCheckedKeys()).then(res => {
+      request.post('/sys/user/authority?userId=' + this.authorityForm.id, this.$refs.tree.getCheckedKeys()).then(res => {
         let result = res.data
         this.$message({
           message: '修改成功!',
@@ -562,7 +581,7 @@ export default {
     // 查询物料表单列表数据
     getMaterialList() {
       console.log("搜索字段:",this.select)
-      this.$axios.get('/baseData/material/list', {
+      request.get('/baseData/material/list', {
         params: {
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -578,7 +597,7 @@ export default {
     },
     // 物料分组 查询分组列表数据
     getMaterialGroupList() {
-      this.$axios.post('/baseData/materialGroup/listValide').then(res => {
+      request.post('/baseData/materialGroup/listValide').then(res => {
         this.$nextTick(() => {
           this.groupData = res.data.data
           console.log("查询物料分组", res.data.data)
@@ -588,7 +607,7 @@ export default {
     // 编辑页面
     edit(id) {
       this.addOrUpdate = "update"
-      this.$axios.get('/baseData/material/queryById?id=' + id).then(res => {
+      request.get('/baseData/material/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -613,7 +632,7 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
-      this.$axios.post('/baseData/material/del', ids).then(res => {
+      request.post('/baseData/material/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -644,7 +663,7 @@ export default {
       let parentId = this.lastClickTreeNode.parentId
 
       console.log("选中删除分组id:", delId)
-      this.$axios.get('/baseData/materialGroup/delById?id=' + delId+'&&groupCode='+this.lastClickTreeNode.code).then(res => {
+      request.get('/baseData/materialGroup/delById?id=' + delId+'&&groupCode='+this.lastClickTreeNode.code).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -704,5 +723,9 @@ export default {
 .el-pagination {
   float: right;
 
+}
+/deep/ .el-upload-dragger{
+  width: 289px;
+  height: 200px;
 }
 </style>

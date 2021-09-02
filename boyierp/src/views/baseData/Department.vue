@@ -118,6 +118,8 @@
 </template>
 
 <script>
+import {request} from "@/axios";
+
 export default {
   name: "User",
   data() {
@@ -183,7 +185,7 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$axios.post('/baseData/department/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
+          request.post('/baseData/department/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -204,7 +206,7 @@ export default {
 
     // 查询部门表单列表数据
     getList() {
-      this.$axios.get('/baseData/department/list', {
+      request.get('/baseData/department/list', {
         params:{
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -218,7 +220,7 @@ export default {
     },
     // 编辑页面
     edit(id) {
-      this.$axios.get('/baseData/department/queryById?id=' + id).then(res => {
+      request.get('/baseData/department/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -243,7 +245,7 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id",ids)
       }
-      this.$axios.post('/baseData/department/del', ids).then(res => {
+      request.post('/baseData/department/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'

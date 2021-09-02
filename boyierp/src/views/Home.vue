@@ -55,6 +55,7 @@
 // <!-- 引入SideMenu.vue 公共组件 -->
 import SideMenu from "@/views/inc/SideMenu";
 import Tab from "@/views/inc/Tab";
+import {request} from "@/axios";
 
 export default {
   name: "Home",
@@ -70,14 +71,14 @@ export default {
   methods: {
     getUserInfo() {
       // 用户信息接口
-      this.$axios.get('/sys/user/getUserInfo').then(res => {
+      request.get('/sys/user/getUserInfo').then(res => {
         console.log("设置userInfo,",res.data.data)
         this.$store.commit("SET_USERINFO",res.data.data)
       })
     },
     logout() {
       // 用户退出接口
-      this.$axios.post('/logout').then(res => {
+      request.post('/logout').then(res => {
         this.$store.commit('LOGOUT')
         this.$store.commit("reset")
         this.$router.push("/login")

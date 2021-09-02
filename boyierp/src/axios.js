@@ -4,6 +4,13 @@ import Element from "element-ui"
 
 axios.defaults.baseURL = "http://127.0.0.1:8081" // 定义请求的前缀
 
+const request2 =axios.create({
+    timeout:5000,
+    headers:{
+        'Authorization' : localStorage.getItem("token")
+    }
+})
+
 // 声明请求实例
 const request =axios.create({
     timeout:5000,
@@ -52,4 +59,6 @@ request.interceptors.response.use(response=>{
 })
 
 // 暴露出去，给其他地方引用
-export default request
+export {
+    request,request2
+}

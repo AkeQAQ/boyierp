@@ -4,9 +4,8 @@ import Index from '../views/Index.vue'
 import Home from "@/views/Home";
 import UserCenter from "@/views/UserCenter";
 
-import axios from "@/axios";
+import {request} from "@/axios";
 import store from "@/store"
-import ro from "element-ui/src/locale/lang/ro";
 
 
 Vue.use(VueRouter)
@@ -64,7 +63,7 @@ router.beforeEach((to, from, next) => {
         const newRoutes = router.options.routes;
         console.log("刚刚开始的路由信息:",router.options.routes)
         // 2. 获取路由信息
-        axios.get('/sys/menu/navList').then(res => {
+        request.get('/sys/menu/navList').then(res => {
             // 根路由对象
             res.data.data.nav.forEach(menu => {
                 if (menu.children && menu.status === 0) {

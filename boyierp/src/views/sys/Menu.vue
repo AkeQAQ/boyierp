@@ -220,7 +220,7 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$axios.post('/sys/menu/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
+          request.post('/sys/menu/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
             let result = res.data
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
@@ -241,13 +241,13 @@ export default {
     },
     // 查询菜单表单列表数据
     getMenuList() {
-      this.$axios.post('/sys/menu/list').then(res => {
+      request.post('/sys/menu/list').then(res => {
         this.tableData = res.data.data
       })
     },
     // 编辑
     edit(id) {
-      this.$axios.get('/sys/menu/queryById?id=' + id).then(res => {
+      request.get('/sys/menu/queryById?id=' + id).then(res => {
         console.log("根据菜单id查询结果:",res.data.data)
         let result = res.data.data
         this.dialogVisible = true
@@ -262,7 +262,7 @@ export default {
     },
     // 删除
     del(id) {
-      this.$axios.get('/sys/menu/delById?id=' + id).then(res => {
+      request.get('/sys/menu/delById?id=' + id).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'

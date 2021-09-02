@@ -299,7 +299,7 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$axios.post('/sys/user/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
+          request.post('/sys/user/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -319,7 +319,7 @@ export default {
     },
     submitAuthorityForm(formName) {
       console.log("提交后的，被选中的 角色 ID数组：",this.$refs.tree.getCheckedKeys())
-      this.$axios.post('/sys/user/authority?userId='+this.authorityForm.id,this.$refs.tree.getCheckedKeys()).then(res => {
+      request.post('/sys/user/authority?userId='+this.authorityForm.id,this.$refs.tree.getCheckedKeys()).then(res => {
         let result = res.data
         this.$message({
           message:'修改成功!',
@@ -334,7 +334,7 @@ export default {
 
     // 查询角色表单列表数据
     getUserList() {
-      this.$axios.get('/sys/user/list', {
+      request.get('/sys/user/list', {
         params:{
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -348,7 +348,7 @@ export default {
     },
     // 编辑页面
     edit(id) {
-      this.$axios.get('/sys/user/queryById?id=' + id).then(res => {
+      request.get('/sys/user/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -362,7 +362,7 @@ export default {
     },
     // 重置密码
     resetPass(id,username) {
-      this.$axios.get('/sys/user/resetPass',{
+      request.get('/sys/user/resetPass',{
         params:{
           id:id
         }
@@ -380,7 +380,7 @@ export default {
       // 1. 弹出分配权限窗口
       this.authorityDialogVisible = true
       // 2. 获取全部角色列表
-      this.$axios.post('/sys/role/listValide').then(res => {
+      request.post('/sys/role/listValide').then(res => {
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
         this.$nextTick(() => {
         // 赋值到编辑表单
@@ -389,7 +389,7 @@ export default {
         })
       })
       // 3. 获取该用户的角色列表
-      this.$axios.get('/sys/user/queryRolesByUserId?id=' + id).then(res => {
+      request.get('/sys/user/queryRolesByUserId?id=' + id).then(res => {
         let result = res.data
         // 4. 设置选中的节点
         this.$refs.tree.setCheckedKeys(result.data);
@@ -408,7 +408,7 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id",ids)
       }
-      this.$axios.post('/sys/user/del', ids).then(res => {
+      request.post('/sys/user/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'

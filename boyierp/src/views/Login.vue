@@ -35,6 +35,7 @@
 
 <script>
 import qs from 'qs'
+import {request} from "@/axios";
 
 export default {
 
@@ -62,7 +63,7 @@ export default {
         if (valid) {
           console.log("校验通过")
           // 1. 发送登陆请求到后端进行登陆
-          this.$axios.post('/login?'+qs.stringify(this.loginForm)).then(res =>{
+          request.post('/login?'+qs.stringify(this.loginForm)).then(res =>{
 
             const jwt = res.headers['authorization']                     // 将jwt存储到应用store中
             console.log("获的authorization jwt：",jwt)

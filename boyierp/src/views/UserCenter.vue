@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import {request} from "@/axios";
+
 export default {
   name: "UserCenter",
   data() {
@@ -77,7 +79,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           const _this = this
-          this.$axios.post('/sys/user/updatePassword',this.userForm).then(response =>{
+          request.post('/sys/user/updatePassword',this.userForm).then(response =>{
             _this.$alert(response.data.msg,'提示',{
               confirmButtonText:'确定',
               callback:action => {

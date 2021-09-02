@@ -298,6 +298,8 @@
 </template>
 
 <script>
+import {request} from "@/axios";
+
 export default {
   name: "supplierMaterial",
 
@@ -365,12 +367,12 @@ export default {
       },
     },*/
     loadMaterialValideAll() {
-      this.$axios.post('/baseData/material/getSearchAllData').then(res => {
+      request.post('/baseData/material/getSearchAllData').then(res => {
         this.materialSearchDatas = res.data.data
       })
     },
     loadSupplierValideAll() {
-      this.$axios.post('/baseData/supplier/getSearchAllData').then(res => {
+      request.post('/baseData/supplier/getSearchAllData').then(res => {
         this.supplierSearchDatas = res.data.data
       })
     },
@@ -452,7 +454,7 @@ export default {
         console.log("当前供应商id:", this.editForm.supplierId)
         console.log("当前物料id:", this.editForm.materialId)
         if (valid) {
-          this.$axios.post('/baseData/supplierMaterial/' + methodName, this.editForm).then(res => {
+          request.post('/baseData/supplierMaterial/' + methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -474,7 +476,7 @@ export default {
     // 查询价目表单列表数据
     getSupplierMaterialList() {
       console.log("搜索字段:", this.select)
-      this.$axios.get('/baseData/supplierMaterial/list', {
+      request.get('/baseData/supplierMaterial/list', {
         params: {
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -491,7 +493,7 @@ export default {
     // 编辑页面
     edit(id) {
       this.addOrUpdate = "update"
-      this.$axios.get('/baseData/supplierMaterial/queryById?id=' + id).then(res => {
+      request.get('/baseData/supplierMaterial/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -516,7 +518,7 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
-      this.$axios.post('/baseData/supplierMaterial/del', ids).then(res => {
+      request.post('/baseData/supplierMaterial/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -528,7 +530,7 @@ export default {
     },
     // 状态待审核
     statusPass(id){
-      this.$axios.get('/baseData/supplierMaterial/statusPass?id='+id).then(res => {
+      request.get('/baseData/supplierMaterial/statusPass?id='+id).then(res => {
         this.$message({
           message: '审核通过!',
           type: 'success'
@@ -538,7 +540,7 @@ export default {
     },
     // 状态反审核
     statusReturn(id){
-      this.$axios.get('/baseData/supplierMaterial/statusReturn?id='+id).then(res => {
+      request.get('/baseData/supplierMaterial/statusReturn?id='+id).then(res => {
         this.$message({
           message: '反审核完成!',
           type: 'success'

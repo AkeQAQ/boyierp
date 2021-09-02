@@ -250,6 +250,8 @@
 </template>
 
 <script>
+import {request} from "@/axios";
+
 export default {
   name: "Supplier",
 
@@ -334,7 +336,7 @@ export default {
 
     nodeDbClick(event,data){
       console.log("双击获取分组的ID：",data.id)
-      this.$axios.get('/baseData/supplier/listByGroupCode', {
+      request.get('/baseData/supplier/listByGroupCode', {
         params: {
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -357,7 +359,7 @@ export default {
 
     // 获取基本单位的所有数据
     loadUnitAll() {
-      this.$axios.post('/baseData/unit/getSearchAllData', this.editForm).then(res => {
+      request.post('/baseData/unit/getSearchAllData', this.editForm).then(res => {
           this.restaurants = res.data.data
       })
     },
@@ -499,7 +501,7 @@ export default {
         console.log("当前供应商id:",this.editForm.id)
         console.log("当前分组groupName:",this)
         if (valid) {
-          this.$axios.post('/baseData/supplier/'+methodName, this.editForm).then(res => {
+          request.post('/baseData/supplier/'+methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -526,7 +528,7 @@ export default {
           if (valid) {
             console.log("提交前的参数:parentId:", this.groupEditForm.parentId)
 
-            this.$axios.post('/baseData/supplierGroup/' + (this.groupEditForm.id ? 'update' : 'save'), this.groupEditForm).then(res => {
+            request.post('/baseData/supplierGroup/' + (this.groupEditForm.id ? 'update' : 'save'), this.groupEditForm).then(res => {
               this.$message({
                 message: (this.groupEditForm.id ? '编辑' : '新增') + '成功!',
                 type: 'success'
@@ -553,7 +555,7 @@ export default {
     },
     submitAuthorityForm(formName) {
       console.log("提交后的，被选中的 角色 ID数组：", this.$refs.tree.getCheckedKeys())
-      this.$axios.post('/sys/user/authority?userId=' + this.authorityForm.id, this.$refs.tree.getCheckedKeys()).then(res => {
+      request.post('/sys/user/authority?userId=' + this.authorityForm.id, this.$refs.tree.getCheckedKeys()).then(res => {
         let result = res.data
         this.$message({
           message: '修改成功!',
@@ -568,7 +570,7 @@ export default {
     // 查询供应商表单列表数据
     getSupplierList() {
       console.log("搜索字段:",this.select)
-      this.$axios.get('/baseData/supplier/list', {
+      request.get('/baseData/supplier/list', {
         params: {
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -584,7 +586,7 @@ export default {
     },
     // 供应商分组 查询分组列表数据
     getMaterialGroupList() {
-      this.$axios.post('/baseData/supplierGroup/listValide').then(res => {
+      request.post('/baseData/supplierGroup/listValide').then(res => {
         this.$nextTick(() => {
           this.groupData = res.data.data
           console.log("查询供应商分组", res.data.data)
@@ -594,7 +596,7 @@ export default {
     // 编辑页面
     edit(id) {
       this.addOrUpdate = "update"
-      this.$axios.get('/baseData/supplier/queryById?id=' + id).then(res => {
+      request.get('/baseData/supplier/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -612,7 +614,7 @@ export default {
       // 1. 弹出分配权限窗口
       this.authorityDialogVisible = true
       // 2. 获取全部角色列表
-      this.$axios.post('/sys/role/listValide').then(res => {
+      request.post('/sys/role/listValide').then(res => {
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
         this.$nextTick(() => {
           // 赋值到编辑表单
@@ -621,7 +623,7 @@ export default {
         })
       })
       // 3. 获取该用户的角色列表
-      this.$axios.get('/sys/user/queryRolesByUserId?id=' + id).then(res => {
+      request.get('/sys/user/queryRolesByUserId?id=' + id).then(res => {
         let result = res.data
         // 4. 设置选中的节点
         this.$refs.tree.setCheckedKeys(result.data);
@@ -640,7 +642,7 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
-      this.$axios.post('/baseData/supplier/del', ids).then(res => {
+      request.post('/baseData/supplier/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -672,7 +674,7 @@ export default {
       let parentId = this.lastClickTreeNode.parentId
 
       console.log("选中删除分组id:", delId)
-      this.$axios.get('/baseData/supplierGroup/delById?id=' + delId+'&&groupCode='+this.lastClickTreeNode.code).then(res => {
+      request.get('/baseData/supplierGroup/delById?id=' + delId+'&&groupCode='+this.lastClickTreeNode.code).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'

@@ -263,7 +263,7 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$axios.post('/sys/role/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
+          request.post('/sys/role/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
             let result = res.data
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
@@ -283,7 +283,7 @@ export default {
     },
     submitAuthorityForm(formName) {
         console.log("提交后的，被选中的菜单ID数组：",this.$refs.tree.getCheckedKeys())
-        this.$axios.post('/sys/role/authority?roleId='+this.authorityForm.id,this.$refs.tree.getCheckedKeys()).then(res => {
+        request.post('/sys/role/authority?roleId='+this.authorityForm.id,this.$refs.tree.getCheckedKeys()).then(res => {
           let result = res.data
           this.$message({
             message:'修改成功!',
@@ -297,7 +297,7 @@ export default {
 
     // 查询角色表单列表数据
     getUserList() {
-      this.$axios.get('/sys/role/list', {
+      request.get('/sys/role/list', {
           params:{
             currentPage: this.currentPage
             , pageSize: this.pageSize
@@ -311,7 +311,7 @@ export default {
     },
     // 点击编辑页面，弹出
     edit(id) {
-      this.$axios.get('/sys/role/queryById?id=' + id).then(res => {
+      request.get('/sys/role/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -331,12 +331,12 @@ export default {
       // 1. 弹出分配权限窗口
       this.authorityDialogVisible = true
       // 2. 获取有效的菜单列表
-      this.$axios.post('/sys/menu/listValide').then(res => {
+      request.post('/sys/menu/listValide').then(res => {
           // 赋值到编辑表单
         console.log("设置树节点数据.",res.data.data)
           this.authorityTreeData = res.data.data
         // 3. 获取该用户的菜单列表
-        this.$axios.get('/sys/role/queryMenusByRoleId?id=' + id).then(res => {
+        request.get('/sys/role/queryMenusByRoleId?id=' + id).then(res => {
           let result = res.data
           console.log("选中该用户拥有的菜单",result.data)
           // 4. 设置选中的节点
@@ -359,7 +359,7 @@ export default {
         console.log("批量删除:id",ids)
 
       }
-      this.$axios.post('/sys/role/del', ids).then(res => {
+      request.post('/sys/role/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'

@@ -90,6 +90,8 @@
 </template>
 
 <script>
+import {request} from "@/axios";
+
 export default {
   name: "unit",
   data() {
@@ -116,7 +118,7 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$axios.post('/baseData/unit/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
+          request.post('/baseData/unit/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
             let result = res.data
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
@@ -137,13 +139,13 @@ export default {
     },
     // 查询计量单位表单列表数据
     getUnitList() {
-      this.$axios.post('/baseData/unit/list').then(res => {
+      request.post('/baseData/unit/list').then(res => {
         this.tableData = res.data.data
       })
     },
     // 编辑
     edit(id) {
-      this.$axios.get('/baseData/unit/queryById?id=' + id).then(res => {
+      request.get('/baseData/unit/queryById?id=' + id).then(res => {
         console.log("根据计量单位id查询结果:",res.data.data)
         let result = res.data.data
         this.dialogVisible = true
@@ -158,7 +160,7 @@ export default {
     },
     // 删除
     del(id) {
-      this.$axios.get('/baseData/unit/delById?id=' + id).then(res => {
+      request.get('/baseData/unit/delById?id=' + id).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'

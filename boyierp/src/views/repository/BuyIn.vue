@@ -85,6 +85,18 @@
           </el-button>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('repository:buyIn:export')">
+          <el-dropdown   @command="expChange">
+            <el-button  icon="el-icon-download" size="mini" type="success">
+              导出<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="all">导出全部</el-dropdown-item>
+              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-form-item>
+
         <!--        <el-form-item v-if="hasAuth('repository:buyIn:del')">
                   <el-popconfirm @confirm="del(null)" title="确定删除吗？">
                     <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger"
@@ -357,7 +369,7 @@
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails"
                    v-show="this.editForm.status===1">添加
         </el-button>
-        <el-button type="success" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
+        <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
                    v-show="this.editForm.status===1">删除
         </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteAllDetails"
@@ -452,34 +464,105 @@
           :total="this.total">
       </el-pagination>
     </el-main>
+
+    <export-excel-common ref="myChild" :exportExcelInfo="exportExcelInfo" :tableData="tableData" :exportExcelArry="exportExcelArry"></export-excel-common>
+
   </el-container>
+
+
+  <!-- 导出功能 -->
+
 
 
 </template>
 
 <script>
+
+// POI，因为响应输出字节流，和ajax 的请求不一样。
+import {request} from "@/axios";
+
+
 // 引入打印基础组件，和打印模块print页面
 import vueEasyPrint from "vue-easy-print";
 import print from "@/views/print";
+import exportExcelCommon from"../common/ExportExcelCommon"
+import {request2} from "@/axios";
 
 export default {
   name: 'BuyIn',
   // 引入打印模块基础组件和该打印模块的模板页面
   components: {
     vueEasyPrint,
-    print
+    print,
+    exportExcelCommon
   },
   data() {
     return {
-      /* printObj:{
-         id:'printDiv',
-         popTitle:'title',
-         extraHead: '<meta http-equiv="Content-Language"content="zh-cn"/>'
-       },*/
+
+      // vue 前端的 导出table 数据功能
+      //导出表格字段及formatter信息
+      exportExcelArry: [{
+        prop: 'id',
+        label: '单据编号',
+        formatterFlag: false
+      },
+      {
+        prop: 'buyInDate',
+        label: '入库日期',
+        formatterFlag: false
+      },
+        {
+          prop: 'supplierName',
+          label: '供应商',
+          formatterFlag: false
+        },
+
+        {
+          prop: 'status',
+          label: '状态',
+          formatterFlag: true,
+          formatterType: 'common-type',
+          formatterInfo: [{value: 0,label: '审核完成'},{value: 1,label: '待审核'}]
+        },
+        {
+          prop: 'materialId',
+          label: '物料编码',
+          formatterFlag: false
+        },
+        {
+          prop: 'materialName',
+          label: '物料名称',
+          formatterFlag: false
+        },
+        {
+          prop: 'unit',
+          label: '基本单位',
+          formatterFlag: false
+        },{
+          prop: 'num',
+          label: '商量',
+          formatterFlag: false
+        },{
+          prop: 'price',
+          label: '单价',
+          formatterFlag: false
+        }
+         ,{
+        prop: 'amount',
+        label: '金额',
+        formatterFlag: false
+      }],
+      //导出excel表格id及excel名称
+      exportExcelInfo: {
+        excelId: 'record-table',
+        excelName: '采购入库列表.xlsx'
+      },
+      //需要导出的table数据
+      tableAllData: [],
+
 
       //选中的从表数据
       checkedDetail: [],
-
 
       // 搜索字段
       selectedName: 'supplierName',// 搜索默认值
@@ -506,7 +589,7 @@ export default {
       // 表单字段
       addOrUpdate: 'save',
       editForm: {
-        status: 0, // 编辑表单初始默认值
+        status: 1, // 编辑表单初始默认值
         id: '',
         supplierId: '',
         supplierName: '',
@@ -539,6 +622,11 @@ export default {
     }
   },
   methods: {
+    // 导出按钮
+    exportExcel () {
+      this.$refs.myChild.exportExcel();
+    },
+
     // 打印按钮事件
     printDemo() {
       this.$refs.easyPrint.print()
@@ -590,18 +678,18 @@ export default {
     },
 
     loadSupplierAll() {
-      this.$axios.post('/baseData/supplier/getSearchAllData').then(res => {
+      request.post('/baseData/supplier/getSearchAllData').then(res => {
         this.restaurants = res.data.data
       })
     },
 
     loadTableSearchMaterialDetailAll() {
-      this.$axios.post('/baseData/material/loadTableSearchMaterialDetailAll').then(res => {
+      request.post('/baseData/material/loadTableSearchMaterialDetailAll').then(res => {
         this.restaurants3 = res.data.data
       })
     },
     loadMaterialAll() {
-      this.$axios.post('/baseData/material/getSearchAllData').then(res => {
+      request.post('/baseData/material/getSearchAllData').then(res => {
         this.restaurants2 = res.data.data
       })
     },
@@ -699,11 +787,44 @@ export default {
 
     },
 
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportList() {
+
+      request2.post('/repository/buyIn/export?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchStr="+this.searchStr+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select
+      ,null,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'采购入库全部列表.xlsx')
+      }).catch()
+    },
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
+
+
     // 入库列表 点击添加按钮
     addSupplierMaterial() {
       this.addOrUpdate = 'save'
       this.editForm = {
-        status: 0, // 编辑表单初始默认值
+        status: 1, // 编辑表单初始默认值
         id: '',
         supplierId: '',
         supplierName: '',
@@ -790,7 +911,7 @@ export default {
             return
           }
 
-          this.$axios.post('/repository/buyIn/' + methodName, this.editForm).then(res => {
+          request.post('/repository/buyIn/' + methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -813,16 +934,16 @@ export default {
     // 查询价目表单列表数据
     getBuyInDocumentList() {
       console.log("搜索字段:", this.select)
-      this.$axios.get('/repository/buyIn/list', {
+      request.get('/repository/buyIn/list', {
         params: {
-          currentPage: this.currentPage
-          , pageSize: this.pageSize
-          , total: this.total
-          , searchStr: this.searchStr
-          , searchStartDate: this.searchStartDate
-          , searchEndDate: this.searchEndDate
-          , searchField: this.select
-        }
+        currentPage: this.currentPage
+            , pageSize: this.pageSize
+            , total: this.total
+            , searchStr: this.searchStr
+            , searchStartDate: this.searchStartDate
+            , searchEndDate: this.searchEndDate
+            , searchField: this.select
+      }
       }).then(res => {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
@@ -833,7 +954,7 @@ export default {
     // 编辑页面
     edit(id) {
       this.addOrUpdate = "update"
-      this.$axios.get('/repository/buyIn/queryById?id=' + id).then(res => {
+      request.get('/repository/buyIn/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -865,7 +986,7 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
-      this.$axios.post('/repository/buyIn/del', ids).then(res => {
+      request.post('/repository/buyIn/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -877,7 +998,7 @@ export default {
     },
     // 状态待审核
     statusPass(id) {
-      this.$axios.get('/repository/buyIn/statusPass?id=' + id).then(res => {
+      request.get('/repository/buyIn/statusPass?id=' + id).then(res => {
         this.$message({
           message: '审核通过!',
           type: 'success'
@@ -887,7 +1008,7 @@ export default {
     },
     // 状态反审核
     statusReturn(id) {
-      this.$axios.get('/repository/buyIn/statusReturn?id=' + id).then(res => {
+      request.get('/repository/buyIn/statusReturn?id=' + id).then(res => {
         this.$message({
           message: '反审核完成!',
           type: 'success'
@@ -921,6 +1042,15 @@ export default {
       } else {
         this.selectedName = item
 
+      }
+    },
+
+    expChange(item) {
+      console.log("导出:",item)
+      if (item === 'currentList') {
+        this.exportExcel()
+      } else if(item === 'all'){
+        this.exportList()
       }
     },
 
