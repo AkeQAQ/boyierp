@@ -213,6 +213,8 @@
 </template>
 
 <script>
+import {request} from "@/axios";
+
 export default {
   name: "User",
   data() {
