@@ -12,7 +12,7 @@
 <script>
 //1. 首先安装，npm install vue-easy-print --save
 import vueEasyPrint from "vue-easy-print";
-import demo from "./print"
+import demo from "./printModule/print"
 export default {
   methods: {
     printDemo(){

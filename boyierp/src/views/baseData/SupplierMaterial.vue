@@ -314,8 +314,6 @@ export default {
       select: 'supplierName', // 搜索默认值
       searchStr: '',
       searchField: '',
-      restaurants: [],// 搜索框列表数据存放
-      restaurants2: [],
       supplierSearchDatas:[], // 用于搜索的建议框
       materialSearchDatas:[], // 用于搜索的建议框
 
@@ -394,6 +392,21 @@ export default {
       return (restaurant) => {
         return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
+    },
+    getSupplierNameById(id){
+      this.supplierSearchDatas.forEach(obj=>{
+        if(id === obj.id){
+          this.editForm.supplierName = obj.name
+
+        }
+      })
+    },
+    getMaterialNameById(id){
+      this.materialSearchDatas.forEach(obj=>{
+        if(id === obj.id){
+          this.editForm.materialName = obj.name
+        }
+      })
     },
     handleSelect(item) {
       this.editForm.supplierId = item.id
@@ -495,11 +508,14 @@ export default {
       this.addOrUpdate = "update"
       request.get('/baseData/supplierMaterial/queryById?id=' + id).then(res => {
         let result = res.data.data
-        this.dialogVisible = true
-        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.editForm = result
+        this.getSupplierNameById(this.editForm.supplierId)
+        this.getMaterialNameById(this.editForm.materialId)
+
+        // 弹出框我们先让他初始化结束再赋值
         this.$nextTick(() => {
           // 赋值到编辑表单
-          this.editForm = result
+          this.dialogVisible = true
         })
 
       })
@@ -570,7 +586,8 @@ export default {
     moveMouse(text){
       try{
         // foreach 只能抛出异常结束
-        this.restaurants.forEach(item =>{
+        this.supplierSearchDatas.forEach(item =>{
+          console.log("moveMouse")
           if(text === item.name){
             console.log("匹配到:",text,item.name,this.editForm.supplierId,item.id)
             this.editForm.supplierId = item.id
@@ -589,7 +606,7 @@ export default {
     moveMaterialMouse(text){
       try{
         // foreach 只能抛出异常结束
-        this.restaurants2.forEach(item =>{
+        this.materialSearchDatas.forEach(item =>{
           if(text === item.name){
             console.log("匹配到:",text,item.name,this.editForm.materialId,item.id)
             this.editForm.materialId = item.id
