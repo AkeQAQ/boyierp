@@ -45,7 +45,8 @@
       </el-form>
 
       <el-table
-
+          show-summary
+          :summary-method="getSummaries"
           ref="multipleTable"
           :data="tableData"
           border
@@ -57,7 +58,7 @@
           @selection-change="handleSelectionChange">
         <el-table-column
             type="selection"
-            width="40">
+            width="50">
         </el-table-column>
         <el-table-column
             label="物料编码"
@@ -218,6 +219,35 @@ export default {
     },
     searchFieldChange(item) {
       this.selectedName = item
+    },
+    getSummaries(param) {
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 3 ) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+        }
+
+      });
+
+      return sums;
     },
   },
   // 页面初始化时调用的方法

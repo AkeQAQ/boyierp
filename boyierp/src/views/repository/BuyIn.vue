@@ -134,7 +134,7 @@
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
-                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+                       @click=" edit(scope.row.id)"
             >{{ scope.row.id }}
             </el-button>
           </template>
@@ -215,16 +215,20 @@
         >
         </el-table-column>
 
-
         <el-table-column
             prop="amount"
             label="金额">
         </el-table-column>
 
         <el-table-column
+            prop="orderSeq"
+            label="单号">
+        </el-table-column>
+
+        <el-table-column
             prop="action"
             label="操作"
-            width="230px"
+            width="170px"
             fixed="right"
         >
           <template slot-scope="scope">
@@ -248,7 +252,7 @@
 
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0 ">
+                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0 && scope.row.orderId===null ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"
@@ -330,6 +334,7 @@
           <el-form-item label="供应商" prop="supplierName" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
+                :disabled="this.editForm.status===0"
                 style="width: 150px"
                 class="inline-input"
                 v-model="editForm.supplierName"
@@ -343,13 +348,13 @@
             </el-autocomplete>
           </el-form-item>
 
-          <el-form-item label="供应商单号" prop="supplierDocumentNum" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input size="mini" clearable style="width: 150px" v-model="editForm.supplierDocumentNum">
+          <el-form-item  label="供应商单号" prop="supplierDocumentNum" style="padding: -20px 0 ;margin-bottom: -20px">
+            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 150px" v-model="editForm.supplierDocumentNum">
             </el-input>
           </el-form-item>
 
           <el-form-item label="入库日期" prop="buyInDate">
-            <el-date-picker style="width: 150px"
+            <el-date-picker :disabled="this.editForm.status===0" style="width: 150px"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.buyInDate"
                             type="date"
@@ -368,10 +373,6 @@
 
           </el-form-item>
 
-          <el-form-item>
-
-
-          </el-form-item>
         </el-form>
         <el-divider content-position="left">明细信息</el-divider>
 
@@ -400,7 +401,7 @@
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column label="订单号" align="center" prop="orderSeq" width="100">
+          <el-table-column label="单号" align="center" prop="orderSeq" width="100">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].orderSeq"></el-input>
             </template>
@@ -409,12 +410,13 @@
           <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="200" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete size="mini" clearable
+                               :disabled="editForm.status===0"
                                class="inline-input"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
                                placeholder="请输入内容"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
-                               @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1])"
+                               @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
               >
               </el-autocomplete>
             </template>
@@ -432,7 +434,7 @@
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].specs"></el-input>
             </template>
           </el-table-column>
-          <el-table-column label="物料单位" align="center" prop="unit" width="75">
+          <el-table-column label="物料单位" align="center" prop="unit" width="100">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].unit"></el-input>
             </template>
@@ -446,7 +448,7 @@
 
           <el-table-column label="入库数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
-              <el-input size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -459,7 +461,7 @@
 
           <el-table-column label="备注" align="center" width="150" prop="comment">
             <template slot-scope="scope">
-              <el-input size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
+              <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
             </template>
           </el-table-column>
 
@@ -778,10 +780,9 @@ export default {
       } catch (err) {
       }
     },
-    tableMoveMouse(selectItem, rowObj) {
+    tableMoveMouse(selectItem, rowObj,index) {
       console.log("tableMoveMouse", selectItem, rowObj)
       try {
-
         // foreach 只能抛出异常结束
         this.restaurants3.forEach(item => {
           if (selectItem === item.id) {
@@ -792,9 +793,19 @@ export default {
             rowObj.specs = item.obj.specs
             throw new Error();
           } else {
+            rowObj.materialName = "";
+            rowObj.unit = "";
+            rowObj.materialId = '';
+            rowObj.specs = ''
+
+            rowObj.price = '';
+            rowObj.num = ''
+            rowObj.comment = ''
+            rowObj.amount=''
             console.log("没有匹配到", selectItem, item.id)
-            rowObj = {}
           }
+          console.log("设置rowObj:{},",this.editForm.rowList)
+
         })
       } catch (err) {
       }
@@ -970,6 +981,7 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
+        console.log("id:",res.data.data.records[0].orderId ===null)
         console.log("获取用户表单数据", res.data.data.records)
       })
     },
@@ -1132,7 +1144,7 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 12) {
+      } else if (columnIndex === 13) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
