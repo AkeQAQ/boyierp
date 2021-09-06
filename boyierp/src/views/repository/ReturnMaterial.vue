@@ -2,7 +2,7 @@
 
   <el-container>
     <el-main>
-      <!-- 领料列表 -->
+      <!-- 退料列表 -->
       <el-form :inline="true" class="demo-form-inline">
         <el-form-item>
           <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
@@ -73,19 +73,19 @@
 
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getPickDocumentList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="getReturnDocumentList">搜索</el-button>
         </el-form-item>
 
 
-        <el-form-item v-if="hasAuth('repository:pickMaterial:save')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:pickMaterial:save')"
-                     @click="addPickMaterial()"
+        <el-form-item v-if="hasAuth('repository:returnMaterial:save')">
+          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:returnMaterial:save')"
+                     @click="addReturnMaterial()"
 
           >新增
           </el-button>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('repository:pickMaterial:export')">
+        <el-form-item v-if="hasAuth('repository:returnMaterial:export')">
           <el-dropdown @command="expChange">
             <el-button icon="el-icon-download" size="mini" type="success">
               导出<i class="el-icon-arrow-down el-icon--right"></i>
@@ -133,15 +133,15 @@
         </el-table-column>
 
         <el-table-column
-            prop="pickDate"
-            label="领料日期"
+            prop="returnDate"
+            label="退料日期"
             width="90px"
         >
         </el-table-column>
 
 
         <el-table-column
-            label="领料部门"
+            label="退料部门"
             prop="departmentName"
             width="110px"
             show-overflow-tooltip
@@ -201,14 +201,14 @@
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('repository:pickMaterial:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
+                       v-if="hasAuth('repository:returnMaterial:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('repository:pickMaterial:update') && scope.row.status ===1   "></el-divider>
+                        v-if="hasAuth('repository:returnMaterial:update') && scope.row.status ===1   "></el-divider>
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('repository:pickMaterial:valid')  && scope.row.status ===1   ">
+                       v-if="hasAuth('repository:returnMaterial:valid')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
                                title="确定设置审核通过吗？"
@@ -230,10 +230,10 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('repository:pickMaterial:del')  && scope.row.status ===1  "></el-divider>
+                        v-if="hasAuth('repository:returnMaterial:del')  && scope.row.status ===1  "></el-divider>
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('repository:pickMaterial:del') && scope.row.status ===1   ">
+                       v-if="hasAuth('repository:returnMaterial:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
                                title="确定删除吗？"
@@ -249,10 +249,10 @@
 
       </el-table>
 
-      <!-- 领料弹窗 -->
+      <!-- 退料弹窗 -->
 
       <el-dialog
-          title="领料信息"
+          title="退料信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"
           fullscreen
@@ -272,7 +272,7 @@
           <el-form-item v-if="false" prop="departmentId" style="margin-bottom: 0px">
             <el-input v-model="editForm.departmentId"></el-input>
           </el-form-item>
-          <el-form-item label="领料部门" prop="departmentName" style="margin-bottom: 10px">
+          <el-form-item label="退料部门" prop="departmentName" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
                 :disabled="this.editForm.status===0"
@@ -289,15 +289,15 @@
             </el-autocomplete>
           </el-form-item>
 
-          <el-form-item  label="领料人" prop="pickUser" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 150px" v-model="editForm.pickUser">
+          <el-form-item  label="退料人" prop="returnUser" style="padding: -20px 0 ;margin-bottom: -20px">
+            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 150px" v-model="editForm.returnUser">
             </el-input>
           </el-form-item>
 
-          <el-form-item label="领料日期" prop="pickDate">
+          <el-form-item label="退料日期" prop="returnDate">
             <el-date-picker :disabled="this.editForm.status===0" style="width: 150px"
                             value-format="yyyy-MM-dd"
-                            v-model="editForm.pickDate"
+                            v-model="editForm.returnDate"
                             type="date"
                             clearable
                             placeholder="选择日期">
@@ -372,9 +372,16 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="领料数量" align="center" width="85" prop="num">
+          <el-table-column label="退料数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
               <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+            </template>
+          </el-table-column>
+
+
+          <el-table-column label="退料原因" align="center" width="150" prop="reason">
+            <template slot-scope="scope">
+              <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].reason"/>
             </template>
           </el-table-column>
 
@@ -412,7 +419,7 @@ import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
 
 export default {
-  name: 'PickMaterial',
+  name: 'ReturnMaterial',
   // 引入打印模块基础组件和该打印模块的模板页面
   components: {
     vueEasyPrint,
@@ -455,20 +462,21 @@ export default {
         departmentName: '',
         materialName: '',
         materialId: '',
-        pickDate: '',
-        pickUser:'',
+        returnDate: '',
+        returnUser:'',
+        reason:'',
         endDate: '',
         rowList: []
       },
       rules: {
         departmentName: [
-          {required: true, message: '请输入领料部门', change: 'blur'}
+          {required: true, message: '请输入退料部门', change: 'blur'}
         ],
-        pickUser: [
-          {required: true, message: '请输入领料人', trigger: 'blur'}
+        returnUser: [
+          {required: true, message: '请输入退料人', trigger: 'blur'}
         ],
-        pickDate: [
-          {required: true, message: '请输入领料日期', trigger: 'blur'}
+        returnDate: [
+          {required: true, message: '请输入退料日期', trigger: 'blur'}
         ]
       }
       ,
@@ -499,7 +507,7 @@ export default {
         this.checkedDetail = selection;
       }
     },
-    // 领料详细信息-添加
+    // 退料详细信息-添加
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
@@ -511,11 +519,12 @@ export default {
       obj.materialId = '';
       obj.num = ''
       obj.specs = ''
+      obj.reason=''
 
       this.editForm.rowList.push(obj);
       console.log("现有的数据:", this.editForm.rowList)
     },
-    // 领料详细信息-删除
+    // 退料详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
         this.$message({
@@ -649,7 +658,7 @@ export default {
     // 导出列表数据- 服务端写出字节流到浏览器，进行保存
     exportList() {
 
-      request2.post('/repository/pickMaterial/export?currentPage='+this.currentPage+
+      request2.post('/repository/returnMaterial/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
           "&&searchStr="+this.searchStr+
@@ -660,7 +669,7 @@ export default {
         // 这里使用blob做一个转换
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
-        this.saveFile(blob,'领料全部列表.xlsx')
+        this.saveFile(blob,'退料全部列表.xlsx')
       }).catch()
     },
     // POI- 服务端写出字节流到浏览器，进行保存
@@ -679,8 +688,8 @@ export default {
     },
 
 
-    // 入库列表 点击添加按钮
-    addPickMaterial() {
+    // 领料列表 点击添加按钮
+    addReturnMaterial() {
       this.addOrUpdate = 'save'
       this.editForm = {
         status: 1, // 编辑表单初始默认值
@@ -689,7 +698,7 @@ export default {
         departmentName: '',
         materialName: '',
         materialId: '',
-        pickDate: '',
+        returnDate: '',
         endDate: '',
         price: '',
         rowList: []
@@ -701,13 +710,13 @@ export default {
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize = val
-      this.getPickDocumentList()
+      this.getReturnDocumentList()
 
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.currentPage = val
-      this.getPickDocumentList()
+      this.getReturnDocumentList()
 
     },
     // 多选框方法
@@ -736,7 +745,7 @@ export default {
         if (valid) {
           if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
             this.$message({
-              message: '请录入至少一个领料物料信息',
+              message: '请录入至少一个退料物料信息',
               type: 'error'
             });
             return
@@ -763,13 +772,13 @@ export default {
 
           if (validateFlag === false) {
             this.$message({
-              message: '领料数量不能为空!',
+              message: '退料数量不能为空!',
               type: 'error'
             });
             return
           }
 
-          request.post('/repository/pickMaterial/' + methodName, this.editForm).then(res => {
+          request.post('/repository/returnMaterial/' + methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -779,7 +788,7 @@ export default {
             this.dialogVisible = false;
             this.resetForm("editForm")
             this.handleDeleteAllDetails()
-            this.getPickDocumentList()
+            this.getReturnDocumentList()
 
           })
         } else {
@@ -790,9 +799,9 @@ export default {
     },
 
     // 查询价目表单列表数据
-    getPickDocumentList() {
+    getReturnDocumentList() {
       console.log("搜索字段:", this.select)
-      request.get('/repository/pickMaterial/list', {
+      request.get('/repository/returnMaterial/list', {
         params: {
         currentPage: this.currentPage
             , pageSize: this.pageSize
@@ -813,7 +822,7 @@ export default {
     // 编辑页面
     edit(id) {
       this.addOrUpdate = "update"
-      request.get('/repository/pickMaterial/queryById?id=' + id).then(res => {
+      request.get('/repository/returnMaterial/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -845,34 +854,34 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
-      request.post('/repository/pickMaterial/del', ids).then(res => {
+      request.post('/repository/returnMaterial/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
         });
-        this.getPickDocumentList()
+        this.getReturnDocumentList()
         console.log("删除后重新加载页面")
 
       })
     },
     // 状态待审核
     statusPass(id) {
-      request.get('/repository/pickMaterial/statusPass?id=' + id).then(res => {
+      request.get('/repository/returnMaterial/statusPass?id=' + id).then(res => {
         this.$message({
           message: '审核通过!',
           type: 'success'
         });
-        this.getPickDocumentList()
+        this.getReturnDocumentList()
       })
     },
     // 状态反审核
     statusReturn(id) {
-      request.get('/repository/pickMaterial/statusReturn?id=' + id).then(res => {
+      request.get('/repository/returnMaterial/statusReturn?id=' + id).then(res => {
         this.$message({
           message: '反审核完成!',
           type: 'success'
         });
-        this.getPickDocumentList()
+        this.getReturnDocumentList()
       })
     },
     // 关闭弹窗处理动作
@@ -1052,7 +1061,7 @@ export default {
 
   },
   created() {
-    this.getPickDocumentList()
+    this.getReturnDocumentList()
     this.loadDepartmentAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
