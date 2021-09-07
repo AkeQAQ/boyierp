@@ -97,13 +97,12 @@
           </el-dropdown>
         </el-form-item>
 
-        <!--        <el-form-item v-if="hasAuth('order:buyOrder:del')">
-                  <el-popconfirm @confirm="del(null)" title="确定删除吗？">
-                    <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger"
-                               slot="reference">批量删除
-                    </el-button>
-                  </el-popconfirm>
-                </el-form-item>-->
+        <el-form-item v-if="hasAuth('order:buyOrder:push')">
+          <el-button size="mini" icon="el-icon-plus" type="primary"
+                     @click="pushPage"
+                     >下推入库
+          </el-button>
+        </el-form-item>
 
       </el-form>
 
@@ -158,10 +157,19 @@
 
         <el-table-column
             prop="status"
-            label="状态">
+            label="单据状态">
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.status === 0" type="success">已完成</el-tag>
             <el-tag size="small" v-else-if="scope.row.status===1" type="danger">未完成</el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            prop="detaiStatus"
+            label="详情状态">
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.detailStatus === 0" type="success">已下推</el-tag>
+            <el-tag size="small" v-else-if="scope.row.detailStatus===1" type="danger">未下推</el-tag>
           </template>
         </el-table-column>
 
@@ -194,7 +202,7 @@
         <el-table-column
             prop="num"
             label="数量"
-            width="80px"
+            width="70px"
 
         >
         </el-table-column>
@@ -209,7 +217,7 @@
         <el-table-column
             prop="price"
             label="单价"
-            width="80px"
+            width="60px"
         >
         </el-table-column>
 
@@ -217,6 +225,7 @@
             prop="amount"
             label="金额">
         </el-table-column>
+
 
         <el-table-column
             prop="orderSeq"
@@ -233,65 +242,6 @@
             <el-button type="text" size="small" @click="edit(scope.row.id)"
                        v-if="hasAuth('order:buyOrder:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
             </el-button>
-
-            <el-divider direction="vertical"
-                        v-if="hasAuth('order:buyOrder:push')  && scope.row.status ===0  "></el-divider>
-
-            <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('order:buyOrder:push') && scope.row.status ===0   ">
-              <template>
-                <el-popconfirm @confirm="returnPush(scope.row.id)"
-                               title="确定撤销入库吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">撤销入库</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>
-
-
-            <el-divider direction="vertical"
-                        v-if="hasAuth('order:buyOrder:push')  && scope.row.status ===1  "></el-divider>
-
-            <el-button type="text" size="small" @click="pushPage(scope.row.id)"
-                       v-if="hasAuth('order:buyOrder:push')  && scope.row.status ===1  ">下推入库
-            </el-button>
-<!--
-            <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('order:buyOrder:push') && scope.row.status ===1   ">
-              <template>
-                <el-popconfirm @confirm="push(scope.row.id)"
-                               title="确定下推入库吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">下推入库</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>-->
-
-<!--            <el-divider direction="vertical"
-                        v-if="hasAuth('order:buyOrder:update') && scope.row.status ===1   "></el-divider>
-
-            <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('order:buyOrder:valid')  && scope.row.status ===1   ">
-              <template>
-                <el-popconfirm @confirm="statusPass(scope.row.id)"
-                               title="确定设置审核通过吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">审核通过</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>
-
-
-            <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
-              <template>
-                <el-popconfirm @confirm="statusReturn(scope.row.id)"
-                               title="确定反审核吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">反审核</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>-->
 
             <el-divider direction="vertical"
                         v-if="hasAuth('order:buyOrder:del')  && scope.row.status ===1  "></el-divider>
@@ -326,8 +276,8 @@
                  class="demo-editForm">
 
 
-          <el-form-item v-if="false" prop="orderId" >
-            <el-input v-model="pushForm.orderId"></el-input>
+          <el-form-item v-if="false" prop="orderDetailIds" >
+            <el-input v-model="pushForm.orderDetailIds"></el-input>
           </el-form-item>
 
           <el-form-item label="供应商单号" prop="supplierDocumentNum" style="margin-bottom: 0px">
@@ -403,10 +353,12 @@
           <el-form-item v-if="false" prop="supplierId" style="margin-bottom: 0px">
             <el-input v-model="editForm.supplierId"></el-input>
           </el-form-item>
+
           <el-form-item label="供应商" prop="supplierName" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
                 style="width: 150px"
+                :disabled="this.hasPushed"
                 class="inline-input"
                 v-model="editForm.supplierName"
                 :fetch-suggestions="querySearch"
@@ -422,6 +374,7 @@
 
           <el-form-item label="采购日期" prop="orderDate">
             <el-date-picker style="width: 150px"
+                            :disabled="this.hasPushed"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.orderDate"
                             type="date"
@@ -493,10 +446,9 @@
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-
           <el-table-column label="单号" align="center" width="120" prop="orderSeq">
             <template slot-scope="scope">
-              <el-input size="mini" v-model="editForm.rowList[scope.row.seqNum-1].orderSeq"/>
+              <el-input :disabled="editForm.rowList[scope.row.seqNum-1].status === 0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].orderSeq"/>
             </template>
           </el-table-column>
 
@@ -504,6 +456,7 @@
             <template slot-scope="scope">
               <el-autocomplete size="mini" clearable
                                class="inline-input"
+                               :disabled="editForm.rowList[scope.row.seqNum-1].status === 0"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
                                placeholder="请输入内容"
@@ -538,9 +491,9 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="入库数量" align="center" width="85" prop="num">
+          <el-table-column label="采购数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
-              <el-input size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input :disabled="editForm.rowList[scope.row.seqNum-1].status === 0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -557,6 +510,7 @@
               <el-date-picker style="width: 130px"
                               size="mini"
                               value-format="yyyy-MM-dd"
+                              :disabled="editForm.rowList[scope.row.seqNum-1].status === 0"
                               v-model="editForm.rowList[scope.row.seqNum-1].doneDate"
                               type="date"
                               clearable
@@ -567,7 +521,7 @@
 
           <el-table-column label="备注" align="center" width="150" prop="comment">
             <template slot-scope="scope">
-              <el-input size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
+              <el-input :disabled="editForm.rowList[scope.row.seqNum-1].status === 0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
             </template>
           </el-table-column>
 
@@ -717,9 +671,10 @@ export default {
       , total: 0 // 总共多少数据
       ,
       // 表单字段
+      hasPushed:false,
       addOrUpdate: 'save',
       pushForm: {
-        orderId:'',
+        orderDetailIds:[],
         supplierDocumentNum: '',
         buyInDate: '',
       },
@@ -830,7 +785,7 @@ export default {
         obj.specs = last.specs
         obj.comment = last.comment
         obj.doneDate = last.doneDate
-
+        obj.status = 1;
         let nextStr = dealfun(last.orderSeq)
         console.log("自增:",nextStr)
         obj.orderSeq = nextStr
@@ -1052,7 +1007,7 @@ export default {
       this.multipleSelection = []
 
       val.forEach(theId => {
-        this.multipleSelection.push(theId.id)
+        this.multipleSelection.push(theId.detailId)
       })
       console.log("多选框 选中的 ", this.multipleSelection)
     },
@@ -1061,7 +1016,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
 
-          request.post('/order/buyOrder/push?id='+this.pushForm.orderId, this.pushForm).then(res => {
+          request.post('/order/buyOrder/push?orderDetailIds='+this.pushForm.orderDetailIds, this.pushForm).then(res => {
             this.$message({
               message: '下推成功!',
               type: 'success'
@@ -1117,9 +1072,6 @@ export default {
               throw new Error()
             }
           })
-
-
-
           request.post('/order/buyOrder/' + methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
@@ -1163,6 +1115,7 @@ export default {
 
     // 编辑页面
     edit(id) {
+
       this.addOrUpdate = "update"
       request.get('/order/buyOrder/queryById?id=' + id).then(res => {
         let result = res.data.data
@@ -1171,11 +1124,9 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          this.restaurants3.forEach(obj => {
-            console.log("obj:", obj, result.rowList.materialId)
-
-            if (obj.id === result.materialId) {
-              console.log("obj:", obj, result.materialId)
+          this.editForm.rowList.forEach(obj=>{
+            if(obj.status == 0){
+              this.hasPushed = true
             }
           })
         })
@@ -1183,19 +1134,21 @@ export default {
       })
     },
 
-    pushPage(id){
+    /*pushPage(id){
       this.pushDialogVisible = true
       this.pushForm.orderId = id
-    },
-    // 撤销入库
-    returnPush(id) {
-      request.post('/order/buyOrder/returnPush?id='+id).then(res => {
+    },*/
+    pushPage(){
+      if(this.multipleSelection===[] || this.multipleSelection.length ===0){
         this.$message({
-          message: '撤销入库成功!',
-          type: 'success'
+          message: '请选择下推的选项!',
+          type: 'error'
         });
-        this.getBuyOrderDocumentList()
-      })
+        return
+      }
+
+      this.pushDialogVisible = true
+      this.pushForm.orderDetailIds = this.multipleSelection
     },
 
     // 删除
@@ -1251,6 +1204,7 @@ export default {
       this.$refs['editForm'].resetFields();
 
       this.handleDeleteAllDetails()
+      this.hasPushed = false
       console.log("关闭窗口")
       done();
     },
@@ -1305,14 +1259,7 @@ export default {
     },
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
-      if (columnIndex === 0) {
-        const _row = this.spanArr[rowIndex];
-        const _col = _row > 0 ? 1 : 0;
-        return {
-          rowspan: _row,
-          colspan: _col
-        }
-      } else if (columnIndex === 1) {
+      if (columnIndex === 1) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1340,7 +1287,7 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 13) {
+      } else if (columnIndex === 14) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1387,7 +1334,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 8 || index === 10 || index === 11) {
+        if (index === 9  || index === 12) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {

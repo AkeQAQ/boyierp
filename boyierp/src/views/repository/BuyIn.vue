@@ -194,7 +194,7 @@
         <el-table-column
             prop="num"
             label="数量"
-            width="80px"
+            width="70px"
 
         >
         </el-table-column>
@@ -210,7 +210,7 @@
         <el-table-column
             prop="price"
             label="单价"
-            width="80px"
+            width="60px"
 
         >
         </el-table-column>
@@ -221,9 +221,15 @@
         </el-table-column>
 
         <el-table-column
+            prop="orderId"
+            label="订单编号">
+        </el-table-column>
+
+        <el-table-column
             prop="orderSeq"
             label="单号">
         </el-table-column>
+
 
         <el-table-column
             prop="action"
@@ -252,7 +258,7 @@
 
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0 && scope.row.orderId===null ">
+                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"
@@ -334,7 +340,7 @@
           <el-form-item label="供应商" prop="supplierName" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
-                :disabled="this.editForm.status===0"
+                :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"
                 style="width: 150px"
                 class="inline-input"
                 v-model="editForm.supplierName"
@@ -349,12 +355,12 @@
           </el-form-item>
 
           <el-form-item  label="供应商单号" prop="supplierDocumentNum" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 150px" v-model="editForm.supplierDocumentNum">
+            <el-input :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"  size="mini" clearable style="width: 150px" v-model="editForm.supplierDocumentNum">
             </el-input>
           </el-form-item>
 
           <el-form-item label="入库日期" prop="buyInDate">
-            <el-date-picker :disabled="this.editForm.status===0" style="width: 150px"
+            <el-date-picker :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1" style="width: 150px"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.buyInDate"
                             type="date"
@@ -377,13 +383,13 @@
         <el-divider content-position="left">明细信息</el-divider>
 
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails"
-                   v-show="this.editForm.status===1">添加
+                   v-show="this.editForm.status===1  && this.editForm.sourceType === 0 ">添加
         </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
                    v-show="this.editForm.status===1">删除
         </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteAllDetails"
-                   v-show="this.editForm.status===1">清空
+                   v-show="this.editForm.status===1  && this.editForm.sourceType === 0">清空
         </el-button>
 
         <el-table
@@ -407,10 +413,12 @@
             </template>
           </el-table-column>
 
+
+
           <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="200" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete size="mini" clearable
-                               :disabled="editForm.status===0"
+                               :disabled="editForm.status===0 ||  editForm.sourceType === 1"
                                class="inline-input"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
@@ -448,7 +456,7 @@
 
           <el-table-column label="入库数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
-              <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input  :disabled="editForm.status===0 ||  editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -461,7 +469,7 @@
 
           <el-table-column label="备注" align="center" width="150" prop="comment">
             <template slot-scope="scope">
-              <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
+              <el-input  :disabled="editForm.status===0 || editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
             </template>
           </el-table-column>
 
@@ -613,6 +621,7 @@ export default {
       addOrUpdate: 'save',
       editForm: {
         status: 1, // 编辑表单初始默认值
+        sourceType:'',
         id: '',
         supplierId: '',
         supplierName: '',
@@ -866,6 +875,7 @@ export default {
         buyInDate: '',
         endDate: '',
         price: '',
+        sourceType: 0,
         rowList: []
       }
       this.dialogVisible = true
@@ -1144,7 +1154,7 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 13) {
+      } else if (columnIndex === 14) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1191,7 +1201,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 8 || index === 10 || index === 11) {
+        if (index === 8 || index === 11) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
