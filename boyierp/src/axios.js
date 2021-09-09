@@ -2,7 +2,7 @@ import axios from "axios";
 import router from "@/router";
 import Element from "element-ui"
 
-axios.defaults.baseURL = "http://127.0.0.1:8081" // 定义请求的前缀
+axios.defaults.baseURL = "http://localhost:8081" // 定义请求的前缀
 
 const request2 =axios.create({
     timeout:5000,
@@ -29,7 +29,7 @@ request.interceptors.request.use(config=>{
 // 请求后置拦截器
 request.interceptors.response.use(response=>{
     let result = response.data
-    console.log("请求后置拦截器==============响应的data内容:"+result)
+    console.log("请求后置拦截器==============响应的data内容:",result)
     console.log("请求后置拦截器==============响应的data内容:"+result.code)
 
     if(result.code === 200){

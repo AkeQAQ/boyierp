@@ -4,18 +4,14 @@
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
       <div  class='tab_company_out'>
-        <h3 style="font-size: 20px;margin-bottom: 5px">采  购  物  料  入  库  单</h3>
+        <h3 style="font-size: 20px;margin-bottom: 5px">采  购  物  料  退  料  单</h3>
 
         <el-row :gutter="20" style="padding-bottom: 0px;margin-bottom: -10px;text-align: center">
           <el-col :span="6"><div class="grid-content bg-purple"></div>
-            <time>日期：{{tableData.buyInDate}}</time>
+            <time>日期：{{tableData.buyOutDate}}</time>
           </el-col>
-          <el-col :span="6"><div class="grid-content bg-purple">
+          <el-col :span="10"><div class="grid-content bg-purple">
             <span>供应商：{{tableData.supplierName}}</span>
-          </div>
-          </el-col>
-          <el-col :span="6"><div class="grid-content bg-purple">
-            <span>供应商单据号：{{tableData.supplierDocumentNum}}</span>
           </div>
           </el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
@@ -27,13 +23,12 @@
           <tr>
             <th width='10%'>材料编号</th>
             <th width='26%'>材料名称</th>
-            <th width='7%'>规格</th>
-            <th width='10%'>单号</th>
+            <th width='12%'>规格</th>
             <th width='7%'>计价数量</th>
-            <th width='5%'>单位</th>
+            <th width='10%'>单位</th>
             <th width='8%'>单价</th>
             <th width='12%'>总金额</th>
-            <th width='15%'>说明</th>
+            <th width='15%'>备注</th>
 
           </tr>
           <!-- 每页显示onePageRow条数据 -->
@@ -41,7 +36,6 @@
             <td style="text-align: left">{{row.materialId}}</td>
             <td style="text-align: left">{{row.materialName}}</td>
             <td style="text-align: center">{{row.specs}}</td>
-            <td style="text-align: center">{{row.orderNum}}</td>
             <td style="text-align: center">{{row.num}}</td>
             <td style="text-align: center">{{row.unit}}</td>
             <td style="text-align: center">{{row.price}}</td>
@@ -65,10 +59,9 @@
           <!-- page:当前页，pages最大页 -->
           <tr v-if="page==pages">
             <td style="text-align: center" colspan='1'>合计</td>
-            <td style="text-align: center" colspan='3'>{{chineseTotal}}</td>
+            <td style="text-align: center" colspan='2'>{{chineseTotal}}</td>
             <td style="text-align: center" colspan='2'>{{tableData.totalNum}}</td>
-            <td colspan='1'></td>
-
+            <td style="text-align: center" colspan='1'></td>
             <td style="text-align: center" id='total'>{{tableData.totalAmount}}</td>
             <td></td>
           </tr>
@@ -115,7 +108,7 @@
 
 <script>
 export default {
-  name: "print",
+  name: "printOut",
   // 制作打印模版组件时，props区域尽量保留。
   props: {
     // 每页多少行

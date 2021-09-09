@@ -2,7 +2,7 @@
 
   <el-container>
     <el-main>
-      <!-- 采购订单列表 -->
+      <!-- 退料单列表 -->
       <el-form :inline="true" class="demo-form-inline">
         <el-form-item>
           <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
@@ -73,22 +73,15 @@
 
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getBuyOrderDocumentList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="getBuyOutDocumentList">搜索</el-button>
         </el-form-item>
 
 
-        <el-form-item v-if="hasAuth('order:buyOrder:save')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('order:buyOrder:save')"
+        <el-form-item v-if="hasAuth('repository:buyOut:save')">
+          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:buyOut:save')"
                      @click="addSupplierMaterial()"
 
           >新增
-          </el-button>
-        </el-form-item>
-
-        <el-form-item v-if="hasAuth('order:buyOrder:push')">
-          <el-button size="mini" icon="el-icon-plus" type="primary"
-                     @click="pushPage"
-                     >下推入库
           </el-button>
         </el-form-item>
 
@@ -128,8 +121,8 @@
         </el-table-column>
 
         <el-table-column
-            prop="orderDate"
-            label="采购日期"
+            prop="buyOutDate"
+            label="退料日期"
             width="90px"
         >
         </el-table-column>
@@ -145,19 +138,11 @@
 
         <el-table-column
             prop="status"
-            label="单据状态">
+            width="90px"
+            label="状态">
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.status === 0" type="success">已完成</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">未完成</el-tag>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            prop="detaiStatus"
-            label="详情状态">
-          <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.detailStatus === 0" type="success">已下推</el-tag>
-            <el-tag size="small" v-else-if="scope.row.detailStatus===1" type="danger">未下推</el-tag>
+            <el-tag size="small" v-if="scope.row.status === 0" type="success">审核完成</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">待审核</el-tag>
           </template>
         </el-table-column>
 
@@ -190,34 +175,9 @@
         <el-table-column
             prop="num"
             label="数量"
-            width="70px"
+            width="100px"
 
         >
-        </el-table-column>
-
-        <el-table-column
-            prop="doneDate"
-            label="交货日期"
-            width="90px"
-        >
-        </el-table-column>
-
-        <el-table-column
-            prop="price"
-            label="单价"
-            width="60px"
-        >
-        </el-table-column>
-
-        <el-table-column
-            prop="amount"
-            label="金额">
-        </el-table-column>
-
-
-        <el-table-column
-            prop="orderSeq"
-            label="单号">
         </el-table-column>
 
         <el-table-column
@@ -228,14 +188,40 @@
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('order:buyOrder:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
+                       v-if="hasAuth('repository:buyOut:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('order:buyOrder:del')  && scope.row.status ===1  "></el-divider>
+                        v-if="hasAuth('repository:buyOut:update') && scope.row.status ===1   "></el-divider>
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('order:buyOrder:del') && scope.row.status ===1   ">
+                       v-if="hasAuth('repository:buyOut:valid')  && scope.row.status ===1   ">
+              <template>
+                <el-popconfirm @confirm="statusPass(scope.row.id)"
+                               title="确定设置审核通过吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">审核通过</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+
+            <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
+              <template>
+                <el-popconfirm @confirm="statusReturn(scope.row.id)"
+                               title="确定反审核吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">反审核</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-divider direction="vertical"
+                        v-if="hasAuth('repository:buyOut:del')  && scope.row.status ===1  "></el-divider>
+
+            <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('repository:buyOut:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
                                title="确定删除吗？"
@@ -251,49 +237,8 @@
 
       </el-table>
 
-
-      <el-dialog
-          title="下推入库补充信息"
-          :visible.sync="pushDialogVisible"
-          :before-close="pushClose"
-      >
-        <el-form style="width: 100%;align-items: center"
-                 size="mini" :inline="true"
-                 label-width="100px"
-                 :model="pushForm" :rules="pushRules" ref="pushForm"
-                 class="demo-editForm">
-
-
-          <el-form-item v-if="false" prop="orderDetailIds" >
-            <el-input v-model="pushForm.orderDetailIds"></el-input>
-          </el-form-item>
-
-          <el-form-item label="供应商单号" prop="supplierDocumentNum" style="margin-bottom: 0px">
-            <el-input v-model="pushForm.supplierDocumentNum"></el-input>
-          </el-form-item>
-
-
-          <el-form-item label="入库日期" prop="buyInDate">
-            <el-date-picker style="width: 150px"
-                            value-format="yyyy-MM-dd"
-                            v-model="pushForm.buyInDate"
-                            type="date"
-                            clearable
-                            placeholder="选择日期">
-            </el-date-picker>
-          </el-form-item>
-
-          <el-form-item style="margin-left: 100px">
-            <el-button type="primary" @click="submitPushForm('pushForm')">
-              保存单据
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </el-dialog>
-
-
       <!-- 打印弹窗 -->
-<!--      <el-dialog
+      <el-dialog
           title=""
           :visible.sync="dialogVisiblePrint"
           width="55%"
@@ -305,18 +250,18 @@
                    v-focus ref="printBtn"
                    size="mini" icon="el-icon-printer" type="primary">打印
         </el-button>
-&lt;!&ndash;        <vue-easy-print tableShow ref="easyPrint">
+        <vue-easy-print tableShow ref="easyPrint">
           <template slot-scope="func">
-            <print :tableData="editForm" :getChineseNumber="func.getChineseNumber"></print>
+            <printOut :tableData="editForm" :getChineseNumber="func.getChineseNumber"></printOut>
           </template>
-        </vue-easy-print>&ndash;&gt;
+        </vue-easy-print>
 
-      </el-dialog>-->
+      </el-dialog>
 
-      <!-- 采购订单弹窗 -->
+      <!-- 采购退料弹窗 -->
 
       <el-dialog
-          title="采购订单信息"
+          title="采购退料信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"
           fullscreen
@@ -332,21 +277,15 @@
 
             </el-input>
           </el-form-item>
-          <!--
-                    <el-form-item label="状态" prop="status" style="margin-bottom: 0px">
-                      <el-input style="width: 220px" :disabled=true v-model="editForm.status" >
-                      </el-input>
-                    </el-form-item>-->
 
           <el-form-item v-if="false" prop="supplierId" style="margin-bottom: 0px">
             <el-input v-model="editForm.supplierId"></el-input>
           </el-form-item>
-
           <el-form-item label="供应商" prop="supplierName" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
+                :disabled="this.editForm.status===0 "
                 style="width: 150px"
-                :disabled="this.hasPushed"
                 class="inline-input"
                 v-model="editForm.supplierName"
                 :fetch-suggestions="querySearch"
@@ -359,30 +298,10 @@
             </el-autocomplete>
           </el-form-item>
 
-
-          <el-form-item label="采购日期" prop="orderDate">
-            <el-date-picker style="width: 150px"
-                            :disabled="this.hasPushed"
+          <el-form-item label="退料日期" prop="buyOutDate">
+            <el-date-picker :disabled="this.editForm.status===0" style="width: 150px"
                             value-format="yyyy-MM-dd"
-                            v-model="editForm.orderDate"
-                            type="date"
-                            clearable
-                            placeholder="选择日期">
-            </el-date-picker>
-          </el-form-item>
-
-
-          <el-form-item v-show="this.editForm.status===0"  label="供应商单号" prop="supplierDocumentNum" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input  :disabled="true" size="mini" clearable style="width: 150px" v-model="editForm.supplierDocumentNum">
-            </el-input>
-          </el-form-item>
-
-          <el-form-item v-show="this.editForm.status===0" label="入库日期" prop="buyInDate">
-            <el-date-picker
-                             style="width: 150px"
-                            value-format="yyyy-MM-dd"
-                            v-model="editForm.buyInDate"
-                             :disabled="true"
+                            v-model="editForm.buyOutDate"
                             type="date"
                             clearable
                             placeholder="选择日期">
@@ -393,30 +312,23 @@
             <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
               保存单据
             </el-button>
-<!--            <el-button @click="preViewPrint()" icon="el-icon-printer" type="primary"
+            <el-button @click="preViewPrint()" icon="el-icon-printer" type="primary"
             >打印预览
-            </el-button>-->
+            </el-button>
 
           </el-form-item>
 
-          <el-form-item>
-
-
-          </el-form-item>
         </el-form>
         <el-divider content-position="left">明细信息</el-divider>
 
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails"
-                   v-show="this.editForm.status===1">添加
-        </el-button>
-        <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetailsAutoOrderSeq"
-                   v-show="this.editForm.status===1">单号自增长添加
+                   v-show="this.editForm.status===1   ">添加
         </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
                    v-show="this.editForm.status===1">删除
         </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteAllDetails"
-                   v-show="this.editForm.status===1">清空
+                   v-show="this.editForm.status===1  ">清空
         </el-button>
 
         <el-table
@@ -434,22 +346,16 @@
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column label="单号" align="center" width="120" prop="orderSeq">
-            <template slot-scope="scope">
-              <el-input :disabled="editForm.rowList[scope.row.seqNum-1].status === 0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].orderSeq"/>
-            </template>
-          </el-table-column>
-
           <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="200" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete size="mini" clearable
+                               :disabled="editForm.status===0 "
                                class="inline-input"
-                               :disabled="editForm.rowList[scope.row.seqNum-1].status === 0"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
                                placeholder="请输入内容"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
-                               @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1])"
+                               @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
               >
               </el-autocomplete>
             </template>
@@ -467,52 +373,23 @@
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].specs"></el-input>
             </template>
           </el-table-column>
-          <el-table-column label="物料单位" align="center" prop="unit" width="75">
+          <el-table-column label="物料单位" align="center" prop="unit" width="100">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].unit"></el-input>
             </template>
           </el-table-column>
 
-          <el-table-column label="入库单价" align="center" width="75" prop="price">
+          <el-table-column label="退料数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].price"/>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="采购数量" align="center" width="85" prop="num">
-            <template slot-scope="scope">
-              <el-input :disabled="editForm.rowList[scope.row.seqNum-1].status === 0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="金额" align="center" width="115" prop="amount">
-            <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].amount"/>
-            </template>
-          </el-table-column>
-
-
-          <el-table-column label="交货日期" align="center" width="150" prop="doneDate">
-            <template slot-scope="scope">
-              <!-- 列表界面-日期搜索 -->
-              <el-date-picker style="width: 130px"
-                              size="mini"
-                              value-format="yyyy-MM-dd"
-                              :disabled="editForm.rowList[scope.row.seqNum-1].status === 0"
-                              v-model="editForm.rowList[scope.row.seqNum-1].doneDate"
-                              type="date"
-                              clearable
-                              placeholder="开始日期">
-              </el-date-picker>
+              <el-input  :disabled="editForm.status===0 " size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
           <el-table-column label="备注" align="center" width="150" prop="comment">
             <template slot-scope="scope">
-              <el-input :disabled="editForm.rowList[scope.row.seqNum-1].status === 0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
+              <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
             </template>
           </el-table-column>
-
 
         </el-table>
 
@@ -531,11 +408,7 @@
       </el-pagination>
     </el-main>
 
-    <export-excel-common ref="myChild" :exportExcelInfo="exportExcelInfo" :tableData="tableData" :exportExcelArry="exportExcelArry"></export-excel-common>
-
   </el-container>
-
-
 
 
 
@@ -549,21 +422,20 @@ import {request} from "@/axios";
 
 // 引入打印基础组件，和打印模块print页面
 import vueEasyPrint from "vue-easy-print";
-import print from "@/views/printModule/printOrder";
+import printOut from "@/views/printModule/printOut";
 import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
 
 export default {
-  name: 'BuyOrder',
+  name: 'BuyOut',
   // 引入打印模块基础组件和该打印模块的模板页面
   components: {
     vueEasyPrint,
-    print,
+    printOut,
     exportExcelCommon
   },
   data() {
     return {
-
 
       //选中的从表数据
       checkedDetail: [],
@@ -591,13 +463,7 @@ export default {
       , total: 0 // 总共多少数据
       ,
       // 表单字段
-      hasPushed:false,
       addOrUpdate: 'save',
-      pushForm: {
-        orderDetailIds:[],
-        supplierDocumentNum: '',
-        buyInDate: '',
-      },
       editForm: {
         status: 1, // 编辑表单初始默认值
         id: '',
@@ -605,30 +471,23 @@ export default {
         supplierName: '',
         materialName: '',
         materialId: '',
-        orderDate: '',
-        endDate: '',
-        price: '',
+        buyOutDate: '',
         rowList: []
       },
       rules: {
         supplierName: [
           {required: true, message: '请输入供应商', change: 'blur'}
         ],
-        orderDate: [
-          {required: true, message: '请输入采购日期', trigger: 'blur'}
-        ]
-      },
-      pushRules: {
-        buyInDate: [
-          {required: true, message: '请输入入库日期', change: 'blur'}
-        ],
         supplierDocumentNum: [
-          {required: true, message: '请输入供应商单据号', trigger: 'blur'}
+          {required: true, message: '请输入供应商单据编号', trigger: 'blur'}
+        ],
+        buyOutDate: [
+          {required: true, message: '请输入退料日期', trigger: 'blur'}
         ]
-      },
+      }
+      ,
       dialogVisible: false,
       dialogVisiblePrint: false,
-      pushDialogVisible: false,
       tableData: [],
       spanArr: [],
       pos: '',
@@ -655,7 +514,7 @@ export default {
         this.checkedDetail = selection;
       }
     },
-    // 采购订单详细信息-添加
+    // 采购退料详细信息-添加
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
@@ -665,53 +524,14 @@ export default {
       obj.materialName = "";
       obj.unit = "";
       obj.materialId = '';
-      obj.price = '';
       obj.num = ''
       obj.specs = ''
       obj.comment = ''
-      obj.orderSeq = ''
 
       this.editForm.rowList.push(obj);
       console.log("现有的数据:", this.editForm.rowList)
     },
-    // 采购订单详细信息-添加自增长订单号
-    handleAddDetailsAutoOrderSeq() {
-      if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
-        this.$message({
-          message: '请录入至少一个单号信息!',
-          type: 'error'
-        });
-      }else{
-        let last = this.editForm.rowList[this.editForm.rowList.length - 1]
-        console.log("自增之前的 orderSeq:",last.orderSeq)
-        if(last.orderSeq===''){
-          this.$message({
-            message: '请录入至少一个单号信息!',
-            type: 'error'
-          });
-          return
-        }
-
-        let obj = {};
-        obj.materialName = last.materialName;
-        obj.unit = last.unit;
-        obj.materialId = last.materialId;
-        obj.price = last.price;
-        obj.num = last.num
-        obj.specs = last.specs
-        obj.comment = last.comment
-        obj.doneDate = last.doneDate
-        obj.status = 1;
-        let nextStr = dealfun(last.orderSeq)
-        console.log("自增:",nextStr)
-        obj.orderSeq = nextStr
-
-        this.editForm.rowList.push(obj);
-        console.log("现有的数据:", this.editForm.rowList)
-      }
-
-    },
-    // 采购订单详细信息-删除
+    // 采购退料详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
         this.$message({
@@ -805,10 +625,9 @@ export default {
       } catch (err) {
       }
     },
-    tableMoveMouse(selectItem, rowObj) {
+    tableMoveMouse(selectItem, rowObj,index) {
       console.log("tableMoveMouse", selectItem, rowObj)
       try {
-
         // foreach 只能抛出异常结束
         this.restaurants3.forEach(item => {
           if (selectItem === item.id) {
@@ -819,17 +638,17 @@ export default {
             rowObj.specs = item.obj.specs
             throw new Error();
           } else {
-            console.log("没有匹配到", selectItem, item.id)
             rowObj.materialName = "";
             rowObj.unit = "";
             rowObj.materialId = '';
             rowObj.specs = ''
 
-            rowObj.price = '';
             rowObj.num = ''
             rowObj.comment = ''
-            rowObj.amount=''
+            console.log("没有匹配到", selectItem, item.id)
           }
+          console.log("设置rowObj:{},",this.editForm.rowList)
+
         })
       } catch (err) {
       }
@@ -843,8 +662,7 @@ export default {
       console.log("rowList：", this.editForm.rowList);
 
     },
-
-    // 入库列表 点击添加按钮
+    // 退料列表 点击添加按钮
     addSupplierMaterial() {
       this.addOrUpdate = 'save'
       this.editForm = {
@@ -854,9 +672,7 @@ export default {
         supplierName: '',
         materialName: '',
         materialId: '',
-        orderDate: '',
-        endDate: '',
-        price: '',
+        buyOutDate: '',
         rowList: []
       }
       this.dialogVisible = true
@@ -866,13 +682,13 @@ export default {
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize = val
-      this.getBuyOrderDocumentList()
+      this.getBuyOutDocumentList()
 
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.currentPage = val
-      this.getBuyOrderDocumentList()
+      this.getBuyOutDocumentList()
 
     },
     // 多选框方法
@@ -890,31 +706,9 @@ export default {
       this.multipleSelection = []
 
       val.forEach(theId => {
-        this.multipleSelection.push(theId.detailId)
+        this.multipleSelection.push(theId.id)
       })
       console.log("多选框 选中的 ", this.multipleSelection)
-    },
-    // 下推入库提交
-    submitPushForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-
-          request.post('/order/buyOrder/push?orderDetailIds='+this.pushForm.orderDetailIds, this.pushForm).then(res => {
-            this.$message({
-              message: '下推成功!',
-              type: 'success'
-            });
-
-            // 关闭弹窗并且重置内容
-            this.pushDialogVisible = false;
-            this.resetForm("pushForm")
-            this.getBuyOrderDocumentList()
-          })
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
     },
     // 表单提交
     submitForm(formName, methodName) {
@@ -930,32 +724,34 @@ export default {
             return
           }
 
+          let validateFlag = true;
+          let validateMaterial = true;
           console.log(this.editForm.rowList)
           this.editForm.rowList.forEach(obj => {
             if (obj.num === undefined || obj.num === '') {
-
-                this.$message({
-                  message: '入库数量不能为空!',
-                  type: 'error'
-                });
-                throw new Error()
+              validateFlag = false
             }
             if (obj.materialId === '') {
-                this.$message({
-                  message: '物料不能为空!',
-                  type: 'error'
-                });
-                throw new Error()
-            }
-            if (obj.orderSeq === '') {
-              this.$message({
-                message: '单号不能为空!',
-                type: 'error'
-              });
-              throw new Error()
+              validateMaterial = false
             }
           })
-          request.post('/order/buyOrder/' + methodName, this.editForm).then(res => {
+          if (validateMaterial === false) {
+            this.$message({
+              message: '物料不能为空!',
+              type: 'error'
+            });
+            return
+          }
+
+          if (validateFlag === false) {
+            this.$message({
+              message: '退料数量不能为空!',
+              type: 'error'
+            });
+            return
+          }
+
+          request.post('/repository/buyOut/' + methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -965,7 +761,7 @@ export default {
             this.dialogVisible = false;
             this.resetForm("editForm")
             this.handleDeleteAllDetails()
-            this.getBuyOrderDocumentList()
+            this.getBuyOutDocumentList()
 
           })
         } else {
@@ -976,9 +772,9 @@ export default {
     },
 
     // 查询价目表单列表数据
-    getBuyOrderDocumentList() {
+    getBuyOutDocumentList() {
       console.log("搜索字段:", this.select)
-      request.get('/order/buyOrder/list', {
+      request.get('/repository/buyOut/list', {
         params: {
         currentPage: this.currentPage
             , pageSize: this.pageSize
@@ -992,46 +788,30 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
+        console.log("id:",res.data.data.records[0].orderId ===null)
         console.log("获取用户表单数据", res.data.data.records)
       })
     },
-
     // 编辑页面
     edit(id) {
-
       this.addOrUpdate = "update"
-      request.get('/order/buyOrder/queryById?id=' + id).then(res => {
+      request.get('/repository/buyOut/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          this.editForm.rowList.forEach(obj=>{
-            if(obj.status == 0){
-              this.hasPushed = true
+          this.restaurants3.forEach(obj => {
+            console.log("obj:", obj, result.rowList.materialId)
+
+            if (obj.id === result.materialId) {
+              console.log("obj:", obj, result.materialId)
             }
           })
         })
 
       })
-    },
-
-    /*pushPage(id){
-      this.pushDialogVisible = true
-      this.pushForm.orderId = id
-    },*/
-    pushPage(){
-      if(this.multipleSelection===[] || this.multipleSelection.length ===0){
-        this.$message({
-          message: '请选择下推的选项!',
-          type: 'error'
-        });
-        return
-      }
-
-      this.pushDialogVisible = true
-      this.pushForm.orderDetailIds = this.multipleSelection
     },
 
     // 删除
@@ -1047,47 +827,41 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
-      request.post('/order/buyOrder/del', ids).then(res => {
+      request.post('/repository/buyOut/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
         });
-        this.getBuyOrderDocumentList()
+        this.getBuyOutDocumentList()
         console.log("删除后重新加载页面")
 
       })
     },
-    /*// 状态待审核
+    // 状态待审核
     statusPass(id) {
-      request.get('/order/buyOrder/statusPass?id=' + id).then(res => {
+      request.get('/repository/buyOut/statusPass?id=' + id).then(res => {
         this.$message({
           message: '审核通过!',
           type: 'success'
         });
-        this.getBuyOrderDocumentList()
+        this.getBuyOutDocumentList()
       })
     },
     // 状态反审核
     statusReturn(id) {
-      request.get('/order/buyOrder/statusReturn?id=' + id).then(res => {
+      request.get('/repository/buyOut/statusReturn?id=' + id).then(res => {
         this.$message({
           message: '反审核完成!',
           type: 'success'
         });
-        this.getBuyOrderDocumentList()
+        this.getBuyOutDocumentList()
       })
-    },*/
-    // 关闭下推弹窗处理动作
-    pushClose(done) {
-      this.$refs['pushForm'].resetFields();
-      done();
     },
     // 关闭弹窗处理动作
     handleClose(done) {
       this.$refs['editForm'].resetFields();
 
       this.handleDeleteAllDetails()
-      this.hasPushed = false
       console.log("关闭窗口")
       done();
     },
@@ -1133,7 +907,14 @@ export default {
     },
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
-      if (columnIndex === 1) {
+      if (columnIndex === 0) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      } else if (columnIndex === 1) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1161,7 +942,7 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 14) {
+      } else if (columnIndex === 9) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1179,7 +960,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 7 || index === 8) {
+        if (index === 6) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1208,7 +989,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 9  || index === 12) {
+        if (index === 8) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1256,7 +1037,7 @@ export default {
 
   },
   created() {
-    this.getBuyOrderDocumentList()
+    this.getBuyOutDocumentList()
     this.loadSupplierAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
@@ -1274,21 +1055,8 @@ export default {
   }
 
 }
-// 字符串自增长 方法
-function dealfun(str) {
-  return str.replace(/\d+$/, function (a) {
-    let l
-    var o = "", i = l = a.length;
-    while (i) {
-      o += "0";
-      i--;
-    }
-    return (o + (parseInt(a) + 1)).slice(l * -1);
-  })
-}
 
 </script>
-
 
 
 <style scoped>

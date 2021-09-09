@@ -249,6 +249,27 @@
 
       </el-table>
 
+      <!-- 打印弹窗 -->
+      <el-dialog
+          title=""
+          :visible.sync="dialogVisiblePrint"
+          width="55%"
+          style="padding-top: 0px"
+          :before-close="printClose"
+      >
+        <el-button v-if="dialogVisiblePrint"
+                   @click="printDemo"
+                   v-focus ref="printBtn"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="easyPrint">
+          <template slot-scope="func">
+            <print :tableData="editForm" :getChineseNumber="func.getChineseNumber"></print>
+          </template>
+        </vue-easy-print>
+
+      </el-dialog>
+
       <!-- 退料弹窗 -->
 
       <el-dialog
@@ -307,6 +328,9 @@
           <el-form-item style="margin-left: 100px">
             <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
               保存
+            </el-button>
+            <el-button size="mini" @click="preViewPrint()" icon="el-icon-printer" type="primary"
+            >打印预览
             </el-button>
 
           </el-form-item>
@@ -414,7 +438,7 @@ import {request} from "@/axios";
 
 // 引入打印基础组件，和打印模块print页面
 import vueEasyPrint from "vue-easy-print";
-import print from "@/views/printModule/print";
+import print from "@/views/printModule/printReturn";
 import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
 
@@ -428,6 +452,8 @@ export default {
   },
   data() {
     return {
+      dialogVisiblePrint: false,
+
       //选中的从表数据
       checkedDetail: [],
 
@@ -578,7 +604,7 @@ export default {
     },
     createFilter(queryString) {
       return (restaurant) => {
-        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || ((restaurant.id+"").toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
     },
     createFilter2(queryString) {
@@ -1057,7 +1083,19 @@ export default {
     // el-table 单元格样式修改
     cellStyle() {
       return 'padding:0 0'
-    }
+    },
+    // 关闭打印弹窗弹窗处理动作
+    printClose(done) {
+      console.log("打印弹窗关闭...")
+
+      this.$refs.easyPrint.tableShow = false;
+      done();
+    },
+    // 打印按钮事件
+    printDemo() {
+      this.$refs.easyPrint.print()
+    },
+
 
   },
   created() {

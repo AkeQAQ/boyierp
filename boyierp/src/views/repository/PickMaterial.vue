@@ -83,18 +83,7 @@
 
           >新增
           </el-button>
-        </el-form-item>
 
-        <el-form-item v-if="hasAuth('repository:pickMaterial:export')">
-          <el-dropdown @command="expChange">
-            <el-button icon="el-icon-download" size="mini" type="success">
-              导出<i class="el-icon-arrow-down el-icon--right"></i>
-            </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="all">导出全部</el-dropdown-item>
-              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
         </el-form-item>
 
       </el-form>
@@ -249,6 +238,29 @@
 
       </el-table>
 
+      <!-- 打印弹窗 -->
+      <el-dialog
+          title=""
+          :visible.sync="dialogVisiblePrint"
+          width="55%"
+          style="padding-top: 0px"
+          :before-close="printClose"
+      >
+        <el-button v-if="dialogVisiblePrint"
+                   @click="printDemo"
+                   v-focus ref="printBtn"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="easyPrint">
+          <template slot-scope="func">
+            <print :tableData="editForm" :getChineseNumber="func.getChineseNumber"></print>
+          </template>
+        </vue-easy-print>
+
+      </el-dialog>
+
+
+
       <!-- 领料弹窗 -->
 
       <el-dialog
@@ -307,6 +319,9 @@
           <el-form-item style="margin-left: 100px">
             <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
               保存
+            </el-button>
+            <el-button size="mini" @click="preViewPrint()" icon="el-icon-printer" type="primary"
+            >打印预览
             </el-button>
 
           </el-form-item>
@@ -407,7 +422,7 @@ import {request} from "@/axios";
 
 // 引入打印基础组件，和打印模块print页面
 import vueEasyPrint from "vue-easy-print";
-import print from "@/views/printModule/print";
+import print from "@/views/printModule/printPick";
 import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
 
@@ -421,6 +436,8 @@ export default {
   },
   data() {
     return {
+      dialogVisiblePrint: false,
+
       //选中的从表数据
       checkedDetail: [],
 
@@ -481,10 +498,6 @@ export default {
     }
   },
   methods: {
-    // 导出按钮
-    exportExcel () {
-      this.$refs.myChild.exportExcel();
-    },
 
     // 设置每一行的seqNum = 游标+1
     rowClassName({row, rowIndex}) {
@@ -533,6 +546,7 @@ export default {
     loadDepartmentAll() {
       request.post('/baseData/department/getSearchAllData').then(res => {
         this.restaurants = res.data.data
+        console.log("部门列表数据:",this.restaurants)
       })
     },
 
@@ -564,12 +578,14 @@ export default {
     querySearch(queryString, cb) {
       var restaurants = this.restaurants;
       var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
     createFilter(queryString) {
       return (restaurant) => {
-        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        console.log("部门一个对象：",restaurant,queryString)
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || ((restaurant.id+"").toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
     },
     createFilter2(queryString) {
@@ -645,40 +661,13 @@ export default {
       console.log("rowList：", this.editForm.rowList);
 
     },
+    // 关闭打印弹窗弹窗处理动作
+    printClose(done) {
+      console.log("打印弹窗关闭...")
 
-    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
-    exportList() {
-
-      request2.post('/repository/pickMaterial/export?currentPage='+this.currentPage+
-          "&&pageSize="+this.pageSize+
-          "&&total="+this.total+
-          "&&searchStr="+this.searchStr+
-          "&&searchStartDate="+this.searchStartDate+
-          "&&searchEndDate="+this.searchEndDate+
-          "&&searchField="+this.select
-      ,null,{responseType:'arraybuffer'}).then(res=>{
-        // 这里使用blob做一个转换
-        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-
-        this.saveFile(blob,'领料全部列表.xlsx')
-      }).catch()
+      this.$refs.easyPrint.tableShow = false;
+      done();
     },
-    // POI- 服务端写出字节流到浏览器，进行保存
-    saveFile(data,name){
-      try {
-        const blobUrl = window.URL.createObjectURL(data)
-        const a = document.createElement('a')
-        a.style.display = 'none'
-        a.download = name
-        a.href = blobUrl
-        a.click()
-
-      } catch (e) {
-        alert('保存文件出错')
-      }
-    },
-
-
     // 入库列表 点击添加按钮
     addPickMaterial() {
       this.addOrUpdate = 'save'
@@ -892,15 +881,6 @@ export default {
       this.selectedName = item
     },
 
-    expChange(item) {
-      console.log("导出:",item)
-      if (item === 'currentList') {
-        this.exportExcel()
-      } else if(item === 'all'){
-        this.exportList()
-      }
-    },
-
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     getSpanArr(data) {
       this.spanArr = []
@@ -1043,6 +1023,10 @@ export default {
           type: 'error'
         });
       }
+    },
+    // 打印按钮事件
+    printDemo() {
+      this.$refs.easyPrint.print()
     },
 
     // el-table 单元格样式修改
