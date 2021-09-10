@@ -28,10 +28,25 @@
         </el-form-item>
 
 
-        <el-form-item v-if="hasAuth('order:productPricePre:save')">
+<!--        <el-form-item v-if="hasAuth('order:productPricePre:save')">
           <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('order:productPricePre:save')"
                      @click="add()"
           >新增
+          </el-button>
+        </el-form-item>-->
+
+        <el-form-item v-if="hasAuth('order:productPricePre:save')">
+          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('order:productPricePre:save')"
+                     @click="add()"
+          >添加
+          </el-button>
+        </el-form-item>
+
+
+        <el-form-item v-if="hasAuth('order:productPricePre:save')">
+          <el-button size="mini" icon="el-icon-s-order" type="success" v-if="hasAuth('order:productPricePre:save')"
+                     @click="getSpreadDemo()"
+          >设置模板
           </el-button>
         </el-form-item>
 
@@ -80,28 +95,42 @@
         </el-table-column>
 
         <el-table-column
-            prop="uploadName"
-            label="文件名称"
-        >
-        </el-table-column>
-
-        <el-table-column
             prop="status"
             label="状态">
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.status === 0" type="success">已确认</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">未确认</el-tag>
+            <el-tag size="small" v-if="scope.row.status === 0" type="success">已最终确认</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">未报价完成</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===2" type="danger">报价完成</el-tag>
+
           </template>
         </el-table-column>
 
         <el-table-column
             prop="action"
             label="操作"
-            width="200px"
+            width="300px"
             fixed="right"
         >
           <template slot-scope="scope">
 
+            <el-button type="text" size="small" @click="edit(scope.row.id)"
+                       v-if="hasAuth('order:productPricePre:list') && scope.row.status === 0   ">查看报价
+            </el-button>
+            <el-button type="text" size="small" @click="realEdit(scope.row.id)"
+                       v-if="hasAuth('order:productPricePre:list') && scope.row.status === 0   ">查看实际
+            </el-button>
+
+            <el-button type="text" size="small" @click="edit(scope.row.id)"
+                       v-if="hasAuth('order:productPricePre:update') && scope.row.status === 1   ">报价编辑
+            </el-button>
+            <el-button type="text" size="small" @click="realEdit(scope.row.id)"
+                       v-if="hasAuth('order:productPricePre:real') && scope.row.status === 2  ">编辑报价完成
+            </el-button>
+            <el-button type="text" size="small" @click="realEdit(scope.row.id)"
+                       v-if="hasAuth('order:productPricePre:real') && scope.row.status === 3  ">查看实际
+            </el-button>
+
+<!--
             <el-button style="padding: 0px" type="text"
                        v-if="hasAuth('order:productPricePre:down')    ">
               <template>
@@ -112,6 +141,7 @@
                 </el-popconfirm>
               </template>
             </el-button>
+-->
 
             <el-button style="padding: 0px" type="text"
                        v-if="hasAuth('order:productPricePre:valid')   && scope.row.status ===1   ">
@@ -119,19 +149,44 @@
                 <el-popconfirm @confirm="valid(scope.row.id)"
                                title="确定审核完成吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">确认审核</el-button>
+                  <el-button type="text" size="small" slot="reference">确认报价审核</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+
+
+
+            <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('order:productPricePre:returnValid')   && scope.row.status ===2   ">
+              <template>
+                <el-popconfirm @confirm="returnValid(scope.row.id)"
+                               title="确定反审核吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">报价反审核</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
 
 
             <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('order:productPricePre:real')   && scope.row.status ===2   ">
+              <template>
+                <el-popconfirm @confirm="realValid(scope.row.id)"
+                               title="确定审核完成吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">确认最终审核</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-button style="padding: 0px" type="text"
                        v-if="hasAuth('order:productPricePre:returnValid')   && scope.row.status ===0   ">
               <template>
-                <el-popconfirm @confirm="returnValid(scope.row.id)"
+                <el-popconfirm @confirm="returnRealValid(scope.row.id)"
                                title="确定反审核吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">反审核</el-button>
+                  <el-button type="text" size="small" slot="reference">最终反审核</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
@@ -152,14 +207,142 @@
         </el-table-column>
 
       </el-table>
-      <!-- 成本核算弹窗 -->
+
+      <!-- 编辑页面 -->
       <el-dialog
+          title="成本核算信息"
+          :visible.sync="dialogVisible2"
+          :before-close="handleClose2"
+          fullscreen
+
+      >
+        <el-form style="width: 100%;align-items: center;margin-top: -30px"
+                 size="mini"
+                 label-width="100px"
+                 inline
+                 :model="editForm2" :rules="rules" ref="editForm2"
+                 class="demo-editForm">
+
+
+          <el-form-item label="本厂货号" prop="companyNum">
+            <el-input size="mini" clearable style="width: 200px" v-model="editForm2.companyNum">
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="客户公司" prop="customer">
+            <el-input size="mini" clearable style="width: 200px" v-model="editForm2.customer">
+            </el-input>
+          </el-form-item>
+
+
+          <el-form-item label="报价价格" prop="price">
+            <el-input size="mini" clearable style="width: 200px" v-model="editForm2.price">
+            </el-input>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" v-show="editForm2.status===1" @click="submitForm('editForm2',addOrUpdate)">
+              保存核算
+            </el-button>
+          </el-form-item>
+
+          <el-form-item>
+            <el-input size="mini" v-show="false" v-model="editForm2.excelJson">
+            </el-input>
+          </el-form-item>
+
+        </el-form>
+        <div style="width: 100%">
+          <!-- SpreadJS 组件 -->
+          <gc-spread-sheets
+              :hostClass="hostClass"
+              @workbookInitialized="initWorkbook2"
+
+          >
+          </gc-spread-sheets>
+        </div>
+      </el-dialog>
+
+
+      <!-- 设置模板 -->
+      <el-dialog
+          title="成本核算信息EXCEL模板设置"
+          :visible.sync="dialogSpreadDemoVisible"
+          fullscreen
+      >
+        <el-form style="width: 100%;align-items: center;margin-top: -30px"
+                 size="mini"
+                 label-width="100px"
+                 inline
+                 :model="editDemoForm"  ref="editDemoForm"
+                 class="demo-editForm">
+
+          <el-form-item>
+            <el-button type="primary" @click="setDemoForm()">
+              完成设置
+            </el-button>
+          </el-form-item>
+
+          <el-form-item>
+            <el-input size="mini" v-show="false" v-model="editDemoForm.demoJson">
+            </el-input>
+          </el-form-item>
+
+        </el-form>
+
+        <!-- SpreadJS 组件 -->
+        <gc-spread-sheets
+            :hostClass="hostClass"
+            @workbookInitialized="initWorkbookDemo"
+        >
+        </gc-spread-sheets>
+
+      </el-dialog>
+
+
+      <!-- 实际报价模板 -->
+      <el-dialog
+          title="成本核算信息实际报价"
+          :visible.sync="dialogVisibleReal"
+          fullscreen
+      >
+        <el-form style="width: 100%;align-items: center;margin-top: -30px"
+                 size="mini"
+                 label-width="100px"
+                 inline
+                 :model="editRealForm"  ref="editRealForm"
+                 class="demo-editForm">
+
+          <el-form-item>
+            <el-button type="primary" @click="setRealForm()">
+              完成设置
+            </el-button>
+          </el-form-item>
+
+          <el-form-item>
+            <el-input size="mini" v-show="false" v-model="editRealForm.realJson">
+            </el-input>
+          </el-form-item>
+
+        </el-form>
+
+        <!-- SpreadJS 组件 -->
+        <gc-spread-sheets
+            :hostClass="hostClass"
+            @workbookInitialized="initWorkbookReal"
+        >
+        </gc-spread-sheets>
+
+      </el-dialog>
+
+      <!-- 成本核算弹窗 -->
+<!--      <el-dialog
           title="成本核算信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"
-          width="600px"
+          fullscreen
       >
-        <el-form style="width: 100%;align-items: center"
+        <el-form style="width: 100%;align-items: center;margin-bottom: -20px;margin-top: -30px;"
                  size="mini"
                  label-width="100px"
                  :model="editForm" :rules="rules" ref="editForm"
@@ -208,7 +391,7 @@
           </el-form-item>
 
         </el-form>
-      </el-dialog>
+      </el-dialog>-->
 
       <!--价目列表 分页组件 -->
       <el-pagination
@@ -234,10 +417,22 @@ import {request} from "@/axios";
 
 import {request2} from "@/axios";
 
+// 导入SpreadJS
+import "@grapecity/spread-sheets/styles/gc.spread.sheets.excel2016colorful.css";
+import * as GC from "@grapecity/spread-sheets";
+import "@grapecity/spread-sheets-vue";
+
 export default {
   name: 'ProductPricePre',
   data() {
     return {
+      //SpreadJS
+      hostClass: "spread-host",
+      spreadDemo:null,  // 模板设置的spread
+      spread:null, //新增，编辑的spread
+      spreadReal:null, // 实际报价的报表
+
+
       fileSizeIsSatisfy: false,
       fileList: [],
 
@@ -257,10 +452,21 @@ export default {
       , total: 0 // 总共多少数据
       ,
       addOrUpdate: 'save',
-      pushForm: {
-        orderDetailIds: [],
-        supplierDocumentNum: '',
-        buyInDate: '',
+      editDemoForm: {
+        id: '',
+        demoJson:''
+      },
+      editRealForm: {
+        id: '',
+        realJson:''
+      },
+      editForm2: {
+        status: 1, // 编辑表单初始默认值
+        id: '',
+        companyNum: '',
+        customer: '',
+        price: '',
+        excelJson:''
       },
       editForm: {
         status: 1, // 编辑表单初始默认值
@@ -286,11 +492,27 @@ export default {
         ]
       },
       dialogVisible: false,
+      dialogVisible2: false,
+      dialogVisibleReal: false,
+      dialogSpreadDemoVisible: false,
       tableData: [],
 
     }
   },
   methods: {
+    // SpreadJS
+    initWorkbook2: function (spread) {
+      this.spread = spread;
+    },
+    initWorkbookDemo: function (spread) {
+      this.spreadDemo = spread;
+      this.setDemo(this.spreadDemo);
+    },
+    initWorkbookReal: function (spread) {
+      this.spreadReal = spread;
+    },
+
+
     uploadRequest(fileobj) {
       let param = new FormData()
       param.append('files', fileobj.file)
@@ -327,9 +549,96 @@ export default {
       console.log("文件大小", file.size)
       this.fileSizeIsSatisfy = file.size < 5 * 1024 * 1024 ? true : false;
       return this.fileSizeIsSatisfy
+    },
+    // 编辑页面
+    async realEdit(id) {
+      this.dialogVisibleReal = true
+
+      await request.get('/order/productPricePre/queryRealById?id=' + id).then(res => {
+        let result = res.data.data
+        this.editRealForm = result
+        // 显示EXCEL 数据
+        this.fromJson(this.spreadReal,result.realJson)
+      })
+    },
+    // 编辑页面
+    async edit(id) {
+      this.dialogVisible2 = true
+
+      this.addOrUpdate = "update"
+      await request.get('/order/productPricePre/queryById?id=' + id).then(res => {
+        let result = res.data.data
+        this.editForm2 = result
+        // 显示EXCEL 数据
+
+        console.log("该数据:",result.excelJson)
+        this.fromJson(this.spread,result.excelJson)
+      })
+    },
+    // 点击添加按钮
+    add() {
+      this.addOrUpdate = 'save'
+      this.editForm2 = {
+        status: 1,
+        companyNum: '',
+        customer: '',
+        file: ''
+      }
+      request.get('/order/productPricePre/getStreadDemo').then(res => {
+        let result = res.data.data;
+        if(result != null){
+          console.log("setDemo:",result)
+          this.fromJson(this.spread,result.demoJson)
+        }
+      })
+
+      this.dialogVisible2 = true
+    },
+    // 点击设置模板按钮
+      getSpreadDemo() {
+         this.dialogSpreadDemoVisible = true
+    },
+    // 点击设置模板按钮
+    setDemoForm() {
+      this.editDemoForm.demoJson = this.toJson(this.spreadDemo)
+      request.post('/order/productPricePre/setStreadDemo',this.editDemoForm).then(res => {
+        this.$message({
+          message:  '设置模板成功!',
+          type: 'success'
+        });
+
+        // 关闭弹窗并且重置内容
+        this.dialogSpreadDemoVisible = false;
+        this.resetForm("editDemoForm")
+        this.getList()
+      })
+    },
+    // 保存实际报价
+    setRealForm() {
+      this.editRealForm.realJson = this.toJson(this.spreadReal)
+      request.post('/order/productPricePre/setStreadReal',this.editRealForm).then(res => {
+        this.$message({
+          message:  '保存实际报价成功!',
+          type: 'success'
+        });
+
+        // 关闭弹窗并且重置内容
+        this.dialogVisibleReal = false;
+        this.resetForm("editRealForm")
+        this.getList()
+      })
+    },
+    // 重新设置模板内容
+    async setDemo(spread){
+      await request.get('/order/productPricePre/getStreadDemo').then(res => {
+        let result = res.data.data;
+        if(result != null){
+          console.log("setDemo:",result)
+          this.fromJson(spread,result.demoJson)
+        }
+      })
     }
-    ,
-// 点击添加按钮
+  /*  // 点击添加按钮
     add() {
       this.addOrUpdate = 'save'
       this.editForm = {
@@ -339,7 +648,7 @@ export default {
         file: ''
       }
       this.dialogVisible = true
-    }
+    }*/
     ,
 
 // 分页方法
@@ -355,49 +664,55 @@ export default {
       this.currentPage = val
       this.getList()
 
-    }
-    ,
-// 下推入库提交
-    submitPushForm(formName) {
+    },
+    toJson(spread){
+      var jsonStr = JSON.stringify(spread.toJSON());
+      return jsonStr
+    },
+    fromJson(spread,jsonStr){
+      spread.fromJSON(JSON.parse(jsonStr));
+    },
+    // 表单提交
+    submitForm(formName, methodName) {
+      //ToJson
+      this.editForm2.excelJson = this.toJson(this.spread);
+      this.spread.refresh()
+      console.log("提交时的json,",this.editForm2.excelJson)
+
       this.$refs[formName].validate((valid) => {
+
         if (valid) {
-
-
-          request.post('/order/productPricePre/push?orderDetailIds=' + this.pushForm.orderDetailIds, this.pushForm).then(res => {
+          request.post('/order/productPricePre/' + methodName, this.editForm2).then(res => {
             this.$message({
-              message: '下推成功!',
+              message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
             });
 
             // 关闭弹窗并且重置内容
-            this.pushDialogVisible = false;
-            this.resetForm("pushForm")
+            this.dialogVisible2 = false;
+            this.resetForm("editForm2")
             this.getList()
           })
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
-    }
-    ,
-// 表单提交
-    submitForm(formName, methodName) {
-      this.$refs[formName].validate((valid) => {
-
-        if (valid) {
-          if (this.fileList.length <= 0) {
-            this.$message.error("请至少上传一个文件！");
-            return;
-          }
-          if (!this.fileSizeIsSatisfy) {
-            this.$message.error("上传失败！存在文件大小超过5M！");
-            return;
-          }
-          this.$refs.upload.submit();
-
         }
       })
+    },
+    // 文件上传
+    uploadFile(formName, methodName) {
+
+        this.$refs[formName].validate((valid) => {
+
+          if (valid) {
+            if (this.fileList.length <= 0) {
+              this.$message.error("请至少上传一个文件！");
+              return;
+            }
+            if (!this.fileSizeIsSatisfy) {
+              this.$message.error("上传失败！存在文件大小超过5M！");
+              return;
+            }
+            this.$refs.upload.submit();
+          }
+        })
     }
     ,
 
@@ -420,20 +735,7 @@ export default {
         console.log("获取用户表单数据", res.data.data.records)
       })
     }
-    ,
 
-    pushPage() {
-      if (this.multipleSelection === [] || this.multipleSelection.length === 0) {
-        this.$message({
-          message: '请选择下推的选项!',
-          type: 'error'
-        });
-        return
-      }
-
-      this.pushDialogVisible = true
-      this.pushForm.orderDetailIds = this.multipleSelection
-    }
     ,
 //  服务端写出字节流到浏览器，进行保存
     saveFile(data,name){
@@ -449,14 +751,37 @@ export default {
       }
     },
     // 审核
+    realValid(id) {
+      request.post('/order/productPricePre/realValid', id).then(res => {
+        this.$message({
+          message: '最终审核成功!',
+          type: 'success'
+        });
+
+        this.getList()
+        console.log("审核后重新加载页面")
+      })
+    },
+    // 审核
     valid(id) {
       request.post('/order/productPricePre/valid', id).then(res => {
         this.$message({
           message: '审核成功!',
           type: 'success'
         });
+
         this.getList()
         console.log("审核后重新加载页面")
+      })
+    },
+    // 反审核
+    returnRealValid(id) {
+      request.post('/order/productPricePre/returnRealValid', id).then(res => {
+        this.$message({
+          message: '反审核成功!',
+          type: 'success'
+        });
+        this.getList()
       })
     },
     // 反审核
@@ -479,6 +804,7 @@ export default {
         this.saveFile(blob,name)
       }).catch()
     },
+
     // 删除
     del(id) {
       request.post('/order/productPricePre/del', id).then(res => {
@@ -492,33 +818,18 @@ export default {
       })
     }
     ,
-    /*// 状态待审核
-    statusPass(id) {
-      request.get('/order/productPricePre/statusPass?id=' + id).then(res => {
-        this.$message({
-          message: '审核通过!',
-          type: 'success'
-        });
-        this.getList()
-      })
+    // 关闭弹窗处理动作
+    handleClose2(done) {
+      this.$refs['editForm2'].resetFields();
+      console.log("关闭窗口")
+      done();
     },
-    // 状态反审核
-    statusReturn(id) {
-      request.get('/order/productPricePre/statusReturn?id=' + id).then(res => {
-        this.$message({
-          message: '反审核完成!',
-          type: 'success'
-        });
-        this.getList()
-      })
-    },*/
     // 关闭弹窗处理动作
     handleClose(done) {
       this.$refs['editForm'].resetFields();
       console.log("关闭窗口")
       done();
-    }
-    ,
+    },
     // 重置表单
     resetForm(formName) {
       this.$refs[formName].resetFields();
@@ -544,7 +855,10 @@ export default {
 </script>
 
 <style scoped>
-
+.spread-host {
+  width: 100%;
+  height: 600px;
+}
 
 .el-pagination {
   float: right;
@@ -552,6 +866,9 @@ export default {
 }
 
 .el-table--mini td {
+  padding: 0 0;
+}
+.el-dialog__body{
   padding: 0 0;
 }
 

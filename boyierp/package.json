@@ -7,6 +7,8 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@grapecity/spread-sheets": "^14.1.6",
+    "@grapecity/spread-sheets-vue": "^14.1.6",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "dbltree": "^1.0.3",
