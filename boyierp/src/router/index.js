@@ -38,6 +38,21 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: () => import('../views/Login')
+    },
+    {
+        path: '/luckysheet/craft',
+        name: 'LKCraft',
+        component: () => import('../views/luckysheet/craft')
+    },
+    {
+        path: '/luckysheet/craft',
+        name: 'LKCraft_demo',
+        component: () => import('../views/luckysheet/craftDemo')
+    },
+    {
+        path: '/luckysheet/craft',
+        name: 'LKCraft_real',
+        component: () => import('../views/luckysheet/craftReal')
     }
 ]
 

@@ -76,7 +76,7 @@
         <el-table-column
             label="本厂货号"
             prop="companyNum"
-            width="110px"
+            width="70px"
             show-overflow-tooltip
         >
         </el-table-column>
@@ -87,11 +87,45 @@
             show-overflow-tooltip>
         </el-table-column>
 
-
         <el-table-column
             prop="price"
             label="报价价格"
             >
+        </el-table-column>
+
+
+        <el-table-column
+            prop="priceLastUpdateDate"
+            label="报价最后修改时间"
+            width="150px"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="priceLastUpdateUser"
+            label="报价最后修改人"
+            width="110px"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="realPrice"
+            label="实际价格"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="realPriceLastUpdateDate"
+            width="150px"
+            label="实价最后修改时间"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="realPriceLastUpdateUser"
+            label="实价最后修改人"
+            width="110px"
+        >
         </el-table-column>
 
         <el-table-column
@@ -114,7 +148,7 @@
           <template slot-scope="scope">
 
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('order:productPricePre:list') && scope.row.status === 0   ">查看报价
+                       v-if="hasAuth('order:productPricePre:list') && scope.row.status != 1   ">查看报价
             </el-button>
             <el-button type="text" size="small" @click="realEdit(scope.row.id)"
                        v-if="hasAuth('order:productPricePre:list') && scope.row.status === 0   ">查看实际
@@ -125,9 +159,6 @@
             </el-button>
             <el-button type="text" size="small" @click="realEdit(scope.row.id)"
                        v-if="hasAuth('order:productPricePre:real') && scope.row.status === 2  ">编辑报价完成
-            </el-button>
-            <el-button type="text" size="small" @click="realEdit(scope.row.id)"
-                       v-if="hasAuth('order:productPricePre:real') && scope.row.status === 3  ">查看实际
             </el-button>
 
 <!--
@@ -154,9 +185,6 @@
               </template>
             </el-button>
 
-
-
-
             <el-button style="padding: 0px" type="text"
                        v-if="hasAuth('order:productPricePre:returnValid')   && scope.row.status ===2   ">
               <template>
@@ -168,25 +196,24 @@
               </template>
             </el-button>
 
-
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('order:productPricePre:real')   && scope.row.status ===2   ">
+                       v-if="hasAuth('order:productPricePre:realValid')   && scope.row.status ===2   ">
               <template>
                 <el-popconfirm @confirm="realValid(scope.row.id)"
                                title="确定审核完成吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">确认最终审核</el-button>
+                  <el-button type="text" size="small" slot="reference">实价审核</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('order:productPricePre:returnValid')   && scope.row.status ===0   ">
+                       v-if="hasAuth('order:productPricePre:returnRealValid')   && scope.row.status ===0   ">
               <template>
                 <el-popconfirm @confirm="returnRealValid(scope.row.id)"
                                title="确定反审核吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">最终反审核</el-button>
+                  <el-button type="text" size="small" slot="reference">实价反审核</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
@@ -240,6 +267,7 @@
             </el-input>
           </el-form-item>
 
+
           <el-form-item>
             <el-button type="primary" v-show="editForm2.status===1" @click="submitForm('editForm2',addOrUpdate)">
               保存核算
@@ -278,7 +306,7 @@
                  class="demo-editForm">
 
           <el-form-item>
-            <el-button type="primary" @click="setDemoForm()">
+            <el-button  type="primary" @click="setDemoForm()">
               完成设置
             </el-button>
           </el-form-item>
@@ -313,8 +341,14 @@
                  :model="editRealForm"  ref="editRealForm"
                  class="demo-editForm">
 
-          <el-form-item>
-            <el-button type="primary" @click="setRealForm()">
+
+          <el-form-item label="实际价格" prop="realPrice">
+            <el-input size="mini" clearable style="width: 200px" v-model="editRealForm.realPrice">
+            </el-input>
+          </el-form-item>
+
+          <el-form-item >
+            <el-button  v-if="hasAuth('order:productPricePre:real') && editRealForm.status === 2  " type="primary" @click="setRealForm()">
               完成设置
             </el-button>
           </el-form-item>
@@ -458,7 +492,9 @@ export default {
       },
       editRealForm: {
         id: '',
-        realJson:''
+        realJson:'',
+        realPrice:'',
+        status:''
       },
       editForm2: {
         status: 1, // 编辑表单初始默认值
@@ -466,7 +502,7 @@ export default {
         companyNum: '',
         customer: '',
         price: '',
-        excelJson:''
+        excelJson:'',
       },
       editForm: {
         status: 1, // 编辑表单初始默认值
