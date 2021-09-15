@@ -10,7 +10,6 @@
 
         <el-form-item>
           <input style="font-size:16px;" type="file" @change="uploadExcel" />
-
         </el-form-item>
 
         <el-form-item label="本厂货号" prop="companyNum">
@@ -23,9 +22,14 @@
           </el-input>
         </el-form-item>
 
+        <el-form-item label="报价价格" prop="price">
+          <el-input size="mini" clearable style="width: 200px" v-model="editForm2.price">
+          </el-input>
+        </el-form-item>
+
         <el-form-item>
           <el-button type="primary" v-show="editForm2.status===1" @click="submitForm('editForm2')">
-            保存核算
+            保存报价
           </el-button>
           <el-button type="primary"  @click="returnPage">
             取消
@@ -53,7 +57,7 @@ import {request} from "@/axios";
 import LuckyExcel from 'luckyexcel'
 
 export default {
-  name: "craft-lk",
+  name: "productPrice-lk",
   data() {
     return {
       editForm2: {
@@ -121,7 +125,7 @@ export default {
       this.$refs[formName].validate((valid) => {
 
         if (valid) {
-          request.post('/produce/craft/' + methodName, this.editForm2).then(res => {
+          request.post('/order/productPricePre/' + methodName, this.editForm2).then(res => {
             this.$message({
               message: (methodName === 'update' ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -132,8 +136,6 @@ export default {
         }
       })
     },
-
-
   },
   created() {
     console.log("id=",this.$route.params.id)
@@ -143,7 +145,7 @@ export default {
 
       if(this.$route.params.addOrUpdate==='update'){
 
-        request.get('/produce/craft/queryById?id=' + this.$route.params.id).then(res => {
+        request.get('/order/productPricePre/queryById?id=' + this.$route.params.id).then(res => {
           let result = res.data.data
           this.editForm2 = result
           console.log("excelJson",this.editForm2.excelJson)
@@ -158,9 +160,8 @@ export default {
           }
           luckysheet.create(options)
         })
-
       }else{
-        request.get('/produce/craft/getStreadDemo').then(res => {
+        request.get('/order/productPricePre/getStreadDemo').then(res => {
           let result = res.data.data;
           if(result != null){
             let arr = JSON.parse(result.demoJson);
@@ -175,7 +176,6 @@ export default {
             luckysheet.create(options)
           }
           else{
-
             var options = {
               container:'luckysheet',
               titile:'1',

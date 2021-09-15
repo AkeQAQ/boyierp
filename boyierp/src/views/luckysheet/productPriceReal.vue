@@ -6,17 +6,22 @@
                size="mini"
                label-width="100px"
                inline
-               :model="editForm2"  ref="editForm2"
+               :model="editForm2" :rules="rules" ref="editForm2"
                class="demo-editForm">
 
         <el-form-item>
-          <input style="font-size:16px;" type="file" @change="uploadExcel" />
+          <input  v-if="hasAuth('order:productPricePre:real') && editForm2.status === 2 "  style="font-size:16px;" type="file" @change="uploadExcel" />
 
         </el-form-item>
 
+        <el-form-item label="实际价格" prop="realPrice">
+          <el-input size="mini" clearable style="width: 200px" v-model="editForm2.realPrice">
+          </el-input>
+        </el-form-item>
+
         <el-form-item>
-          <el-button type="primary" v-if="hasAuth('produce:craft:real')"  @click="submitForm()">
-            保存最终工艺单
+          <el-button type="primary"  v-if="hasAuth('order:productPricePre:real') && editForm2.status === 2  "  @click="submitForm()">
+            保存实际价目
           </el-button>
           <el-button type="primary"  @click="returnPage">
             取消
@@ -37,11 +42,6 @@
     </el-footer>
   </el-container>
 
-
-
-
-
-
 </template>
 
 <script>
@@ -49,7 +49,7 @@ import {request} from "@/axios";
 import LuckyExcel from 'luckyexcel'
 
 export default {
-  name: "craftReal-lk",
+  name: "productPriceReal-lk",
   data() {
     return {
       editForm2: {
@@ -57,7 +57,6 @@ export default {
         realJson:[]
       },
     }
-
   },
   methods:{
     returnPage(){
@@ -101,7 +100,7 @@ export default {
       this.editForm2.realJson = JSON.stringify(luckysheet.getAllSheets());
       console.log("提交时的json,",this.editForm2.realJson)
 
-        request.post('/produce/craft/setStreadReal' , this.editForm2).then(res => {
+        request.post('/order/productPricePre/setStreadReal' , this.editForm2).then(res => {
           this.$message({
             message: '编辑成功!',
             type: 'success'
@@ -110,21 +109,19 @@ export default {
           this.returnPage()
         })
     },
-
-
   },
   created() {
     console.log("id=",this.$route.params.id)
 
     this.$nextTick(() => {
 
-        request.get('/produce/craft/queryById?id=' + this.$route.params.id).then(res => {
+        request.get('/order/productPricePre/queryById?id=' + this.$route.params.id).then(res => {
           let result = res.data.data
           this.editForm2 = result
 
           console.log("realJson",this.editForm2.realJson)
           if(this.editForm2.realJson === ''){
-            request.get('/produce/craft/getStreadDemo').then(res => {
+            request.get('/order/productPricePre/getStreadDemo').then(res => {
               let result = res.data.data;
               if(result != null){
                 let arr = JSON.parse(result.demoJson);

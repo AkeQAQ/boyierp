@@ -135,14 +135,14 @@
                        v-if="hasAuth('produce:craft:list') && scope.row.status != 1   ">查看开发填写
             </el-button>
             <el-button type="text" size="small" @click="realEdit(scope.row.id)"
-                       v-if="hasAuth('produce:craft:list') && scope.row.status === 0   ">查看最终
+                       v-if="hasAuth('produce:craft:list') && scope.row.status === 0   ">查看确认
             </el-button>
 
             <el-button type="text" size="small" @click="edit(scope.row.id)"
                        v-if="hasAuth('produce:craft:update') && scope.row.status === 1   ">开发填写编辑
             </el-button>
             <el-button type="text" size="small" @click="realEdit(scope.row.id)"
-                       v-if="hasAuth('produce:craft:real') && scope.row.status === 2  ">编辑开发填写完成
+                       v-if="hasAuth('produce:craft:real') && scope.row.status === 2  ">确认填写编辑
             </el-button>
 
             <el-button style="padding: 0px" type="text"
@@ -151,7 +151,7 @@
                 <el-popconfirm @confirm="valid(scope.row.id)"
                                title="确定审核完成吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">确认开发填写审核</el-button>
+                  <el-button type="text" size="small" slot="reference">确认填写审核</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
@@ -173,7 +173,7 @@
                 <el-popconfirm @confirm="realValid(scope.row.id)"
                                title="确定审核完成吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">最终审核</el-button>
+                  <el-button type="text" size="small" slot="reference">确认审核</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
@@ -184,7 +184,7 @@
                 <el-popconfirm @confirm="returnRealValid(scope.row.id)"
                                title="确定反审核吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">最终反审核</el-button>
+                  <el-button type="text" size="small" slot="reference">确认反审核</el-button>
                 </el-popconfirm>
               </template>
             </el-button>

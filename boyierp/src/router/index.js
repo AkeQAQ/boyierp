@@ -53,6 +53,21 @@ const routes = [
         path: '/luckysheet/craft',
         name: 'LKCraft_real',
         component: () => import('../views/luckysheet/craftReal')
+    },
+    {
+        path: '/luckysheet/productPrice',
+        name: 'LKProductPrice',
+        component: () => import('../views/luckysheet/productPrice')
+    },
+    {
+        path: '/luckysheet/productPriceDemo',
+        name: 'LKProductPrice_demo',
+        component: () => import('../views/luckysheet/productPriceDemo')
+    },
+    {
+        path: '/luckysheet/productPriceReal',
+        name: 'LKProductPrice_real',
+        component: () => import('../views/luckysheet/productPriceReal')
     }
 ]
 

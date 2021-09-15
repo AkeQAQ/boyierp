@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
 
-      <el-button size="mini" type="primary" v-if="hasAuth('produce:craft:save')" @click="submitForm()">
+      <el-button size="mini" type="primary" v-if="hasAuth('order:productPricePre:save')" @click="submitForm()">
         保存模板
       </el-button>
 
@@ -26,7 +26,7 @@ import {request} from "@/axios";
 import LuckyExcel from 'luckyexcel'
 
 export default {
-  name: "craftDemo-lk",
+  name: "productPriceDemo-lk",
   data() {
     return {
       editForm2: {
@@ -78,7 +78,7 @@ export default {
       this.editForm2.demoJson = JSON.stringify(luckysheet.getAllSheets());
       console.log("提交时的json,",this.editForm2.demoJson)
 
-      request.post('/produce/craft/setStreadDemo',this.editForm2).then(res => {
+      request.post('/order/productPricePre/setStreadDemo',this.editForm2).then(res => {
         this.$message({
           message:  '设置模板成功!',
           type: 'success'
@@ -92,7 +92,7 @@ export default {
   },
   created() {
     this.$nextTick(() => {
-      request.get('/produce/craft/getStreadDemo').then(res => {
+      request.get('/order/productPricePre/getStreadDemo').then(res => {
         let result = res.data.data;
         if(result != null){
           let arr = JSON.parse(result.demoJson);

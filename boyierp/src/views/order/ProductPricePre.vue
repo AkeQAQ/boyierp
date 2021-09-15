@@ -27,14 +27,6 @@
           <el-button size="mini" icon="el-icon-search" @click="getList">搜索</el-button>
         </el-form-item>
 
-
-<!--        <el-form-item v-if="hasAuth('order:productPricePre:save')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('order:productPricePre:save')"
-                     @click="add()"
-          >新增
-          </el-button>
-        </el-form-item>-->
-
         <el-form-item v-if="hasAuth('order:productPricePre:save')">
           <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('order:productPricePre:save')"
                      @click="add()"
@@ -49,7 +41,6 @@
           >设置模板
           </el-button>
         </el-form-item>
-
       </el-form>
 
       <el-table
@@ -151,14 +142,14 @@
                        v-if="hasAuth('order:productPricePre:list') && scope.row.status != 1   ">查看报价
             </el-button>
             <el-button type="text" size="small" @click="realEdit(scope.row.id)"
-                       v-if="hasAuth('order:productPricePre:list') && scope.row.status === 0   ">查看实际
+                       v-if="hasAuth('order:productPricePre:list') && scope.row.status === 0   ">查看实价
             </el-button>
 
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('order:productPricePre:update') && scope.row.status === 1   ">报价编辑
+                       v-if="hasAuth('order:productPricePre:update') && scope.row.status === 1   ">编辑报价
             </el-button>
             <el-button type="text" size="small" @click="realEdit(scope.row.id)"
-                       v-if="hasAuth('order:productPricePre:real') && scope.row.status === 2  ">编辑报价完成
+                       v-if="hasAuth('order:productPricePre:real') && scope.row.status === 2  ">编辑实价
             </el-button>
 
 <!--
@@ -180,7 +171,7 @@
                 <el-popconfirm @confirm="valid(scope.row.id)"
                                title="确定审核完成吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">确认报价审核</el-button>
+                  <el-button type="text" size="small" slot="reference">确认报价</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
@@ -202,7 +193,7 @@
                 <el-popconfirm @confirm="realValid(scope.row.id)"
                                title="确定审核完成吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">实价审核</el-button>
+                  <el-button type="text" size="small" slot="reference">确认实价</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
@@ -236,7 +227,7 @@
       </el-table>
 
       <!-- 编辑页面 -->
-      <el-dialog
+<!--      <el-dialog
           title="成本核算信息"
           :visible.sync="dialogVisible2"
           :before-close="handleClose2"
@@ -281,18 +272,18 @@
 
         </el-form>
         <div style="width: 100%">
-          <!-- SpreadJS 组件 -->
+          &lt;!&ndash; SpreadJS 组件 &ndash;&gt;
           <gc-spread-sheets
               :hostClass="hostClass"
               @workbookInitialized="initWorkbook2"
-
           >
           </gc-spread-sheets>
         </div>
-      </el-dialog>
+      </el-dialog>-->
 
 
       <!-- 设置模板 -->
+<!--
       <el-dialog
           title="成本核算信息EXCEL模板设置"
           :visible.sync="dialogSpreadDemoVisible"
@@ -318,7 +309,7 @@
 
         </el-form>
 
-        <!-- SpreadJS 组件 -->
+        &lt;!&ndash; SpreadJS 组件 &ndash;&gt;
         <gc-spread-sheets
             :hostClass="hostClass"
             @workbookInitialized="initWorkbookDemo"
@@ -326,10 +317,11 @@
         </gc-spread-sheets>
 
       </el-dialog>
+-->
 
 
       <!-- 实际报价模板 -->
-      <el-dialog
+<!--      <el-dialog
           title="成本核算信息实际报价"
           :visible.sync="dialogVisibleReal"
           fullscreen
@@ -360,14 +352,8 @@
 
         </el-form>
 
-        <!-- SpreadJS 组件 -->
-        <gc-spread-sheets
-            :hostClass="hostClass"
-            @workbookInitialized="initWorkbookReal"
-        >
-        </gc-spread-sheets>
 
-      </el-dialog>
+      </el-dialog>-->
 
       <!-- 成本核算弹窗 -->
 <!--      <el-dialog
@@ -452,21 +438,11 @@ import {request} from "@/axios";
 import {request2} from "@/axios";
 
 // 导入SpreadJS
-import "@grapecity/spread-sheets/styles/gc.spread.sheets.excel2016colorful.css";
-import * as GC from "@grapecity/spread-sheets";
-import "@grapecity/spread-sheets-vue";
 
 export default {
   name: 'ProductPricePre',
   data() {
     return {
-      //SpreadJS
-      hostClass: "spread-host",
-      spreadDemo:null,  // 模板设置的spread
-      spread:null, //新增，编辑的spread
-      spreadReal:null, // 实际报价的报表
-
-
       fileSizeIsSatisfy: false,
       fileList: [],
 
@@ -486,69 +462,11 @@ export default {
       , total: 0 // 总共多少数据
       ,
       addOrUpdate: 'save',
-      editDemoForm: {
-        id: '',
-        demoJson:''
-      },
-      editRealForm: {
-        id: '',
-        realJson:'',
-        realPrice:'',
-        status:''
-      },
-      editForm2: {
-        status: 1, // 编辑表单初始默认值
-        id: '',
-        companyNum: '',
-        customer: '',
-        price: '',
-        excelJson:'',
-      },
-      editForm: {
-        status: 1, // 编辑表单初始默认值
-        id: '',
-        companyNum: '',
-        customer: '',
-        price: ''
-      },
-      rules: {
-        companyNum: [
-          {required: true, message: '请输入本厂货号', change: 'blur'}
-        ],
-        customer: [
-          {required: true, message: '请输入客户公司', trigger: 'blur'}
-        ]
-      },
-      pushRules: {
-        buyInDate: [
-          {required: true, message: '请输入入库日期', change: 'blur'}
-        ],
-        supplierDocumentNum: [
-          {required: true, message: '请输入本厂货号单据号', trigger: 'blur'}
-        ]
-      },
-      dialogVisible: false,
-      dialogVisible2: false,
-      dialogVisibleReal: false,
-      dialogSpreadDemoVisible: false,
       tableData: [],
 
     }
   },
   methods: {
-    // SpreadJS
-    initWorkbook2: function (spread) {
-      this.spread = spread;
-    },
-    initWorkbookDemo: function (spread) {
-      this.spreadDemo = spread;
-      this.setDemo(this.spreadDemo);
-    },
-    initWorkbookReal: function (spread) {
-      this.spreadReal = spread;
-    },
-
-
     uploadRequest(fileobj) {
       let param = new FormData()
       param.append('files', fileobj.file)
@@ -587,19 +505,23 @@ export default {
       return this.fileSizeIsSatisfy
     },
     // 编辑页面
-    async realEdit(id) {
-      this.dialogVisibleReal = true
+    realEdit(id) {
+      this.addOrUpdate = "update"
+      this.$router.push({name:'LKProductPrice_real',params:{id:id}});
+     /* this.dialogVisibleReal = true
 
       await request.get('/order/productPricePre/queryRealById?id=' + id).then(res => {
         let result = res.data.data
         this.editRealForm = result
         // 显示EXCEL 数据
         this.fromJson(this.spreadReal,result.realJson)
-      })
+      })*/
     },
     // 编辑页面
-    async edit(id) {
-      this.dialogVisible2 = true
+    edit(id) {
+      this.addOrUpdate = "update"
+      this.$router.push({name:'LKProductPrice',params:{id:id,addOrUpdate:this.addOrUpdate}});
+      /*this.dialogVisible2 = true
 
       this.addOrUpdate = "update"
       await request.get('/order/productPricePre/queryById?id=' + id).then(res => {
@@ -609,11 +531,13 @@ export default {
 
         console.log("该数据:",result.excelJson)
         this.fromJson(this.spread,result.excelJson)
-      })
+      })*/
     },
     // 点击添加按钮
     add() {
-      this.addOrUpdate = 'save'
+      this.addOrUpdate = "save"
+      this.$router.push({name:'LKProductPrice',params:{addOrUpdate:this.addOrUpdate}});
+      /*this.addOrUpdate = 'save'
       this.editForm2 = {
         status: 1,
         companyNum: '',
@@ -628,14 +552,15 @@ export default {
         }
       })
 
-      this.dialogVisible2 = true
+      this.dialogVisible2 = true*/
     },
     // 点击设置模板按钮
       getSpreadDemo() {
-         this.dialogSpreadDemoVisible = true
+        this.$router.push({name:'LKProductPrice_demo'});
+        // this.dialogSpreadDemoVisible = true
     },
     // 点击设置模板按钮
-    setDemoForm() {
+    /*setDemoForm() {
       this.editDemoForm.demoJson = this.toJson(this.spreadDemo)
       request.post('/order/productPricePre/setStreadDemo',this.editDemoForm).then(res => {
         this.$message({
@@ -648,9 +573,9 @@ export default {
         this.resetForm("editDemoForm")
         this.getList()
       })
-    },
+    },*/
     // 保存实际报价
-    setRealForm() {
+  /*  setRealForm() {
       this.editRealForm.realJson = this.toJson(this.spreadReal)
       request.post('/order/productPricePre/setStreadReal',this.editRealForm).then(res => {
         this.$message({
@@ -673,7 +598,7 @@ export default {
           this.fromJson(spread,result.demoJson)
         }
       })
-    }
+    }*/
   /*  // 点击添加按钮
     add() {
       this.addOrUpdate = 'save'
@@ -685,7 +610,6 @@ export default {
       }
       this.dialogVisible = true
     }*/
-    ,
 
 // 分页方法
     handleSizeChange(val) {
@@ -700,37 +624,6 @@ export default {
       this.currentPage = val
       this.getList()
 
-    },
-    toJson(spread){
-      var jsonStr = JSON.stringify(spread.toJSON());
-      return jsonStr
-    },
-    fromJson(spread,jsonStr){
-      spread.fromJSON(JSON.parse(jsonStr));
-    },
-    // 表单提交
-    submitForm(formName, methodName) {
-      //ToJson
-      this.editForm2.excelJson = this.toJson(this.spread);
-      this.spread.refresh()
-      console.log("提交时的json,",this.editForm2.excelJson)
-
-      this.$refs[formName].validate((valid) => {
-
-        if (valid) {
-          request.post('/order/productPricePre/' + methodName, this.editForm2).then(res => {
-            this.$message({
-              message: (this.editForm.id ? '编辑' : '新增') + '成功!',
-              type: 'success'
-            });
-
-            // 关闭弹窗并且重置内容
-            this.dialogVisible2 = false;
-            this.resetForm("editForm2")
-            this.getList()
-          })
-        }
-      })
     },
     // 文件上传
     uploadFile(formName, methodName) {

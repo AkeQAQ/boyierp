@@ -10,7 +10,9 @@
     watch:{
       // 解决刷新浏览器没有tab的问题
       $route(to,from){
-        if(to.path != '/login'){
+
+        console.log("跳转的to path：",to.path)
+        if(to.path != '/login' && !to.path.toString().startsWith("/luckysheet") ){
           console.log("路由跳转to:",to)
           this.$store.commit("addTab", {routerName:to.name,title:to.meta.title})
 
