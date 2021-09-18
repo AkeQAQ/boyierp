@@ -236,9 +236,6 @@ export default {
         userName: [
           {required: true, message: '请输入用户名称', trigger: 'blur'}
         ],
-        email: [
-          {required: true, message: '请输入邮箱', trigger: 'blur'}
-        ],
         mobile: [
           {required: true, message: '请输入手机号', trigger: 'blur'}
         ],

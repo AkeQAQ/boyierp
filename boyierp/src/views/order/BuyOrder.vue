@@ -908,7 +908,7 @@ export default {
             // 关闭弹窗并且重置内容
             this.pushDialogVisible = false;
             this.resetForm("pushForm")
-            this.getBuyOrderDocumentList()
+            this.$router.push("/repository/BuyIn")
           })
         } else {
           console.log('error submit!!');

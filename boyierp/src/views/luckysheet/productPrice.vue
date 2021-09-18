@@ -8,8 +8,8 @@
                :model="editForm2" :rules="rules" ref="editForm2"
                class="demo-editForm">
 
-        <el-form-item>
-          <input style="font-size:16px;" type="file" @change="uploadExcel" />
+        <el-form-item  v-show="editForm2.status===1" label="导入" style="margin-left: -50px">
+          <input  style="font-size:12px;padding: 0;margin: 0;width: 160px"  type="file" @change="uploadExcel" />
         </el-form-item>
 
         <el-form-item label="本厂货号" prop="companyNum">
@@ -32,7 +32,7 @@
             保存报价
           </el-button>
           <el-button type="primary"  @click="returnPage">
-            取消
+            返回
           </el-button>
         </el-form-item>
         <el-form-item>
@@ -111,7 +111,9 @@ export default {
           row: 20, //空表格默认的行数据量
           data:exportJson.sheets,
           title:exportJson.info.name,
-          userInfo:exportJson.info.name.creator
+          userInfo:exportJson.info.name.creator,
+          showinfobar:false, //是否显示顶部信息栏
+
         });
       });
     },
@@ -156,6 +158,7 @@ export default {
             lang:'zh',
             column: 20, //空表格默认的列数量
             row: 20, //空表格默认的行数据量
+            showinfobar:false, //是否显示顶部信息栏
             data:arr
           }
           luckysheet.create(options)
@@ -171,6 +174,7 @@ export default {
               lang:'zh',
               column: 20, //空表格默认的列数量
               row: 20, //空表格默认的行数据量
+              showinfobar:false, //是否显示顶部信息栏
               data:arr
             }
             luckysheet.create(options)
@@ -182,6 +186,7 @@ export default {
               lang:'zh',
               column: 20, //空表格默认的列数量
               row: 20, //空表格默认的行数据量
+              showinfobar:false, //是否显示顶部信息栏
             }
             luckysheet.create(options)
           }

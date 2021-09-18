@@ -9,11 +9,6 @@
                :model="editForm2" :rules="rules" ref="editForm2"
                class="demo-editForm">
 
-        <el-form-item>
-          <input  v-if="hasAuth('order:productPricePre:real') && editForm2.status === 2 "  style="font-size:16px;" type="file" @change="uploadExcel" />
-
-        </el-form-item>
-
         <el-form-item label="实际价格" prop="realPrice">
           <el-input size="mini" clearable style="width: 200px" v-model="editForm2.realPrice">
           </el-input>
@@ -24,7 +19,7 @@
             保存实际价目
           </el-button>
           <el-button type="primary"  @click="returnPage">
-            取消
+            返回
           </el-button>
         </el-form-item>
         <el-form-item>
@@ -120,7 +115,7 @@ export default {
           this.editForm2 = result
 
           console.log("realJson",this.editForm2.realJson)
-          if(this.editForm2.realJson === ''){
+          if(this.editForm2.realJson === '' || this.editForm2.realJson === null){
             request.get('/order/productPricePre/getStreadDemo').then(res => {
               let result = res.data.data;
               if(result != null){
@@ -129,6 +124,7 @@ export default {
                   container:'luckysheet',
                   titile:'test',
                   lang:'zh',
+                  showinfobar:false, //是否显示顶部信息栏
                   data:arr
                 }
                 luckysheet.create(options)
@@ -138,7 +134,8 @@ export default {
                 var options = {
                   container:'luckysheet',
                   titile:'1',
-                  lang:'zh'
+                  lang:'zh',
+                  showinfobar:false, //是否显示顶部信息栏
                 }
                 luckysheet.create(options)
               }
@@ -150,7 +147,8 @@ export default {
                 container:'luckysheet',
                 titile:'test',
                 lang:'zh',
-                data:arr
+                data:arr,
+                showinfobar:false, //是否显示顶部信息栏
               }
             luckysheet.create(options)
           }

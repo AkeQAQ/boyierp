@@ -70,6 +70,7 @@ export default {
           data:exportJson.sheets,
           title:exportJson.info.name,
           userInfo:exportJson.info.name.creator
+
         });
       });
     },
@@ -102,6 +103,7 @@ export default {
             lang:'zh',
             column: 20, //空表格默认的列数量
             row: 20, //空表格默认的行数据量
+            showinfobar:false, //是否显示顶部信息栏
             data:arr
           }
           luckysheet.create(options)
@@ -112,6 +114,7 @@ export default {
             titile:'1',
             column: 20, //空表格默认的列数量
             row: 20, //空表格默认的行数据量
+            showinfobar:false, //是否显示顶部信息栏
             lang:'zh'
           }
           luckysheet.create(options)

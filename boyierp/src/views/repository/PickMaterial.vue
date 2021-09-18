@@ -335,9 +335,6 @@
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
                    v-show="this.editForm.status===1">删除
         </el-button>
-        <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteAllDetails"
-                   v-show="this.editForm.status===1">清空
-        </el-button>
 
         <el-table
             :data="editForm.rowList"
@@ -504,13 +501,14 @@ export default {
       row.seqNum = rowIndex + 1;
     },
     //单选框选中数据
-    handleDetailSelectionChange(selection) {
-      if (selection.length > 1) {
-        this.$refs.tb.clearSelection();
-        this.$refs.tb.toggleRowSelection(selection.pop());
-      } else {
-        this.checkedDetail = selection;
-      }
+    handleDetailSelectionChange(val) {
+      console.log("多选框 val ", val)
+      this.checkedDetail = []
+
+      val.forEach(theId => {
+        this.checkedDetail.push(theId.seqNum)
+      })
+      console.log("多选框 选中的 ", this.checkedDetail)
     },
     // 领料详细信息-添加
     handleAddDetails() {
@@ -536,11 +534,21 @@ export default {
           type: 'error'
         });
       } else {
-        this.editForm.rowList.splice(this.checkedDetail[0].seqNum - 1, 1);
+        let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
+        this.editForm.rowList = newArr
       }
+      this.checkedDetail=[]
     },
     handleDeleteAllDetails() {
       this.editForm.rowList = [];
+    },
+    // arr: 原数组，delIndexArr：删除下标数组
+    getNewArr(arr,delIndexArr){
+      let test = []
+      test = arr.filter((item, index) =>{
+        return !delIndexArr.includes(index+1)}
+      )
+      return test
     },
 
     loadDepartmentAll() {

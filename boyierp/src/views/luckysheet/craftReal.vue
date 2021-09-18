@@ -10,16 +10,11 @@
                class="demo-editForm">
 
         <el-form-item>
-          <input style="font-size:16px;" type="file" @change="uploadExcel" />
-
-        </el-form-item>
-
-        <el-form-item>
-          <el-button type="primary" v-if="hasAuth('produce:craft:real')"  @click="submitForm()">
+          <el-button type="primary" v-if="hasAuth('produce:craft:real') && editForm2.status === 2"  @click="submitForm()">
             保存最终工艺单
           </el-button>
           <el-button type="primary"  @click="returnPage">
-            取消
+            返回
           </el-button>
         </el-form-item>
         <el-form-item>
@@ -116,14 +111,13 @@ export default {
   created() {
     console.log("id=",this.$route.params.id)
 
-    this.$nextTick(() => {
 
         request.get('/produce/craft/queryById?id=' + this.$route.params.id).then(res => {
           let result = res.data.data
           this.editForm2 = result
 
           console.log("realJson",this.editForm2.realJson)
-          if(this.editForm2.realJson === ''){
+          if(this.editForm2.realJson === '' || this.editForm2.realJson === null){
             request.get('/produce/craft/getStreadDemo').then(res => {
               let result = res.data.data;
               if(result != null){
@@ -132,6 +126,7 @@ export default {
                   container:'luckysheet',
                   titile:'test',
                   lang:'zh',
+                  showinfobar:false,
                   data:arr
                 }
                 luckysheet.create(options)
@@ -141,7 +136,8 @@ export default {
                 var options = {
                   container:'luckysheet',
                   titile:'1',
-                  lang:'zh'
+                  lang:'zh',
+                  showinfobar:false, //是否显示顶部信息栏
                 }
                 luckysheet.create(options)
               }
@@ -153,13 +149,12 @@ export default {
                 container:'luckysheet',
                 titile:'test',
                 lang:'zh',
+                showinfobar:false,
                 data:arr
               }
             luckysheet.create(options)
           }
         })
-
-    });
 
   }
 }

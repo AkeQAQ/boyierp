@@ -132,17 +132,17 @@
           <template slot-scope="scope">
 
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('produce:craft:list') && scope.row.status != 1   ">查看开发填写
+                       v-if="hasAuth('produce:craft:list') && scope.row.status != 1   ">查看开发内容
             </el-button>
             <el-button type="text" size="small" @click="realEdit(scope.row.id)"
-                       v-if="hasAuth('produce:craft:list') && scope.row.status === 0   ">查看确认
+                       v-if="hasAuth('produce:craft:list') && scope.row.status === 0   ">查看确认内容
             </el-button>
 
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('produce:craft:update') && scope.row.status === 1   ">开发填写编辑
+                       v-if="hasAuth('produce:craft:update') && scope.row.status === 1    ">开发编辑
             </el-button>
             <el-button type="text" size="small" @click="realEdit(scope.row.id)"
-                       v-if="hasAuth('produce:craft:real') && scope.row.status === 2  ">确认填写编辑
+                       v-if="hasAuth('produce:craft:real') && scope.row.status === 2  ">确认编辑
             </el-button>
 
             <el-button style="padding: 0px" type="text"
@@ -151,7 +151,7 @@
                 <el-popconfirm @confirm="valid(scope.row.id)"
                                title="确定审核完成吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">确认填写审核</el-button>
+                  <el-button type="text" size="small" slot="reference">开发审核</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
@@ -162,7 +162,7 @@
                 <el-popconfirm @confirm="returnValid(scope.row.id)"
                                title="确定反审核吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">开发填写反审核</el-button>
+                  <el-button type="text" size="small" slot="reference">开发反审核</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
@@ -261,7 +261,7 @@ export default {
   },
   methods: {
     // 最终编辑页面
-    async realEdit(id) {
+    realEdit(id) {
       this.addOrUpdate = "update"
       this.$router.push({name:'LKCraft_real',params:{id:id}});
     },

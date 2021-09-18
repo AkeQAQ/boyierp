@@ -132,12 +132,13 @@
 
             prop="id" width="70px"
         >
-          <template slot-scope="scope">
+          <template slot-scope="scope"   >
             <el-button type="text" size="small"
-                       @click=" edit(scope.row.id)"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
             >{{ scope.row.id }}
             </el-button>
           </template>
+
         </el-table-column>
 
         <el-table-column
@@ -145,6 +146,12 @@
             label="入库日期"
             width="90px"
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.buyInDate }}
+            </el-button>
+          </template>
         </el-table-column>
 
 
@@ -154,6 +161,12 @@
             width="110px"
             show-overflow-tooltip
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.supplierName }}
+            </el-button>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -171,12 +184,24 @@
             width="90px"
             show-overflow-tooltip
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.materialId }}
+            </el-button>
+          </template>
         </el-table-column>
 
         <el-table-column
             prop="materialName"
             label="物料名称"
             show-overflow-tooltip>
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.materialName }}
+            </el-button>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -184,19 +209,25 @@
             label="基本单位"
             width="80px"
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.unit }}
+            </el-button>
+          </template>
         </el-table-column>
-
-        <!--        <el-table-column
-                    prop="specs"
-                    label="规格型号">
-                </el-table-column>-->
 
         <el-table-column
             prop="num"
             label="数量"
-            width="70px"
-
+            width="100px"
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.num }}
+            </el-button>
+          </template>
         </el-table-column>
 
 
@@ -205,29 +236,60 @@
             label="价目日期"
             width="90px"
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.priceDate }}
+            </el-button>
+          </template>
         </el-table-column>
 
         <el-table-column
             prop="price"
             label="单价"
             width="60px"
-
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.price }}
+            </el-button>
+          </template>
         </el-table-column>
 
         <el-table-column
             prop="amount"
-            label="金额">
+            label="金额"
+            width="100px"
+        >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.amount }}
+            </el-button>
+          </template>
         </el-table-column>
 
         <el-table-column
             prop="orderId"
             label="订单编号">
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.orderId }}
+            </el-button>
+          </template>
         </el-table-column>
 
         <el-table-column
             prop="orderSeq"
             label="单号">
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.orderSeq }}
+            </el-button>
+          </template>
         </el-table-column>
 
 
@@ -388,9 +450,6 @@
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
                    v-show="this.editForm.status===1">删除
         </el-button>
-        <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteAllDetails"
-                   v-show="this.editForm.status===1  && this.editForm.sourceType === 0">清空
-        </el-button>
 
         <el-table
             :data="editForm.rowList"
@@ -454,9 +513,9 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="入库数量" align="center" width="85" prop="num">
+          <el-table-column label="入库数量" align="center" width="85" prop="num" >
             <template slot-scope="scope">
-              <el-input  :disabled="editForm.status===0 ||  editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input @keyup.enter.native="handleAddDetails"  :disabled="editForm.status===0 ||  editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -668,13 +727,14 @@ export default {
       row.seqNum = rowIndex + 1;
     },
     //单选框选中数据
-    handleDetailSelectionChange(selection) {
-      if (selection.length > 1) {
-        this.$refs.tb.clearSelection();
-        this.$refs.tb.toggleRowSelection(selection.pop());
-      } else {
-        this.checkedDetail = selection;
-      }
+    handleDetailSelectionChange(val) {
+      console.log("多选框 val ", val)
+      this.checkedDetail = []
+
+      val.forEach(theId => {
+          this.checkedDetail.push(theId.seqNum)
+      })
+      console.log("多选框 选中的 ", this.checkedDetail)
     },
     // 采购入库详细信息-添加
     handleAddDetails() {
@@ -694,7 +754,9 @@ export default {
 
       this.editForm.rowList.push(obj);
       console.log("现有的数据:", this.editForm.rowList)
+      // 光标
     },
+
     // 采购入库详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
@@ -703,11 +765,22 @@ export default {
           type: 'error'
         });
       } else {
-        this.editForm.rowList.splice(this.checkedDetail[0].seqNum - 1, 1);
+        let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
+        this.editForm.rowList = newArr
       }
+      this.checkedDetail=[]
     },
+    // 多选删除
     handleDeleteAllDetails() {
       this.editForm.rowList = [];
+    },
+    // arr: 原数组，delIndexArr：删除下标数组
+    getNewArr(arr,delIndexArr){
+      let test = []
+      test = arr.filter((item, index) =>{
+        return !delIndexArr.includes(index+1)}
+      )
+      return test
     },
 
     loadSupplierAll() {
@@ -1154,7 +1227,8 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 14) {
+      }
+      else if (columnIndex === 14) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1197,7 +1271,7 @@ export default {
       const {columns, data} = param;
       const sums = [];
       columns.forEach((column, index) => {
-        if (index === 0) {
+        if (index === 0 ) {
           sums[index] = '求和';
           return;
         }
