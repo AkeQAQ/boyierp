@@ -94,7 +94,6 @@
           :span-method="objectSpanMethod"
           border
           fit
-
           :summary-method="getSummaries"
           show-summary
           size="mini"

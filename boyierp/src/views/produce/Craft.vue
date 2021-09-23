@@ -37,8 +37,8 @@
         </el-form-item>
 
 
-        <el-form-item v-if="hasAuth('produce:craft:save')">
-          <el-button size="mini" icon="el-icon-s-order" type="success" v-if="hasAuth('produce:craft:save')"
+        <el-form-item v-if="hasAuth('produce:craft:real')">
+          <el-button size="mini" icon="el-icon-s-order" type="success" v-if="hasAuth('produce:craft:real')"
                      @click="getSpreadDemo()"
           >设置模板
           </el-button>

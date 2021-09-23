@@ -26,14 +26,14 @@
         <table cellpadding='0' cellspacing='0' >
           <tr>
             <th width='10%'>材料编号</th>
-            <th width='26%'>材料名称</th>
+            <th width='24%'>材料名称</th>
             <th width='7%'>规格</th>
             <th width='10%'>单号</th>
             <th width='7%'>计价数量</th>
-            <th width='5%'>单位</th>
+            <th width='7%'>单位</th>
             <th width='8%'>单价</th>
             <th width='12%'>总金额</th>
-            <th width='15%'>说明</th>
+            <th width='15%'>备注</th>
 
           </tr>
           <!-- 每页显示onePageRow条数据 -->
@@ -94,10 +94,10 @@
         <hr style="height: 2px;background-color: black"/>
 
         <el-row :gutter="20" style="padding-top: 10px;margin-bottom: 10px">
-          <el-col :span="14" style="text-align: left"><div class="grid-content bg-purple"></div>
+          <el-col :span="13" style="text-align: left"><div class="grid-content bg-purple"></div>
             <span>注：一式两联：第一联财务（白），第二联供应商（红）</span>
           </el-col>
-          <el-col :span="7" style="text-align: right"><div class="grid-content bg-purple">
+          <el-col :span="6" style="text-align: right"><div class="grid-content bg-purple">
             <span>打印日期：{{new Date().toLocaleDateString()}}  </span>
           </div>
           </el-col>

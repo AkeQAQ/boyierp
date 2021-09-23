@@ -188,6 +188,7 @@
                 :visible.sync="dialogVisible"
                 width="30%"
                 :before-close="handleClose"
+                :append-to-body="true"
             >
 
               <el-form :model="editForm" :rules="rules" ref="editForm" label-width="100px" class="demo-editForm">

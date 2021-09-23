@@ -1246,7 +1246,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 7 || index === 8) {
+        if (index === 8 || index === 9) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {

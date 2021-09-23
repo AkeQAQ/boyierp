@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
 
-      <el-button size="mini" type="primary" v-if="hasAuth('order:productPricePre:save')" @click="submitForm()">
+      <el-button size="mini" type="primary" v-if="hasAuth('order:productPrice:real')" @click="submitForm()">
         保存模板
       </el-button>
 

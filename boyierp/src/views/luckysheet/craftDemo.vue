@@ -1,14 +1,27 @@
 <template>
   <el-container>
-    <el-main>
+    <el-main >
+      <div class="header">
 
-      <el-button size="mini" type="primary" v-if="hasAuth('produce:craft:save')" @click="submitForm()">
-        保存模板
-      </el-button>
+        <el-button size="mini" type="primary" v-if="hasAuth('produce:craft:real')" @click="submitForm()">
+          保存模板
+        </el-button>
 
-      <el-button size="mini" type="primary"  @click="returnPage">
-        返回
-      </el-button>
+        <el-button size="mini" type="primary"  @click="printExcel()">
+          打印
+        </el-button>
+
+
+        <el-button size="mini" type="primary"  @click="downloadExcel()">
+          下载
+        </el-button>
+
+        <el-button style="margin-left: 100px" size="mini" type="danger"  @click="returnPage">
+          返回
+        </el-button>
+
+      </div>
+
 
     </el-main>
     <el-footer>
@@ -22,8 +35,12 @@
 </template>
 
 <script>
+
 import {request} from "@/axios";
 import LuckyExcel from 'luckyexcel'
+
+import { exportLKExcel } from "@/utils/exportLK";
+
 
 export default {
   name: "craftDemo-lk",
@@ -87,6 +104,18 @@ export default {
 
       })
     },
+    // 打印实现
+    printExcel() {
+      //  找到需要隐藏的DOM节点
+      $(".header").addClass("printHideCss");
+      window.print();
+      $(".header").removeClass("printHideCss");
+      //  window.location.reload();
+    },
+    // 导出到本地
+    downloadExcel() {
+      exportLKExcel(luckysheet.getAllSheets(), "工艺单");
+    },
 
 
   },
@@ -127,4 +156,7 @@ export default {
 
 <style scoped>
 
+.printHideCss {
+  visibility: hidden !important;
+}
 </style>

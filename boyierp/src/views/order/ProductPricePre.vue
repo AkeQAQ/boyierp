@@ -121,7 +121,9 @@
 
         <el-table-column
             prop="status"
-            label="状态">
+            label="状态"
+            width="100px"
+        >
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.status === 0" type="success">已最终确认</el-tag>
             <el-tag size="small" v-else-if="scope.row.status===1" type="danger">未报价完成</el-tag>
@@ -133,7 +135,7 @@
         <el-table-column
             prop="action"
             label="操作"
-            width="300px"
+            width="270px"
             fixed="right"
         >
           <template slot-scope="scope">

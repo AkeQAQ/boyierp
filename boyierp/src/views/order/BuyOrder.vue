@@ -87,7 +87,7 @@
 
         <el-form-item v-if="hasAuth('order:buyOrder:push')">
           <el-button size="mini" icon="el-icon-plus" type="primary"
-                     @click="pushPage"
+                     @click="pushPage(null)"
                      >下推入库
           </el-button>
         </el-form-item>
@@ -109,7 +109,11 @@
           style="width: 100%;color:black"
           :cell-style="{padding:'0'}"
           :default-sort="{prop:'id',order:'descending'}"
-          @selection-change="handleSelectionChange">
+          @selection-change="handleSelectionChange"
+          @row-click="rowClick"
+          @select="pinSelect"
+
+      >
         <el-table-column
             type="selection"
             width="50">
@@ -246,11 +250,34 @@
             </el-button>
 
 
+            <el-button style="padding: 0px" type="text"  size="mini"
+                       v-if="hasAuth('order:buyOrder:push') " @click="pushPage(scope.row.id)"> 单据下推
+            </el-button>
+
           </template>
         </el-table-column>
 
       </el-table>
 
+      <el-dialog
+          title="物料"
+          :visible.sync="materialVisible"
+          :before-close="materialClose"
+          width="80%"
+      >
+        <material></material>
+
+      </el-dialog>
+
+      <el-dialog
+          title="供应商"
+          :visible.sync="supplierVisible"
+          :before-close="supplierClose"
+          width="80%"
+      >
+        <supplier></supplier>
+
+      </el-dialog>
 
       <el-dialog
           title="下推入库补充信息"
@@ -263,6 +290,9 @@
                  :model="pushForm" :rules="pushRules" ref="pushForm"
                  class="demo-editForm">
 
+          <el-form-item v-show="false" prop="id" >
+            <el-input v-model="pushForm.id"></el-input>
+          </el-form-item>
 
           <el-form-item v-if="false" prop="orderDetailIds" >
             <el-input v-model="pushForm.orderDetailIds"></el-input>
@@ -319,6 +349,7 @@
           title="采购订单信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"
+          :append-to-body="true"
           fullscreen
       >
         <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
@@ -393,16 +424,22 @@
             <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
               保存单据
             </el-button>
-<!--            <el-button @click="preViewPrint()" icon="el-icon-printer" type="primary"
-            >打印预览
-            </el-button>-->
 
           </el-form-item>
-
-          <el-form-item>
-
-
+          <el-form-item v-if="hasAuth('baseData:material:save')">
+            <el-button size="mini" icon="el-icon-plus" type="primary"
+                       @click="addMeterial"
+            >新建物料
+            </el-button>
           </el-form-item>
+
+          <el-form-item v-if="hasAuth('baseData:supplier:save')">
+            <el-button size="mini" icon="el-icon-plus" type="primary"
+                       @click="addSupplier"
+            >新建供应商
+            </el-button>
+          </el-form-item>
+
         </el-form>
         <el-divider content-position="left">明细信息</el-divider>
 
@@ -414,9 +451,6 @@
         </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
                    v-show="this.editForm.status===1">删除
-        </el-button>
-        <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteAllDetails"
-                   v-show="this.editForm.status===1">清空
         </el-button>
 
         <el-table
@@ -430,6 +464,7 @@
             fit
             show-summary
             :summary-method="getDetailSummaries"
+
         >
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
@@ -479,9 +514,13 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="采购数量" align="center" width="85" prop="num">
+          <el-table-column label="采购数量"  align="center" width="85" prop="num">
             <template slot-scope="scope">
-              <el-input :disabled="editForm.rowList[scope.row.seqNum-1].status === 0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input :ref='"input_num_"+scope.row.seqNum'
+                        @keyup.enter.native="numEnter(scope.row.seqNum)"
+                        @keyup.up.native="numUp(scope.row.seqNum)"
+                        @keyup.down.native="numEnter(scope.row.seqNum)"
+                        :disabled="editForm.rowList[scope.row.seqNum-1].status === 0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -531,7 +570,6 @@
       </el-pagination>
     </el-main>
 
-    <export-excel-common ref="myChild" :exportExcelInfo="exportExcelInfo" :tableData="tableData" :exportExcelArry="exportExcelArry"></export-excel-common>
 
   </el-container>
 
@@ -552,6 +590,8 @@ import vueEasyPrint from "vue-easy-print";
 import print from "@/views/printModule/printOrder";
 import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
+import material from "@/views/baseData/Material"
+import supplier from "@/views/baseData/Supplier"
 
 export default {
   name: 'BuyOrder',
@@ -559,11 +599,16 @@ export default {
   components: {
     vueEasyPrint,
     print,
-    exportExcelCommon
+    exportExcelCommon,
+    material,
+    supplier
   },
   data() {
     return {
 
+      // shift 多选
+      origin:-1,  // 变量起点
+      pin:false, // 默认不按住
 
       //选中的从表数据
       checkedDetail: [],
@@ -597,6 +642,7 @@ export default {
         orderDetailIds:[],
         supplierDocumentNum: '',
         buyInDate: '',
+        id:''
       },
       editForm: {
         status: 1, // 编辑表单初始默认值
@@ -629,6 +675,8 @@ export default {
       dialogVisible: false,
       dialogVisiblePrint: false,
       pushDialogVisible: false,
+      materialVisible: false,
+      supplierVisible: false,
       tableData: [],
       spanArr: [],
       pos: '',
@@ -637,6 +685,43 @@ export default {
     }
   },
   methods: {
+
+    pinSelect(item, index){
+      console.log("pinselect")
+      const data = this.$refs.multipleTable.tableData; // 获取所以数据
+      console.log("data:",data)
+      const origin = this.origin; // 起点数 从-1开始
+      const endIdx = index.index; // 终点数
+      if (this.pin && item.includes(data[origin])) { // 判断按住
+        const sum = Math.abs(origin - endIdx) + 1;// 这里记录终点
+        const min = Math.min(origin, endIdx);// 这里记录起点
+        let i = 0;
+        while (i < sum) {
+          const index = min + i;
+          this.$refs.multipleTable.toggleRowSelection(data[index], true); // 通过ref打点调用toggleRowSelection方法，第二个必须为true
+          i++;
+        }
+      } else {
+        this.origin = index.index; // 没按住记录起点
+      }
+    },
+
+    // 数量的上下光标事件
+    numEnter(seqNum){
+      if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
+        this.$refs['input_num_'+(seqNum + 1)].focus()
+      }
+    },
+    numUp(seqNum){
+      if(this.$refs['input_num_'+(seqNum - 1)] != undefined){
+        this.$refs['input_num_'+(seqNum - 1)].focus()
+      }
+    },
+    // 行点击事件
+    rowClick(row,column,event){
+      console.log("某行单击,",row,column,event)
+      this.$refs.multipleTable.toggleRowSelection(row);
+    },
 
     // 打印按钮事件
     printDemo() {
@@ -647,13 +732,14 @@ export default {
       row.seqNum = rowIndex + 1;
     },
     //单选框选中数据
-    handleDetailSelectionChange(selection) {
-      if (selection.length > 1) {
-        this.$refs.tb.clearSelection();
-        this.$refs.tb.toggleRowSelection(selection.pop());
-      } else {
-        this.checkedDetail = selection;
-      }
+    handleDetailSelectionChange(val) {
+      console.log("多选框 val ", val)
+      this.checkedDetail = []
+
+      val.forEach(theId => {
+        this.checkedDetail.push(theId.seqNum)
+      })
+      console.log("多选框 选中的 ", this.checkedDetail)
     },
     // 采购订单详细信息-添加
     handleAddDetails() {
@@ -714,16 +800,31 @@ export default {
     // 采购订单详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
-        this.$message({
-          message: '请先选择要删除的数据!',
-          type: 'error'
-        });
+        if(this.editForm.rowList.length === 0){
+          this.$message({
+            message: '没有记录可删除!',
+            type: 'error'
+          });
+        }else{
+          this.editForm.rowList.splice(this.editForm.rowList.length-1,1)
+
+        }
       } else {
-        this.editForm.rowList.splice(this.checkedDetail[0].seqNum - 1, 1);
+        let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
+        this.editForm.rowList = newArr
       }
+      this.checkedDetail=[]
     },
     handleDeleteAllDetails() {
       this.editForm.rowList = [];
+    },
+    // arr: 原数组，delIndexArr：删除下标数组
+    getNewArr(arr,delIndexArr){
+      let test = []
+      test = arr.filter((item, index) =>{
+        return !delIndexArr.includes(index+1)}
+      )
+      return test
     },
 
     loadSupplierAll() {
@@ -899,7 +1000,8 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
 
-          request.post('/order/buyOrder/push?orderDetailIds='+this.pushForm.orderDetailIds, this.pushForm).then(res => {
+          request.post('/order/buyOrder/push?orderDetailIds='+this.pushForm.orderDetailIds
+              +"&&id="+this.pushForm.id, this.pushForm).then(res => {
             this.$message({
               message: '下推成功!',
               type: 'success'
@@ -989,7 +1091,11 @@ export default {
             , searchField: this.select
       }
       }).then(res => {
+
         this.tableData = res.data.data.records
+        this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
+          item.index = index;
+        })
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
         console.log("获取用户表单数据", res.data.data.records)
@@ -1021,8 +1127,8 @@ export default {
       this.pushDialogVisible = true
       this.pushForm.orderId = id
     },*/
-    pushPage(){
-      if(this.multipleSelection===[] || this.multipleSelection.length ===0){
+    pushPage(id){
+      if(id === null && (this.multipleSelection===[] || this.multipleSelection.length ===0)){
         this.$message({
           message: '请选择下推的选项!',
           type: 'error'
@@ -1031,7 +1137,8 @@ export default {
       }
 
       this.pushDialogVisible = true
-      this.pushForm.orderDetailIds = this.multipleSelection
+      this.pushForm.orderDetailIds = this.multipleSelection // 部分下推有值
+      this.pushForm.id = id // 单据下推有值
     },
 
     // 删除
@@ -1077,6 +1184,18 @@ export default {
         this.getBuyOrderDocumentList()
       })
     },*/
+    supplierClose(done) {
+      this.supplierVisible = false
+      this.loadSupplierAll()
+      done()
+    },
+    materialClose(done) {
+      this.materialVisible = false
+      this.loadMaterialAll()
+      this.loadTableSearchMaterialDetailAll()
+      done()
+
+    },
     // 关闭下推弹窗处理动作
     pushClose(done) {
       this.$refs['pushForm'].resetFields();
@@ -1248,10 +1367,16 @@ export default {
         });
       }
     },
-
     // el-table 单元格样式修改
     cellStyle() {
       return 'padding:0 0'
+    },
+
+    addMeterial(){
+      this.materialVisible = true;
+    },
+    addSupplier(){
+      this.supplierVisible = true;
     }
 
   },
@@ -1260,6 +1385,21 @@ export default {
     this.loadSupplierAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+  },
+  mounted() {
+    // shift 按住
+    window.addEventListener('keydown',code=>{
+      if(code.keyCode === 16 && code.shiftKey){
+        this.pin = true
+      }
+    })
+    // shift 松开
+    window.addEventListener('keyup',code=>{
+      if(code.keyCode === 16 ){
+        this.pin = false
+      }
+    })
+
   }
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {
