@@ -2,7 +2,7 @@
 
   <el-container>
     <el-main>
-      <!-- 领料列表 -->
+      <!-- 盘点列表 -->
       <el-form :inline="true" class="demo-form-inline">
         <el-form-item>
           <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
@@ -17,16 +17,6 @@
         </el-form-item>
 
         <el-form-item>
-          <!-- 列表界面-部门搜索 -->
-          <el-autocomplete size="mini" v-if="selectedName==='departmentName'"
-                           clearable
-                           class="inline-input"
-                           v-model="searchStr"
-                           :fetch-suggestions="querySearch"
-                           placeholder="请输入搜索内容"
-                           @select="searchSelect"
-          >
-          </el-autocomplete>
 
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
@@ -73,13 +63,13 @@
 
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getPickDocumentList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="getList">搜索</el-button>
         </el-form-item>
 
 
-        <el-form-item v-if="hasAuth('repository:pickMaterial:save')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:pickMaterial:save')"
-                     @click="addPickMaterial()"
+        <el-form-item v-if="hasAuth('repository:check:save')">
+          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:check:save')"
+                     @click="addCheck()"
 
           >新增
           </el-button>
@@ -122,18 +112,9 @@
         </el-table-column>
 
         <el-table-column
-            prop="pickDate"
-            label="领料日期"
+            prop="checkDate"
+            label="盘点日期"
             width="90px"
-        >
-        </el-table-column>
-
-
-        <el-table-column
-            label="领料部门"
-            prop="departmentName"
-            width="110px"
-            show-overflow-tooltip
         >
         </el-table-column>
 
@@ -173,10 +154,25 @@
         >
         </el-table-column>
 
+        <el-table-column
+            prop="checkNum"
+            label="盘点数量"
+            width="80px"
+        >
+        </el-table-column>
 
         <el-table-column
-            prop="num"
-            label="数量"
+            prop="stockNum"
+            label="账存数量"
+            width="80px"
+
+        >
+        </el-table-column>
+
+
+        <el-table-column
+            prop="changeNum"
+            label="调整数量"
             width="80px"
 
         >
@@ -190,14 +186,14 @@
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('repository:pickMaterial:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
+                       v-if="hasAuth('repository:check:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('repository:pickMaterial:update') && scope.row.status ===1   "></el-divider>
+                        v-if="hasAuth('repository:check:update') && scope.row.status ===1   "></el-divider>
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('repository:pickMaterial:valid')  && scope.row.status ===1   ">
+                       v-if="hasAuth('repository:check:valid')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
                                title="确定设置审核通过吗？"
@@ -206,9 +202,9 @@
                 </el-popconfirm>
               </template>
             </el-button>
-
+<!--
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('repository:pickMaterial:valid')  && scope.row.status ===0  ">
+                       v-if="hasAuth('repository:check:returnValid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"
@@ -216,13 +212,13 @@
                   <el-button type="text" size="small" slot="reference">反审核</el-button>
                 </el-popconfirm>
               </template>
-            </el-button>
+            </el-button>-->
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('repository:pickMaterial:del')  && scope.row.status ===1  "></el-divider>
+                        v-if="hasAuth('repository:check:del')  && scope.row.status ===1  "></el-divider>
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('repository:pickMaterial:del') && scope.row.status ===1   ">
+                       v-if="hasAuth('repository:check:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
                                title="确定删除吗？"
@@ -238,33 +234,11 @@
 
       </el-table>
 
-      <!-- 打印弹窗 -->
-      <el-dialog
-          title=""
-          :visible.sync="dialogVisiblePrint"
-          width="55%"
-          style="padding-top: 0px"
-          :before-close="printClose"
-      >
-        <el-button v-if="dialogVisiblePrint"
-                   @click="printDemo"
-                   v-focus ref="printBtn"
-                   size="mini" icon="el-icon-printer" type="primary">打印
-        </el-button>
-        <vue-easy-print tableShow ref="easyPrint">
-          <template slot-scope="func">
-            <print :tableData="editForm" :getChineseNumber="func.getChineseNumber"></print>
-          </template>
-        </vue-easy-print>
 
-      </el-dialog>
-
-
-
-      <!-- 领料弹窗 -->
+      <!-- 盘点弹窗 -->
 
       <el-dialog
-          title="领料信息"
+          title="盘点信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"
           fullscreen
@@ -281,35 +255,16 @@
           </el-form-item>
 
 
-          <el-form-item v-if="false" prop="departmentId" style="margin-bottom: 0px">
-            <el-input v-model="editForm.departmentId"></el-input>
-          </el-form-item>
-          <el-form-item label="领料部门" prop="departmentName" style="margin-bottom: 10px">
-            <!-- 搜索框 -->
-            <el-autocomplete
-                :disabled="this.editForm.status===0"
-                style="width: 150px"
-                class="inline-input"
-                v-model="editForm.departmentName"
-                :fetch-suggestions="querySearch"
-                placeholder="请输入部门"
-                @select="handleSelect"
-                @change="moveMouse"
 
-                clearable
-            >
-            </el-autocomplete>
-          </el-form-item>
-
-          <el-form-item  label="领料人" prop="pickUser" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 150px" v-model="editForm.pickUser">
+          <el-form-item  label="盘点人" prop="checkUser" style="padding: -20px 0 ;margin-bottom: -20px">
+            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 150px" v-model="editForm.checkUser">
             </el-input>
           </el-form-item>
 
-          <el-form-item label="领料日期" prop="pickDate">
+          <el-form-item label="盘点日期" prop="checkDate">
             <el-date-picker :disabled="this.editForm.status===0" style="width: 150px"
                             value-format="yyyy-MM-dd"
-                            v-model="editForm.pickDate"
+                            v-model="editForm.checkDate"
                             type="date"
                             clearable
                             placeholder="选择日期">
@@ -319,9 +274,6 @@
           <el-form-item style="margin-left: 100px">
             <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
               保存
-            </el-button>
-            <el-button size="mini" @click="preViewPrint()" icon="el-icon-printer" type="primary"
-            >打印预览
             </el-button>
 
           </el-form-item>
@@ -384,9 +336,21 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="领料数量" align="center" width="85" prop="num">
+          <el-table-column label="盘点数量" align="center" width="85" prop="checkNum">
             <template slot-scope="scope">
-              <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input  @change="checkNum(scope.row)" :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].checkNum"/>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="账存数量" align="center" prop="stockNum" width="100">
+            <template slot-scope="scope">
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].stockNum"></el-input>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="调整数量" align="center" prop="changeNum" width="100">
+            <template slot-scope="scope">
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].changeNum"></el-input>
             </template>
           </el-table-column>
 
@@ -417,20 +381,10 @@
 import {request} from "@/axios";
 
 
-// 引入打印基础组件，和打印模块print页面
-import vueEasyPrint from "vue-easy-print";
-import print from "@/views/printModule/printPick";
-import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
 
 export default {
-  name: 'PickMaterial',
-  // 引入打印模块基础组件和该打印模块的模板页面
-  components: {
-    vueEasyPrint,
-    print,
-    exportExcelCommon
-  },
+  name: 'Check',
   data() {
     return {
       dialogVisiblePrint: false,
@@ -439,19 +393,17 @@ export default {
       checkedDetail: [],
 
       // 搜索字段
-      selectedName: 'departmentName',// 搜索默认值
+      selectedName: 'materialName',// 搜索默认值
       options: [
-        {value: 'departmentName', label: '部门名称'},
         {value: 'materialName', label: '物料名称'},
         {value: 'id', label: '单据编号'}
       ],
-      select: 'departmentName', // 搜索默认值
+      select: 'materialName', // 搜索默认值
       searchStr: '',
       searchStartDate: '',
       searchEndDate: '',
       searchStrList: [],
       searchField: '',
-      restaurants: [],// 搜索框列表数据存放
       restaurants2: [], //
       restaurants3: [], //用于增量表格的搜索框内容
 
@@ -465,24 +417,20 @@ export default {
       editForm: {
         status: 1, // 编辑表单初始默认值
         id: '',
-        departmentId: '',
-        departmentName: '',
         materialName: '',
         materialId: '',
-        pickDate: '',
-        pickUser:'',
-        endDate: '',
+        checkDate: '',
+        checkUser:'',
+        stockNum:'',
+        checkNum:'',
         rowList: []
       },
       rules: {
-        departmentName: [
-          {required: true, message: '请输入领料部门', change: 'blur'}
+        checkUser: [
+          {required: true, message: '请输入盘点人', trigger: 'blur'}
         ],
-        pickUser: [
-          {required: true, message: '请输入领料人', trigger: 'blur'}
-        ],
-        pickDate: [
-          {required: true, message: '请输入领料日期', trigger: 'blur'}
+        checkDate: [
+          {required: true, message: '请输入盘点日期', trigger: 'blur'}
         ]
       }
       ,
@@ -510,7 +458,7 @@ export default {
       })
       console.log("多选框 选中的 ", this.checkedDetail)
     },
-    // 领料详细信息-添加
+    // 盘点详细信息-添加
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
@@ -520,13 +468,15 @@ export default {
       obj.materialName = "";
       obj.unit = "";
       obj.materialId = '';
-      obj.num = ''
+      obj.checkNum = ''
       obj.specs = ''
+      obj.stockNum = ''
+      obj.changeNum = ''
 
       this.editForm.rowList.push(obj);
       console.log("现有的数据:", this.editForm.rowList)
     },
-    // 领料详细信息-删除
+    // 盘点详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
         this.$message({
@@ -551,15 +501,8 @@ export default {
       return test
     },
 
-    loadDepartmentAll() {
-      request.post('/baseData/department/getSearchAllData').then(res => {
-        this.restaurants = res.data.data
-        console.log("部门列表数据:",this.restaurants)
-      })
-    },
-
-    loadTableSearchMaterialDetailAll() {
-      request.post('/baseData/material/loadTableSearchMaterialDetailAll').then(res => {
+    loadTableSearchMaterialDetailAllWithStock() {
+      request.post('/baseData/material/loadTableSearchMaterialDetailAllWithStock').then(res => {
         this.restaurants3 = res.data.data
       })
     },
@@ -583,16 +526,8 @@ export default {
       cb(results);
     },
 
-    querySearch(queryString, cb) {
-      var restaurants = this.restaurants;
-      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-
-      // 调用 callback 返回建议列表的数据
-      cb(results);
-    },
     createFilter(queryString) {
       return (restaurant) => {
-        console.log("部门一个对象：",restaurant,queryString)
         return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || ((restaurant.id+"").toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
     },
@@ -600,11 +535,6 @@ export default {
       return (restaurant) => {
         return (restaurant.obj.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
-    },
-    handleSelect(item) {
-      this.editForm.departmentId = item.id
-      this.editForm.departmentName = item.name
-      console.log("选中：", item);
     },
     handleSelect2(item) {
       this.editForm.materialId = item.id
@@ -614,24 +544,6 @@ export default {
     searchSelect(item) {
       this.searchStr = item.name
       console.log("选中：", item);
-    },
-    moveMouse(text) {
-      try {
-        // foreach 只能抛出异常结束
-        this.restaurants.forEach(item => {
-          if (text === item.name) {
-            console.log("匹配到:", text, item.name, this.editForm.departmentId, item.id)
-            this.editForm.departmentId = item.id
-            this.editForm.departmentName = item.name
-            throw new Error();
-          } else {
-            this.editForm.departmentId = ''
-            console.log("没有匹配到", text, item.name)
-            this.editForm.departmentName = ''
-          }
-        })
-      } catch (err) {
-      }
     },
     tableMoveMouse(selectItem, rowObj,index) {
       console.log("tableMoveMouse", selectItem, rowObj)
@@ -644,14 +556,17 @@ export default {
             rowObj.materialName = item.obj.name
             rowObj.unit = item.obj.unit
             rowObj.specs = item.obj.specs
+            console.log("匹配数据:",item)
+            rowObj.stockNum = item.stockNum
             throw new Error();
           } else {
             rowObj.materialName = "";
             rowObj.unit = "";
             rowObj.materialId = '';
             rowObj.specs = ''
-
-            rowObj.num = ''
+            rowObj.stockNum = ''
+            rowObj.checkNum = ''
+            rowObj.changeNum = ''
             console.log("没有匹配到", selectItem, item.id)
           }
           console.log("设置rowObj:{},",this.editForm.rowList)
@@ -666,29 +581,20 @@ export default {
       param.materialName = selectItem.obj.name
       param.unit = selectItem.obj.unit
       param.specs = selectItem.obj.specs
+      param.stockNum = selectItem.stockNum
       console.log("rowList：", this.editForm.rowList);
 
     },
-    // 关闭打印弹窗弹窗处理动作
-    printClose(done) {
-      console.log("打印弹窗关闭...")
-
-      this.$refs.easyPrint.tableShow = false;
-      done();
-    },
     // 入库列表 点击添加按钮
-    addPickMaterial() {
+    addCheck() {
       this.addOrUpdate = 'save'
       this.editForm = {
         status: 1, // 编辑表单初始默认值
         id: '',
-        departmentId: '',
-        departmentName: '',
         materialName: '',
         materialId: '',
-        pickDate: '',
-        endDate: '',
-        price: '',
+        checkDate: '',
+        checkUser: '',
         rowList: []
       }
       this.dialogVisible = true
@@ -698,13 +604,13 @@ export default {
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize = val
-      this.getPickDocumentList()
+      this.getList()
 
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.currentPage = val
-      this.getPickDocumentList()
+      this.getList()
 
     },
     // 多选框方法
@@ -733,7 +639,7 @@ export default {
         if (valid) {
           if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
             this.$message({
-              message: '请录入至少一个领料物料信息',
+              message: '请录入至少一个盘点物料信息',
               type: 'error'
             });
             return
@@ -743,7 +649,7 @@ export default {
           let validateMaterial = true;
           console.log(this.editForm.rowList)
           this.editForm.rowList.forEach(obj => {
-            if (obj.num === undefined || obj.num === '') {
+            if (obj.checkNum === undefined || obj.checkNum === '') {
               validateFlag = false
             }
             if (obj.materialId === '') {
@@ -760,13 +666,13 @@ export default {
 
           if (validateFlag === false) {
             this.$message({
-              message: '领料数量不能为空!',
+              message: '盘点数量不能为空!',
               type: 'error'
             });
             return
           }
 
-          request.post('/repository/pickMaterial/' + methodName, this.editForm).then(res => {
+          request.post('/repository/check/' + methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -776,7 +682,7 @@ export default {
             this.dialogVisible = false;
             this.resetForm("editForm")
             this.handleDeleteAllDetails()
-            this.getPickDocumentList()
+            this.getList()
 
           })
         } else {
@@ -787,9 +693,9 @@ export default {
     },
 
     // 查询价目表单列表数据
-    getPickDocumentList() {
+    getList() {
       console.log("搜索字段:", this.select)
-      request.get('/repository/pickMaterial/list', {
+      request.get('/repository/check/list', {
         params: {
         currentPage: this.currentPage
             , pageSize: this.pageSize
@@ -803,27 +709,18 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
-        console.log("id:",res.data.data.records[0].orderId ===null)
-        console.log("获取表单数据", res.data.data.records)
       })
     },
     // 编辑页面
     edit(id) {
       this.addOrUpdate = "update"
-      request.get('/repository/pickMaterial/queryById?id=' + id).then(res => {
+      request.get('/repository/check/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          this.restaurants3.forEach(obj => {
-            console.log("obj:", obj, result.rowList.materialId)
-
-            if (obj.id === result.materialId) {
-              console.log("obj:", obj, result.materialId)
-            }
-          })
         })
 
       })
@@ -842,34 +739,34 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
-      request.post('/repository/pickMaterial/del', ids).then(res => {
+      request.post('/repository/check/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
         });
-        this.getPickDocumentList()
+        this.getList()
         console.log("删除后重新加载页面")
 
       })
     },
     // 状态待审核
     statusPass(id) {
-      request.get('/repository/pickMaterial/statusPass?id=' + id).then(res => {
+      request.get('/repository/check/statusPass?id=' + id).then(res => {
         this.$message({
           message: '审核通过!',
           type: 'success'
         });
-        this.getPickDocumentList()
+        this.getList()
       })
     },
     // 状态反审核
     statusReturn(id) {
-      request.get('/repository/pickMaterial/statusReturn?id=' + id).then(res => {
+      request.get('/repository/check/statusReturn?id=' + id).then(res => {
         this.$message({
           message: '反审核完成!',
           type: 'success'
         });
-        this.getPickDocumentList()
+        this.getList()
       })
     },
     // 关闭弹窗处理动作
@@ -1032,10 +929,10 @@ export default {
         });
       }
     },
-    // 打印按钮事件
-    printDemo() {
-      this.$refs.easyPrint.print()
+    checkNum(row){
+      row.changeNum = row.checkNum - row.stockNum
     },
+
 
     // el-table 单元格样式修改
     cellStyle() {
@@ -1044,10 +941,9 @@ export default {
 
   },
   created() {
-    this.getPickDocumentList()
-    this.loadDepartmentAll()
+    this.getList()
     this.loadMaterialAll()
-    this.loadTableSearchMaterialDetailAll()
+    this.loadTableSearchMaterialDetailAllWithStock()
   }
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {
