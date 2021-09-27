@@ -421,6 +421,10 @@
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
       </el-pagination>
+
+      <!-- 导出功能 -->
+      <export-excel-common ref="myChild" :exportExcelInfo="exportExcelInfo" :tableData="tableData" :exportExcelArry="exportExcelArry"></export-excel-common>
+
     </el-main>
 
   </el-container>
@@ -449,6 +453,66 @@ export default {
   },
   data() {
     return {
+
+      // vue 前端的 导出table 数据功能
+      //导出表格字段及formatter信息
+      exportExcelArry: [{
+        prop: 'id',
+        label: '单据编号',
+        formatterFlag: false
+      },
+        {
+          prop: 'returnDate',
+          label: '退料日期',
+          formatterFlag: false
+        },
+
+        {
+          prop: 'status',
+          label: '状态',
+          formatterFlag: true,
+          formatterType: 'common-type',
+          formatterInfo: [{value: 0,label: '审核完成'},{value: 1,label: '待审核'}]
+        },
+        {
+          prop: 'departmentName',
+          label: '退料部门',
+          formatterFlag: false
+        },
+        {
+          prop: 'materialId',
+          label: '物料编码',
+          formatterFlag: false
+        },
+        {
+          prop: 'materialName',
+          label: '物料名称',
+          formatterFlag: false
+        },
+        {
+          prop: 'specs',
+          label: '规格型号',
+          formatterFlag: false
+        },
+        {
+          prop: 'unit',
+          label: '基本单位',
+          formatterFlag: false
+        },{
+          prop: 'num',
+          label: '数量',
+          formatterFlag: false
+        }
+
+      ],
+      //导出excel表格id及excel名称
+      exportExcelInfo: {
+        excelId: 'record-table',
+        excelName: '生产退料列表.xlsx'
+      },
+      //需要导出的table数据
+      tableAllData: [],
+
       dialogVisiblePrint: false,
 
       //选中的从表数据
@@ -512,9 +576,50 @@ export default {
     }
   },
   methods: {
+    // 导出
+    expChange(item) {
+      console.log("导出:",item)
+      if (item === 'currentList') {
+        this.exportExcel()
+      } else if(item === 'all'){
+        this.exportList()
+      }
+    },
     // 导出按钮
     exportExcel () {
       this.$refs.myChild.exportExcel();
+    },
+
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportList() {
+
+      request2.post('/repository/returnMaterial/export?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchStr="+this.searchStr+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select
+          ,null,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'生产退料全部列表.xlsx')
+      }).catch()
+    },
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
     },
 
     // 设置每一行的seqNum = 游标+1
@@ -687,38 +792,6 @@ export default {
       param.specs = selectItem.obj.specs
       console.log("rowList：", this.editForm.rowList);
 
-    },
-
-    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
-    exportList() {
-
-      request2.post('/repository/returnMaterial/export?currentPage='+this.currentPage+
-          "&&pageSize="+this.pageSize+
-          "&&total="+this.total+
-          "&&searchStr="+this.searchStr+
-          "&&searchStartDate="+this.searchStartDate+
-          "&&searchEndDate="+this.searchEndDate+
-          "&&searchField="+this.select
-      ,null,{responseType:'arraybuffer'}).then(res=>{
-        // 这里使用blob做一个转换
-        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-
-        this.saveFile(blob,'退料全部列表.xlsx')
-      }).catch()
-    },
-    // POI- 服务端写出字节流到浏览器，进行保存
-    saveFile(data,name){
-      try {
-        const blobUrl = window.URL.createObjectURL(data)
-        const a = document.createElement('a')
-        a.style.display = 'none'
-        a.download = name
-        a.href = blobUrl
-        a.click()
-
-      } catch (e) {
-        alert('保存文件出错')
-      }
     },
 
 
@@ -933,15 +1006,6 @@ export default {
     searchFieldChange(item) {
       console.log("搜索字段改变:", item)
       this.selectedName = item
-    },
-
-    expChange(item) {
-      console.log("导出:",item)
-      if (item === 'currentList') {
-        this.exportExcel()
-      } else if(item === 'all'){
-        this.exportList()
-      }
     },
 
     // 同ID的，单元格合并，数据库配合返回根据ID排序

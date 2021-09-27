@@ -78,7 +78,10 @@
         </el-table-column>
         <el-table-column
             label="供应商"
-            prop="supplierName">
+            prop="supplierName"
+            show-overflow-tooltip
+            width="150px"
+        >
         </el-table-column>
         <el-table-column
             label="物料编码"
@@ -90,7 +93,9 @@
         <el-table-column
             prop="materialName"
             label="物料名称"
-            show-overflow-tooltip>
+            show-overflow-tooltip
+            width="150px"
+        >
         </el-table-column>
 
         <el-table-column
@@ -108,7 +113,7 @@
         <el-table-column
             prop="startDate"
             label="生效日期"
-            sortable
+            width="110px"
         >
           <template slot-scope="scope">
             <i class="el-icon-time"></i>
@@ -119,7 +124,9 @@
         <el-table-column
             prop="endDate"
             label="失效日期"
-            sortable>
+            width="110px"
+
+        >
           <template slot-scope="scope">
             <i class="el-icon-time"></i>
             <span style="margin-left: 10px">{{ scope.row.endDate }}</span>
@@ -234,7 +241,7 @@
           <el-form-item label="物料" prop="materialName">
             <!-- 搜索框 -->
             <el-autocomplete
-                class="inline-input"
+                popper-class="my-autocomplete"
                 v-model="editForm.materialName"
                 :fetch-suggestions="queryMaterialSearchValide"
                 placeholder="请输入内容"
@@ -242,6 +249,14 @@
                 @change="moveMaterialMouse"
                 clearable
             >
+              <i
+                  class="el-icon-edit el-input__icon"
+                  slot="suffix">
+              </i>
+              <template slot-scope="{ item }">
+                <div class="name">{{ item.value }}</div>
+                <span class="addr">{{ item.unit }}</span>
+              </template>
             </el-autocomplete>
           </el-form-item>
 
@@ -638,5 +653,24 @@ export default {
 .el-pagination {
   float: right;
 
+}
+.my-autocomplete {
+li {
+  line-height: normal;
+  padding: 7px;
+
+.name {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.addr {
+  font-size: 12px;
+  color: #b4b4b4;
+}
+
+.highlighted .addr {
+  color: #ddd;
+}
+}
 }
 </style>

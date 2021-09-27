@@ -279,9 +279,6 @@ export default {
 
         name: [
           {required: true, message: '请输入名称', trigger: 'blur'}
-        ],
-        mobile: [
-          {required: true, message: '请输入联系电话', change: 'blur'}
         ]
       }
       ,

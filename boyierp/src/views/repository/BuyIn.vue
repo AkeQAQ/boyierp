@@ -549,12 +549,13 @@
       </el-pagination>
     </el-main>
 
+
+    <!-- 导出功能 -->
     <export-excel-common ref="myChild" :exportExcelInfo="exportExcelInfo" :tableData="tableData" :exportExcelArry="exportExcelArry"></export-excel-common>
 
   </el-container>
 
 
-  <!-- 导出功能 -->
 
 
 
@@ -641,7 +642,18 @@ export default {
         prop: 'amount',
         label: '金额',
         formatterFlag: false
-      }],
+      }
+        ,{
+          prop: 'orderId',
+          label: '订单编号',
+          formatterFlag: false
+        }
+        ,{
+          prop: 'orderSeq',
+          label: '单号',
+          formatterFlag: false
+        }
+      ],
       //导出excel表格id及excel名称
       exportExcelInfo: {
         excelId: 'record-table',

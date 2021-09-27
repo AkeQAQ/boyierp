@@ -85,6 +85,18 @@
           </el-button>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('repository:buyOut:export')">
+          <el-dropdown   @command="expChange">
+            <el-button  icon="el-icon-download" size="mini" type="success">
+              导出<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="all">导出全部</el-dropdown-item>
+              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -402,6 +414,11 @@
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
       </el-pagination>
+
+
+      <!-- 导出功能 -->
+      <export-excel-common ref="myChild" :exportExcelInfo="exportExcelInfo" :tableData="tableData" :exportExcelArry="exportExcelArry"></export-excel-common>
+
     </el-main>
 
   </el-container>
@@ -432,6 +449,59 @@ export default {
   },
   data() {
     return {
+      // vue 前端的 导出table 数据功能
+      //导出表格字段及formatter信息
+      exportExcelArry: [{
+        prop: 'id',
+        label: '单据编号',
+        formatterFlag: false
+      },
+        {
+          prop: 'buyOutDate',
+          label: '退料日期',
+          formatterFlag: false
+        },
+        {
+          prop: 'supplierName',
+          label: '供应商',
+          formatterFlag: false
+        },
+
+        {
+          prop: 'status',
+          label: '状态',
+          formatterFlag: true,
+          formatterType: 'common-type',
+          formatterInfo: [{value: 0,label: '审核完成'},{value: 1,label: '待审核'}]
+        },
+        {
+          prop: 'materialId',
+          label: '物料编码',
+          formatterFlag: false
+        },
+        {
+          prop: 'materialName',
+          label: '物料名称',
+          formatterFlag: false
+        },
+        {
+          prop: 'unit',
+          label: '基本单位',
+          formatterFlag: false
+        },{
+          prop: 'num',
+          label: '数量',
+          formatterFlag: false
+        }
+        ],
+      //导出excel表格id及excel名称
+      exportExcelInfo: {
+        excelId: 'record-table',
+        excelName: '采购退料列表.xlsx'
+      },
+      //需要导出的table数据
+      tableAllData: [],
+
 
       //选中的从表数据
       checkedDetail: [],
@@ -1040,7 +1110,53 @@ export default {
     // el-table 单元格样式修改
     cellStyle() {
       return 'padding:0 0'
-    }
+    },
+
+
+    expChange(item) {
+      console.log("导出:",item)
+      if (item === 'currentList') {
+        this.exportExcel()
+      } else if(item === 'all'){
+        this.exportList()
+      }
+    },
+    // 导出按钮
+    exportExcel () {
+      this.$refs.myChild.exportExcel();
+    },
+
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportList() {
+
+      request2.post('/repository/buyOut/export?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchStr="+this.searchStr+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select
+          ,null,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'采购退料全部列表.xlsx')
+      }).catch()
+    },
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
 
   },
   created() {

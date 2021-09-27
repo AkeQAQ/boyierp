@@ -5,7 +5,7 @@ import Element from "element-ui"
 axios.defaults.baseURL = "http://192.168.8.252:8081" // 定义请求的前缀
 
 const request2 =axios.create({
-    timeout:5000,
+    timeout:100000,
     headers:{
         'Authorization' : localStorage.getItem("token")
     }
@@ -13,7 +13,7 @@ const request2 =axios.create({
 
 // 声明请求实例
 const request =axios.create({
-    timeout:5000,
+    timeout:100000,
     headers:{
         'Content-Type':"application/json;charset=utf-8"
     }
