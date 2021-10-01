@@ -1,9 +1,8 @@
 <template>
 
   <el-container>
-    <el-main>
-      <el-form :inline="true" class="demo-form-inline">
-
+    <el-main style="margin-top: -30px;margin-left: -30px">
+      <el-form :inline="true" class="demo-form-inline" style="margin-bottom: -20px">
         <el-form-item>
           <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段" >
             <el-option

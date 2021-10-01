@@ -9,19 +9,13 @@
                :model="editForm2" :rules="rules" ref="editForm2"
                class="demo-editForm">
 
+<!--
         <el-form-item label="实际价格" prop="realPrice">
           <el-input size="mini" clearable style="width: 200px" v-model="editForm2.realPrice">
           </el-input>
         </el-form-item>
+-->
 
-        <el-form-item>
-          <el-button type="primary"  v-if="hasAuth('order:productPricePre:real') && editForm2.status === 2  "  @click="submitForm()">
-            保存实际价目
-          </el-button>
-          <el-button type="primary"  @click="returnPage">
-            返回
-          </el-button>
-        </el-form-item>
         <el-form-item>
           <el-input size="mini" v-show="false" v-model="editForm2.realJson">
           </el-input>
@@ -29,10 +23,20 @@
 
       </el-form>
 
+
+      <div class="bottom" >
+        <el-button v-if="hasAuth('order:productPricePre:real') && editForm2.status === 2  "  type="primary" style="margin-bottom: 10px"  :loading="isLoad" @click="submitForm()">
+          保存实际价目
+        </el-button>
+        <el-button type="danger"  @click="returnPage">
+          返回
+        </el-button>
+      </div>
+
     </el-main>
 
     <el-footer>
-      <div id="luckysheet" style="margin:0px;padding:0px;position:absolute;width:98%;height:100%;left:0px;top:60px;
+      <div id="luckysheet" style="margin:0px;padding:0px;position:absolute;width:98%;height:100%;left:0px;top:0px;
 "></div>
     </el-footer>
   </el-container>
@@ -47,9 +51,11 @@ export default {
   name: "productPriceReal-lk",
   data() {
     return {
+      isLoad:false,
       editForm2: {
         id: '',
-        realJson:[]
+        realJson:[],
+        realPrice:''
       },
     }
   },
@@ -92,8 +98,12 @@ export default {
     // 表单提交
     submitForm(formName) {
       //ToJson
+      this.isLoad=true;
       this.editForm2.realJson = JSON.stringify(luckysheet.getAllSheets());
       console.log("提交时的json,",this.editForm2.realJson)
+      let cellValue = luckysheet.getCellValue(59, 17);
+      console.log("60行，18列的内容：",cellValue)
+      this.editForm2.realPrice = cellValue;
 
         request.post('/order/productPricePre/setStreadReal' , this.editForm2).then(res => {
           this.$message({
@@ -103,6 +113,7 @@ export default {
 
           this.returnPage()
         })
+      this.isLoad=false;
     },
   },
   created() {
@@ -161,5 +172,7 @@ export default {
 </script>
 
 <style scoped>
-
+.bottom{position:fixed; bottom:100px;right: 50px;  z-index:99999;
+  width: 100px;
+}
 </style>

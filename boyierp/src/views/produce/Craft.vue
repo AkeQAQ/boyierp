@@ -3,9 +3,9 @@
 <template>
 
   <el-container>
-    <el-main>
-      <!-- 工艺单列表 -->
-      <el-form :inline="true" class="demo-form-inline">
+    <el-main class="elMain_my">
+      <!-- 入库单列表 -->
+      <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
           <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option

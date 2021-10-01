@@ -1,9 +1,9 @@
 <template>
 
   <el-container>
-    <el-main>
-      <!-- 退料单列表 -->
-      <el-form :inline="true" class="demo-form-inline">
+    <el-main class="elMain_my">
+      <!-- 入库单列表 -->
+      <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
           <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
@@ -218,7 +218,7 @@
 
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
+                       v-if="hasAuth('repository:buyOut:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"

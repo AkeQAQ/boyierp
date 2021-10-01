@@ -1,9 +1,10 @@
 <template>
-  <el-container>
-    <el-main>
-      <el-form style="width: 100%;height: 100%;align-items: center;margin-top: 0px"
+  <el-container >
+    <el-main >
+      <el-form style="width: 100%;height: 100%;align-items: center;margin-top: -15px"
                size="mini"
                label-width="100px"
+
                inline
                :model="editForm2" :rules="rules" ref="editForm2"
                class="demo-editForm">
@@ -21,31 +22,37 @@
           <el-input size="mini" clearable style="width: 200px" v-model="editForm2.customer">
           </el-input>
         </el-form-item>
+<!--
 
         <el-form-item label="报价价格" prop="price">
           <el-input size="mini" clearable style="width: 200px" v-model="editForm2.price">
           </el-input>
         </el-form-item>
+-->
 
         <el-form-item>
-          <el-button type="primary" v-show="editForm2.status===1" @click="submitForm('editForm2')">
-            保存报价
-          </el-button>
-          <el-button type="primary"  @click="returnPage">
-            返回
-          </el-button>
+
+
         </el-form-item>
         <el-form-item>
           <el-input size="mini" v-show="false" v-model="editForm2.excelJson">
           </el-input>
         </el-form-item>
-
       </el-form>
+
+      <div class="bottom" >
+        <el-button type="primary" style="margin-bottom: 10px" v-show="editForm2.status===1" :loading="isLoad" @click="submitForm('editForm2')">
+          保存报价
+        </el-button>
+        <el-button type="danger"  @click="returnPage">
+          返回
+        </el-button>
+      </div>
 
     </el-main>
 
     <el-footer>
-        <div id="luckysheet" style="margin:0px;padding:0px;position:absolute;width:98%;height:100%;left:0px;top:60px;
+        <div id="luckysheet" style="margin:0px;padding:0px;position:absolute;width:98%;height:100%;left:0px;top:40px;
 "></div>
     </el-footer>
   </el-container>
@@ -60,11 +67,13 @@ export default {
   name: "productPrice-lk",
   data() {
     return {
+      isLoad:false,
       editForm2: {
         status: 1, // 编辑表单初始默认值
         id: '',
         companyNum: '',
         customer: '',
+        price:'',
         excelJson:[]
       },
       rules: {
@@ -120,9 +129,13 @@ export default {
     // 表单提交
     submitForm(formName) {
       //ToJson
+      this.isLoad=true;
       let methodName = this.$route.params.addOrUpdate
       this.editForm2.excelJson = JSON.stringify(luckysheet.getAllSheets());
       console.log("提交时的json,",this.editForm2.excelJson)
+      let cellValue = luckysheet.getCellValue(59, 8);
+      console.log("60行，9列的内容：",cellValue)
+      this.editForm2.price = cellValue;
 
       this.$refs[formName].validate((valid) => {
 
@@ -136,6 +149,8 @@ export default {
             this.returnPage()
           })
         }
+        this.isLoad=false;
+
       })
     },
   },
@@ -175,6 +190,7 @@ export default {
               column: 20, //空表格默认的列数量
               row: 20, //空表格默认的行数据量
               showinfobar:false, //是否显示顶部信息栏
+
               data:arr
             }
             luckysheet.create(options)
@@ -186,7 +202,8 @@ export default {
               lang:'zh',
               column: 20, //空表格默认的列数量
               row: 20, //空表格默认的行数据量
-              showinfobar:false, //是否显示顶部信息栏
+              showinfobar:false, //是否显示顶部信息栏,
+              "scrollTop": 0,
             }
             luckysheet.create(options)
           }
@@ -200,5 +217,7 @@ export default {
 </script>
 
 <style scoped>
-
+.bottom{position:fixed; bottom:100px;right: 50px;  z-index:99999;
+  width: 100px;
+}
 </style>

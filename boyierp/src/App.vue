@@ -13,7 +13,7 @@
 
         console.log("跳转的to path：",to.path)
         if(to.path != '/login' && !to.path.toString().startsWith("/luckysheet") ){
-          console.log("路由跳转to:",to)
+          console.log("obj.checkNumto:",to)
           this.$store.commit("addTab", {routerName:to.name,title:to.meta.title})
 
         }
@@ -23,6 +23,8 @@
 </script>
 
 <style>
+@import './assets/css/common.css';
+
 html, body, #app {
   font-family: 'Helvetica Neue', 'Hiragino Sans GB', 'WenQuanYi Micro Hei', 'Microsoft Yahei', sans-serif;
   height: 100%;

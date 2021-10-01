@@ -23,19 +23,21 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" v-show="editForm2.status===1" @click="submitForm('editForm2')">
-            保存核算
-          </el-button>
-          <el-button type="primary"  @click="returnPage">
-            返回
-          </el-button>
-        </el-form-item>
-        <el-form-item>
           <el-input size="mini" v-show="false" v-model="editForm2.excelJson">
           </el-input>
         </el-form-item>
 
       </el-form>
+
+      <div class="bottom" >
+        <el-button  style="margin-bottom: 10px"
+                    type="primary" v-show="editForm2.status===1" @click="submitForm('editForm2')">
+          保存核算
+        </el-button>
+        <el-button type="danger"  @click="returnPage">
+          返回
+        </el-button>
+      </div>
 
     </el-main>
 
@@ -55,6 +57,7 @@ export default {
   name: "craft-lk",
   data() {
     return {
+      isLoad:false,
       editForm2: {
         status: 1, // 编辑表单初始默认值
         id: '',
@@ -117,6 +120,7 @@ export default {
       let methodName = this.$route.params.addOrUpdate
       this.editForm2.excelJson = JSON.stringify(luckysheet.getAllSheets());
       console.log("提交时的json,",this.editForm2.excelJson)
+      this.isLoad=true
 
       this.$refs[formName].validate((valid) => {
 
@@ -131,6 +135,7 @@ export default {
           })
         }
       })
+      this.isLoad=false
     },
 
 
@@ -198,5 +203,7 @@ export default {
 </script>
 
 <style scoped>
-
+.bottom{position:fixed; bottom:100px;right: 50px;  z-index:99999;
+  width: 100px;
+}
 </style>

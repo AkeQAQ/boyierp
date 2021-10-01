@@ -10,31 +10,30 @@
                class="demo-editForm">
 
         <el-form-item>
-          <el-button type="primary" v-if="hasAuth('produce:craft:real') && editForm2.status === 2"  @click="submitForm()">
-            保存最终工艺单
-          </el-button>
-          <el-button type="primary"  @click="returnPage">
-            返回
-          </el-button>
-        </el-form-item>
-        <el-form-item>
           <el-input size="mini" v-show="false" v-model="editForm2.realJson">
           </el-input>
         </el-form-item>
 
       </el-form>
 
+
+      <div class="bottom" >
+        <el-button type="primary" style="margin-bottom: 10px"
+                   v-if="hasAuth('produce:craft:real') && editForm2.status === 2"  @click="submitForm()">
+          保存最终工艺单
+        </el-button>
+        <el-button type="danger"  @click="returnPage">
+          返回
+        </el-button>
+      </div>
+
     </el-main>
 
     <el-footer>
-      <div id="luckysheet" style="margin:0px;padding:0px;position:absolute;width:98%;height:100%;left:0px;top:60px;
+      <div id="luckysheet" style="margin:0px;padding:0px;position:absolute;width:98%;height:100%;left:0px;top:0px;
 "></div>
     </el-footer>
   </el-container>
-
-
-
-
 
 
 </template>
@@ -47,6 +46,7 @@ export default {
   name: "craftReal-lk",
   data() {
     return {
+      isLoad:false,
       editForm2: {
         id: '',
         realJson:[]
@@ -95,6 +95,7 @@ export default {
       //ToJson
       this.editForm2.realJson = JSON.stringify(luckysheet.getAllSheets());
       console.log("提交时的json,",this.editForm2.realJson)
+      this.isLoad=true
 
         request.post('/produce/craft/setStreadReal' , this.editForm2).then(res => {
           this.$message({
@@ -104,14 +105,12 @@ export default {
 
           this.returnPage()
         })
+      this.isLoad=false
     },
-
 
   },
   created() {
     console.log("id=",this.$route.params.id)
-
-
         request.get('/produce/craft/queryById?id=' + this.$route.params.id).then(res => {
           let result = res.data.data
           this.editForm2 = result
@@ -161,5 +160,7 @@ export default {
 </script>
 
 <style scoped>
-
+.bottom{position:fixed; bottom:100px;right: 50px;  z-index:99999;
+  width: 100px;
+}
 </style>

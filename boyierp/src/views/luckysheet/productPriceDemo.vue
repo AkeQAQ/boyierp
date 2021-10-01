@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
 
-      <el-button size="mini" type="primary" v-if="hasAuth('order:productPrice:real')" @click="submitForm()">
+      <el-button size="mini" type="primary" v-if="hasAuth('order:productPricePre:save')" @click="submitForm()">
         保存模板
       </el-button>
 
@@ -104,6 +104,7 @@ export default {
             column: 20, //空表格默认的列数量
             row: 20, //空表格默认的行数据量
             showinfobar:false, //是否显示顶部信息栏
+            "scrollTop": 0,
             data:arr
           }
           luckysheet.create(options)
@@ -115,6 +116,7 @@ export default {
             column: 20, //空表格默认的列数量
             row: 20, //空表格默认的行数据量
             showinfobar:false, //是否显示顶部信息栏
+            "scrollTop": 0,
             lang:'zh'
           }
           luckysheet.create(options)

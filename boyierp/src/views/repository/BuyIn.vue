@@ -1,9 +1,8 @@
 <template>
-
   <el-container>
-    <el-main>
+    <el-main class="elMain_my">
       <!-- 入库单列表 -->
-      <el-form :inline="true" class="demo-form-inline">
+      <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
           <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
@@ -48,7 +47,7 @@
         <el-form-item>
 
           <!-- 列表界面-日期搜索 -->
-          <el-date-picker style="width: 130px"
+          <el-date-picker style="width: 130px;"
                           size="mini"
                           value-format="yyyy-MM-dd"
                           v-model="searchStartDate"
@@ -56,11 +55,10 @@
                           clearable
                           placeholder="开始日期">
           </el-date-picker>
-
         </el-form-item>
 
         <el-form-item>
-          <el-date-picker style="width: 130px"
+          <el-date-picker style="width: 130px;"
                           size="mini"
                           value-format="yyyy-MM-dd"
                           v-model="searchEndDate"
@@ -195,6 +193,7 @@
         <el-table-column
             prop="materialName"
             label="物料名称"
+            width="120px"
             show-overflow-tooltip>
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -220,7 +219,7 @@
         <el-table-column
             prop="num"
             label="数量"
-            width="100px"
+            width="80px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -271,17 +270,6 @@
         </el-table-column>
 
         <el-table-column
-            prop="orderId"
-            label="订单编号">
-          <template slot-scope="scope">
-            <el-button type="text" size="small"
-                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
-            >{{ scope.row.orderId }}
-            </el-button>
-          </template>
-        </el-table-column>
-
-        <el-table-column
             prop="orderSeq"
             label="单号">
           <template slot-scope="scope">
@@ -292,6 +280,18 @@
           </template>
         </el-table-column>
 
+        <el-table-column
+            prop="orderId"
+            label="订单编号">
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.orderId }}
+            </el-button>
+          </template>
+        </el-table-column>
+
+
 
         <el-table-column
             prop="action"
@@ -300,14 +300,14 @@
             fixed="right"
         >
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="edit(scope.row.id)"
+            <el-button class="elInput_action_my" type="text" size="small" @click="edit(scope.row.id)"
                        v-if="hasAuth('repository:buyIn:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
             </el-button>
 
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:buyIn:update') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button class="elInput_action_my" type="text"
                        v-if="hasAuth('repository:buyIn:valid')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
@@ -318,9 +318,8 @@
               </template>
             </el-button>
 
-
-            <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
+            <el-button class="elInput_action_my" type="text"
+                       v-if="hasAuth('repository:buyIn:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"
@@ -333,7 +332,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:buyIn:del')  && scope.row.status ===1  "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button class="elInput_action_my" type="text"
                        v-if="hasAuth('repository:buyIn:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
@@ -355,7 +354,7 @@
           title=""
           :visible.sync="dialogVisiblePrint"
           width="55%"
-          style="padding-top: 0px"
+          class="elDialog_print_my"
           :before-close="printClose"
       >
         <el-button v-if="dialogVisiblePrint"
@@ -379,13 +378,13 @@
           :before-close="handleClose"
           fullscreen
       >
-        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+        <el-form
                  size="mini" :inline="true"
                  label-width="100px"
                  :model="editForm" :rules="rules" ref="editForm"
-                 class="demo-editForm">
+                 class="demo-editForm elDialogForm_my">
 
-          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0px">
+          <el-form-item label="单据编号" prop="id" >
             <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
 
             </el-input>
@@ -396,15 +395,14 @@
                       </el-input>
                     </el-form-item>-->
 
-          <el-form-item v-if="false" prop="supplierId" style="margin-bottom: 0px">
+          <el-form-item v-show="false" prop="supplierId" >
             <el-input v-model="editForm.supplierId"></el-input>
           </el-form-item>
-          <el-form-item label="供应商" prop="supplierName" style="margin-bottom: 10px">
+          <el-form-item label="供应商" prop="supplierName" >
             <!-- 搜索框 -->
             <el-autocomplete
                 :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"
-                style="width: 150px"
-                class="inline-input"
+                class="inline-input elAutocomplete_my"
                 v-model="editForm.supplierName"
                 :fetch-suggestions="querySearch"
                 placeholder="请输入供应商"
@@ -416,13 +414,13 @@
             </el-autocomplete>
           </el-form-item>
 
-          <el-form-item  label="供应商单号" prop="supplierDocumentNum" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"  size="mini" clearable style="width: 150px" v-model="editForm.supplierDocumentNum">
+          <el-form-item  label="供应商单号" prop="supplierDocumentNum" >
+            <el-input :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"  size="mini" clearable style="width: 100px;" v-model="editForm.supplierDocumentNum">
             </el-input>
           </el-form-item>
 
           <el-form-item label="入库日期" prop="buyInDate">
-            <el-date-picker :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1" style="width: 150px"
+            <el-date-picker :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1" style="width: 130px;"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.buyInDate"
                             type="date"
@@ -1358,8 +1356,6 @@ export default {
 
 
 <style scoped>
-
-
 .el-pagination {
   float: right;
 

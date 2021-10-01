@@ -1,6 +1,6 @@
 <template>
   <!-- 打印入库单据24cm的适配宽度 -->
-  <div style="width: 750px">
+  <div style="width: 750px;">
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
       <div  class='tab_company_out'>
@@ -25,10 +25,10 @@
             <th width='26%'>材料名称</th>
             <th width='12%'>规格</th>
             <th width='7%'>计价数量</th>
-            <th width='10%'>单位</th>
+            <th width='12%'>单位</th>
             <th width='8%'>单价</th>
             <th width='12%'>总金额</th>
-            <th width='15%'>备注</th>
+            <th width='13%'>备注</th>
 
           </tr>
           <!-- 每页显示onePageRow条数据 -->
@@ -43,9 +43,8 @@
             <td style="text-align: center">{{row.comment}}</td>
           </tr>
           <!-- 插入空白行 -->
-<!--          <template v-if="blankLines===true && tableData.rowList.slice((page-1)*onePageRow,page*onePageRow).length<5">
-            <tr v-for="d in (5-tableData.rowList.slice((page-1)*onePageRow,page*onePageRow).length)" :key="`_${d}_`">
-              <td></td>
+         <template v-if="blankLines===true && tableData.rowList.slice((page-1)*onePageRow,page*onePageRow).length<onePageRow">
+            <tr v-for="d in (onePageRow-tableData.rowList.slice((page-1)*onePageRow,page*onePageRow).length)" :key="`_${d}_`">
               <td></td>
               <td></td>
               <td></td>
@@ -55,7 +54,7 @@
               <td></td>
               <td></td>
             </tr>
-          </template>-->
+          </template>
           <!-- page:当前页，pages最大页 -->
           <tr v-if="page==pages">
             <td style="text-align: center" colspan='1'>合计</td>
@@ -67,9 +66,9 @@
           </tr>
 
         </table>
-        <el-row :gutter="20" style="padding-top: 5px;margin-bottom: 5px">
+        <el-row :gutter="20" style="padding-top: 0px;margin-bottom: 1px">
           <el-col :span="6"><div class="grid-content bg-purple"></div>
-            <time>制单人：{{tableData.createdUser}}</time>
+            <time>制单人：{{$store.state.user_info.userName}}</time>
           </el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
             <span>仓库主管：</span>
@@ -86,11 +85,11 @@
         </el-row>
         <hr style="height: 2px;background-color: black"/>
 
-        <el-row :gutter="20" style="padding-top: 10px;margin-bottom: 10px">
-          <el-col :span="14" style="text-align: left"><div class="grid-content bg-purple"></div>
+        <el-row :gutter="20" style="padding-top: 0px;margin-bottom: 10px">
+          <el-col :span="13" style="text-align: left"><div class="grid-content bg-purple"></div>
             <span>注：一式两联：第一联财务（白），第二联供应商（红）</span>
           </el-col>
-          <el-col :span="7" style="text-align: right"><div class="grid-content bg-purple">
+          <el-col :span="6" style="text-align: right"><div class="grid-content bg-purple">
             <span>打印日期：{{new Date().toLocaleDateString()}}  </span>
           </div>
           </el-col>
@@ -214,8 +213,8 @@ table tr th:last-of-type {
 table tr th {
   border-top: 1px solid #000;
   border-left: 1px solid #000;
-  height: 22px;
-  line-height: 22px;
+  height: 28px;
+  line-height: 28px;
   font-size: 12px;
 }
 table tr th:nth-child(2) {

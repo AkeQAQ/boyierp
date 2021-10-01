@@ -1,9 +1,9 @@
 <template>
 
   <el-container>
-    <el-main>
-      <!-- 领料列表 -->
-      <el-form :inline="true" class="demo-form-inline">
+    <el-main class="elMain_my">
+      <!-- 入库单列表 -->
+      <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
           <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
@@ -294,7 +294,7 @@
                  class="demo-editForm">
 
           <el-form-item label="单据编号" prop="id" style="margin-bottom: 0px">
-            <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
+            <el-input class="elInput_my" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
             </el-input>
           </el-form-item>
 
@@ -306,7 +306,7 @@
             <!-- 搜索框 -->
             <el-autocomplete
                 :disabled="this.editForm.status===0"
-                style="width: 150px"
+                style="width: 100px"
                 class="inline-input"
                 v-model="editForm.departmentName"
                 :fetch-suggestions="querySearch"
@@ -320,7 +320,7 @@
           </el-form-item>
 
           <el-form-item  label="领料人" prop="pickUser" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 150px" v-model="editForm.pickUser">
+            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 100px" v-model="editForm.pickUser">
             </el-input>
           </el-form-item>
 
@@ -1213,11 +1213,11 @@ export default {
 
 }
 
+
 </script>
 
 
 <style scoped>
-
 
 .el-pagination {
   float: right;
