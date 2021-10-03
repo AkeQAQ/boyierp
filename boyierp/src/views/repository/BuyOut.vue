@@ -18,7 +18,8 @@
 
         <el-form-item>
           <!-- 列表界面-供应商搜索 -->
-          <el-autocomplete size="mini" v-if="selectedName==='supplierName'"
+          <el-autocomplete
+              size="mini" v-if="selectedName==='supplierName'"
                            clearable
                            class="inline-input"
                            v-model="searchStr"
@@ -296,7 +297,7 @@
             <!-- 搜索框 -->
             <el-autocomplete
                 :disabled="this.editForm.status===0 "
-                style="width: 150px"
+                style="width: 250px"
                 class="inline-input"
                 v-model="editForm.supplierName"
                 :fetch-suggestions="querySearch"
@@ -389,7 +390,11 @@
 
           <el-table-column label="退料数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
-              <el-input  :disabled="editForm.status===0 " size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input
+                  :ref='"input_num_"+scope.row.seqNum'
+                  @keyup.up.native="numUp(scope.row.seqNum)"
+                  @keyup.down.native="numDown(scope.row.seqNum)"
+                  :disabled="editForm.status===0 " size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -562,7 +567,17 @@ export default {
     }
   },
   methods: {
-
+// 数量的上下光标事件
+    numDown(seqNum){
+      if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
+        this.$refs['input_num_'+(seqNum + 1)].focus()
+      }
+    },
+    numUp(seqNum){
+      if(this.$refs['input_num_'+(seqNum - 1)] != undefined){
+        this.$refs['input_num_'+(seqNum - 1)].focus()
+      }
+    },
     // 打印按钮事件
     printDemo() {
       this.$refs.easyPrint.print()
@@ -749,7 +764,7 @@ export default {
         supplierName: '',
         materialName: '',
         materialId: '',
-        buyOutDate: '',
+        buyOutDate: new Date(),
         rowList: []
       }
       this.dialogVisible = true

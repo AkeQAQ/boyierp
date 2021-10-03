@@ -160,11 +160,11 @@
           </template>
         </el-table-column>
 
-        <el-table-column
+<!--        <el-table-column
             prop="produceDocNum"
             width="110px"
             label="生产单号">
-        </el-table-column>
+        </el-table-column>-->
 
         <el-table-column
             prop="materialId"
@@ -306,7 +306,7 @@
             <!-- 搜索框 -->
             <el-autocomplete
                 :disabled="this.editForm.status===0"
-                style="width: 100px"
+                style="width: 150px"
                 class="inline-input"
                 v-model="editForm.departmentName"
                 :fetch-suggestions="querySearch"
@@ -333,10 +333,10 @@
                             placeholder="选择日期">
             </el-date-picker>
           </el-form-item>
-          <el-form-item  label="生产单号" prop="produceDocNum" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 150px" v-model="editForm.produceDocNum">
+<!--          <el-form-item  label="生产单号" prop="produceDocNum" style="padding: -20px 0 ;margin-bottom: -20px">
+            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 100px" v-model="editForm.produceDocNum">
             </el-input>
-          </el-form-item>
+          </el-form-item>-->
 
           <el-form-item style="margin-left: 100px">
             <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
@@ -408,7 +408,10 @@
 
           <el-table-column label="领料数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
-              <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input  :ref='"input_num_"+scope.row.seqNum'
+                         @keyup.up.native="numUp(scope.row.seqNum)"
+                         @keyup.down.native="numDown(scope.row.seqNum)"
+                         :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -487,12 +490,12 @@ export default {
           label: '领料部门',
           formatterFlag: false
         },
-
+/*
         {
           prop: 'produceDocNum',
           label: '生产单号',
           formatterFlag: false
-        },
+        },*/
         {
           prop: 'materialId',
           label: '物料编码',
@@ -590,6 +593,18 @@ export default {
     }
   },
   methods: {
+    // 数量的上下光标事件
+    numDown(seqNum){
+      if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
+        this.$refs['input_num_'+(seqNum + 1)].focus()
+      }
+    },
+    numUp(seqNum){
+      if(this.$refs['input_num_'+(seqNum - 1)] != undefined){
+        this.$refs['input_num_'+(seqNum - 1)].focus()
+      }
+    },
+
     // 导出
     expChange(item) {
       console.log("导出:",item)
@@ -827,7 +842,7 @@ export default {
         departmentName: '',
         materialName: '',
         materialId: '',
-        pickDate: '',
+        pickDate: new Date(),
         endDate: '',
         price: '',
         rowList: []

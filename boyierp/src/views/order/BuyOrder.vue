@@ -516,7 +516,8 @@
 
           <el-table-column label="采购数量"  align="center" width="85" prop="num">
             <template slot-scope="scope">
-              <el-input :ref='"input_num_"+scope.row.seqNum'
+              <el-input
+                        :ref='"input_num_"+scope.row.seqNum'
                         @keyup.enter.native="numEnter(scope.row.seqNum)"
                         @keyup.up.native="numUp(scope.row.seqNum)"
                         @keyup.down.native="numEnter(scope.row.seqNum)"

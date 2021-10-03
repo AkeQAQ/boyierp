@@ -395,7 +395,10 @@
 
           <el-table-column label="退料数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
-              <el-input  :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input  :ref='"input_num_"+scope.row.seqNum'
+                         @keyup.up.native="numUp(scope.row.seqNum)"
+                         @keyup.down.native="numDown(scope.row.seqNum)"
+                         :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -576,6 +579,18 @@ export default {
     }
   },
   methods: {
+    // 数量的上下光标事件
+    numDown(seqNum){
+      if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
+        this.$refs['input_num_'+(seqNum + 1)].focus()
+      }
+    },
+    numUp(seqNum){
+      if(this.$refs['input_num_'+(seqNum - 1)] != undefined){
+        this.$refs['input_num_'+(seqNum - 1)].focus()
+      }
+    },
+
     // 导出
     expChange(item) {
       console.log("导出:",item)
@@ -805,7 +820,7 @@ export default {
         departmentName: '',
         materialName: '',
         materialId: '',
-        returnDate: '',
+        returnDate: new Date(),
         endDate: '',
         price: '',
         rowList: []

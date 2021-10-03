@@ -404,7 +404,7 @@ export default {
     },
     createFilter(queryString) {
       return (restaurant) => {
-        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
     },
     getSupplierNameById(id){

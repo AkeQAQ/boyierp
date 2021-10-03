@@ -401,6 +401,7 @@
           <el-form-item label="供应商" prop="supplierName" >
             <!-- 搜索框 -->
             <el-autocomplete
+                style="width: 250px"
                 :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"
                 class="inline-input elAutocomplete_my"
                 v-model="editForm.supplierName"
@@ -415,7 +416,7 @@
           </el-form-item>
 
           <el-form-item  label="供应商单号" prop="supplierDocumentNum" >
-            <el-input :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"  size="mini" clearable style="width: 100px;" v-model="editForm.supplierDocumentNum">
+            <el-input :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"  size="mini" clearable style="width: 120px;" v-model="editForm.supplierDocumentNum">
             </el-input>
           </el-form-item>
 
@@ -513,7 +514,11 @@
 
           <el-table-column label="入库数量" align="center" width="85" prop="num" >
             <template slot-scope="scope">
-              <el-input @keyup.enter.native="handleAddDetails"  :disabled="editForm.status===0 ||  editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input @keyup.enter.native="handleAddDetails"
+                        :ref='"input_num_"+scope.row.seqNum'
+                        @keyup.up.native="numUp(scope.row.seqNum)"
+                        @keyup.down.native="numDown(scope.row.seqNum)"
+                        :disabled="editForm.status===0 ||  editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -696,7 +701,7 @@ export default {
         supplierName: '',
         materialName: '',
         materialId: '',
-        buyInDate: '',
+        buyInDate: new Date(),
         endDate: '',
         price: '',
         rowList: []
@@ -723,6 +728,17 @@ export default {
     }
   },
   methods: {
+    // 数量的上下光标事件
+    numDown(seqNum){
+      if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
+        this.$refs['input_num_'+(seqNum + 1)].focus()
+      }
+    },
+    numUp(seqNum){
+      if(this.$refs['input_num_'+(seqNum - 1)] != undefined){
+        this.$refs['input_num_'+(seqNum - 1)].focus()
+      }
+    },
     // 导出按钮
     exportExcel () {
       this.$refs.myChild.exportExcel();
@@ -955,7 +971,7 @@ export default {
         supplierName: '',
         materialName: '',
         materialId: '',
-        buyInDate: '',
+        buyInDate: new Date(),
         endDate: '',
         price: '',
         sourceType: 0,

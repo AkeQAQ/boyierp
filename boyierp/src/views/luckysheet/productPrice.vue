@@ -29,11 +29,12 @@
           </el-input>
         </el-form-item>
 -->
-
-        <el-form-item>
-
-
+        <el-form-item label="">
+          <el-button type="primary" :disabled="this.isCopy" style="margin-bottom: 10px" @click="copy()">
+            {{this.isCopy ? '已复制':'复制'}}
+          </el-button>
         </el-form-item>
+
         <el-form-item>
           <el-input size="mini" v-show="false" v-model="editForm2.excelJson">
           </el-input>
@@ -67,6 +68,7 @@ export default {
   name: "productPrice-lk",
   data() {
     return {
+      isCopy:false,
       isLoad:false,
       editForm2: {
         status: 1, // 编辑表单初始默认值
@@ -126,11 +128,22 @@ export default {
         });
       });
     },
+    copy(){
+      this.isCopy = true
+      this.editForm2.companyNum = ''
+      this.editForm2.customer = ''
+      this.editForm2.id= ''
+    },
     // 表单提交
     submitForm(formName) {
       //ToJson
       this.isLoad=true;
-      let methodName = this.$route.params.addOrUpdate
+      let methodName = '';
+      if(this.isCopy === true){
+        methodName = 'save'
+      }else {
+        methodName = this.$route.params.addOrUpdate
+      }
       this.editForm2.excelJson = JSON.stringify(luckysheet.getAllSheets());
       console.log("提交时的json,",this.editForm2.excelJson)
       let cellValue = luckysheet.getCellValue(59, 8);
