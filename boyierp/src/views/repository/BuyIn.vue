@@ -264,7 +264,7 @@
           <template slot-scope="scope">
             <el-button type="text" size="small"
                        @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
-            >{{ scope.row.amount }}
+            >{{ scope.row.amount ==null? null :scope.row.amount.toFixed(2) }}
             </el-button>
           </template>
         </el-table-column>

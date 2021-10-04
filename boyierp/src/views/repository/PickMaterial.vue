@@ -576,9 +576,6 @@ export default {
         departmentName: [
           {required: true, message: '请输入领料部门', change: 'blur'}
         ],
-        pickUser: [
-          {required: true, message: '请输入领料人', trigger: 'blur'}
-        ],
         pickDate: [
           {required: true, message: '请输入领料日期', trigger: 'blur'}
         ]
@@ -1110,7 +1107,7 @@ export default {
           colspan: _col
         }
       }
-      else if (columnIndex === 11) {
+      else if (columnIndex === 10) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {

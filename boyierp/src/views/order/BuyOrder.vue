@@ -527,7 +527,7 @@
 
           <el-table-column label="金额" align="center" width="115" prop="amount">
             <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].amount"/>
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].amount ==null ? null :editForm.rowList[scope.row.seqNum-1].amount.toFixed(2)"/>
             </template>
           </el-table-column>
 

@@ -562,9 +562,6 @@ export default {
         departmentName: [
           {required: true, message: '请输入退料部门', change: 'blur'}
         ],
-        returnUser: [
-          {required: true, message: '请输入退料人', trigger: 'blur'}
-        ],
         returnDate: [
           {required: true, message: '请输入退料日期', trigger: 'blur'}
         ]
