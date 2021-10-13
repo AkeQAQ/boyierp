@@ -71,7 +71,7 @@ export default {
   data() {
     return {
       editForm:{
-        closeDate:new Date()
+        closeDate:new Date().format("yyyy-MM-dd")
       },
       tableData: [],
       tableData2: [],

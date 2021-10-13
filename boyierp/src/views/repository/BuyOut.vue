@@ -543,7 +543,15 @@ export default {
         materialName: '',
         materialId: '',
         buyOutDate: '',
-        rowList: []
+        rowList: [{
+          materialName:'',
+          unit:'',
+          materialId:'',
+          num:'',
+          specs:'',
+          comment:'',
+
+        }]
       },
       rules: {
         supplierName: [
@@ -764,8 +772,16 @@ export default {
         supplierName: '',
         materialName: '',
         materialId: '',
-        buyOutDate: new Date(),
-        rowList: []
+        buyOutDate: new Date().format("yyyy-MM-dd"),
+        rowList: [{
+          materialName:'',
+          unit:'',
+          materialId:'',
+          num:'',
+          specs:'',
+          comment:'',
+
+        }]
       }
       this.dialogVisible = true
     },

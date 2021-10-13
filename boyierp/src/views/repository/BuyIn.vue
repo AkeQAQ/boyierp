@@ -514,7 +514,7 @@
 
           <el-table-column label="入库数量" align="center" width="85" prop="num" >
             <template slot-scope="scope">
-              <el-input @keyup.enter.native="handleAddDetails"
+              <el-input @keyup.enter.native="handleAddDetails" @input="changeNum(scope.row.seqNum,editForm.supplierId,scope.row.materialId,editForm.buyInDate)"
                         :ref='"input_num_"+scope.row.seqNum'
                         @keyup.up.native="numUp(scope.row.seqNum)"
                         @keyup.down.native="numDown(scope.row.seqNum)"
@@ -524,7 +524,7 @@
 
           <el-table-column label="金额" align="center" width="115" prop="amount">
             <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].amount"/>
+              <el-input size="mini" :disabled=true v-model="editForm.rowList[scope.row.seqNum-1].amount"/>
             </template>
           </el-table-column>
 
@@ -695,16 +695,28 @@ export default {
       addOrUpdate: 'save',
       editForm: {
         status: 1, // 编辑表单初始默认值
-        sourceType:'',
         id: '',
         supplierId: '',
         supplierName: '',
         materialName: '',
         materialId: '',
-        buyInDate: new Date(),
+        buyInDate: new Date().format("yyyy-MM-dd") ,
         endDate: '',
         price: '',
-        rowList: []
+        sourceType: 0,
+        rowList: [{
+          obj:'',
+          materialName:'',
+          unit:'',
+          materialId:'',
+          price:'',
+          num:'',
+          specs:'',
+          comment:'',
+          orderSeq:'',
+          amount:''
+
+        }]
       },
       rules: {
         supplierName: [
@@ -728,6 +740,22 @@ export default {
     }
   },
   methods: {
+    changeNum(seq,supplierId,materialId,buyIndate){
+      console.log("supplierId materialid:,buyIndate",supplierId,materialId,buyIndate)
+      // 获取该物料，该日期的单价信息
+      if(this.editForm.rowList[seq-1].price === ''){
+        request.get('/baseData/supplierMaterial/queryByValidPrice?supplierId='+supplierId+'&&materialId='+materialId
+            +'&&date='+buyIndate).then(res => {
+          if(res.data.data != null){
+            this.editForm.rowList[seq-1].price = res.data.data
+            this.editForm.rowList[seq-1].amount = (this.editForm.rowList[seq-1].price * this.editForm.rowList[seq-1].num).toFixed(2)
+          }
+        })
+      }else{
+        this.editForm.rowList[seq-1].amount = (this.editForm.rowList[seq-1].price *  this.editForm.rowList[seq-1].num).toFixed(2)
+      }
+
+    },
     // 数量的上下光标事件
     numDown(seqNum){
       if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
@@ -781,6 +809,7 @@ export default {
       this.editForm.rowList.push(obj);
       console.log("现有的数据:", this.editForm.rowList)
       // 光标
+
     },
 
     // 采购入库详细信息-删除
@@ -875,13 +904,11 @@ export default {
         // foreach 只能抛出异常结束
         this.restaurants.forEach(item => {
           if (text === item.name) {
-            console.log("匹配到:", text, item.name, this.editForm.supplierId, item.id)
             this.editForm.supplierId = item.id
             this.editForm.supplierName = item.name
             throw new Error();
           } else {
             this.editForm.supplierId = ''
-            console.log("没有匹配到", text, item.name)
             this.editForm.supplierName = ''
           }
         })
@@ -894,7 +921,6 @@ export default {
         // foreach 只能抛出异常结束
         this.restaurants3.forEach(item => {
           if (selectItem === item.id) {
-            console.log("匹配到:", selectItem, item.id)
             rowObj.materialId = item.id;
             rowObj.materialName = item.obj.name
             rowObj.unit = item.obj.unit
@@ -910,9 +936,7 @@ export default {
             rowObj.num = ''
             rowObj.comment = ''
             rowObj.amount=''
-            console.log("没有匹配到", selectItem, item.id)
           }
-          console.log("设置rowObj:{},",this.editForm.rowList)
 
         })
       } catch (err) {
@@ -971,11 +995,23 @@ export default {
         supplierName: '',
         materialName: '',
         materialId: '',
-        buyInDate: new Date(),
+        buyInDate: new Date().format("yyyy-MM-dd") ,
         endDate: '',
         price: '',
         sourceType: 0,
-        rowList: []
+        rowList: [{
+          obj:'',
+          materialName:'',
+          unit:'',
+          materialId:'',
+          price:'',
+          num:'',
+          specs:'',
+          comment:'',
+          orderSeq:'',
+          amount:''
+
+        }]
       }
       this.dialogVisible = true
     },
@@ -1266,6 +1302,7 @@ export default {
     },
     getDetailSummaries(param) {
       const {columns, data} = param;
+
       const sums = [];
       columns.forEach((column, index) => {
         if (index === 0) {
@@ -1274,6 +1311,7 @@ export default {
         }
         if (index === 8 || index === 9) {
           const values = data.map(item => Number(item[column.property]));
+          console.log("index:values:",index,values)
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
               const value = Number(curr);

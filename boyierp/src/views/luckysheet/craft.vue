@@ -37,7 +37,7 @@
 
       <div class="bottom" >
         <el-button  style="margin-bottom: 10px"
-                    type="primary" v-show="editForm2.status===1" @click="submitForm('editForm2')">
+                    type="primary" v-show="editForm2.status===1 || isCopy === true" @click="submitForm('editForm2')">
           保存核算
         </el-button>
         <el-button type="danger"  @click="returnPage">

@@ -570,7 +570,13 @@ export default {
         pickUser:'',
         endDate: '',
         produceDocNum: '',
-        rowList: []
+        rowList: [{
+          materialName:'',
+          unit:'',
+          materialId:'',
+          num:'',
+          specs:''
+        }]
       },
       rules: {
         departmentName: [
@@ -839,10 +845,16 @@ export default {
         departmentName: '',
         materialName: '',
         materialId: '',
-        pickDate: new Date(),
+        pickDate: new Date().format("yyyy-MM-dd"),
         endDate: '',
         price: '',
-        rowList: []
+        rowList: [{
+          materialName:'',
+          unit:'',
+          materialId:'',
+          num:'',
+          specs:''
+        }]
       }
       this.dialogVisible = true
     },
@@ -1092,14 +1104,6 @@ export default {
           colspan: _col
         }
       } else if (columnIndex === 4) {
-        const _row = this.spanArr[rowIndex];
-        const _col = _row > 0 ? 1 : 0;
-        return {
-          rowspan: _row,
-          colspan: _col
-        }
-      }
-      else if (columnIndex === 5) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {

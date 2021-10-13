@@ -556,7 +556,14 @@ export default {
         returnUser:'',
         reason:'',
         endDate: '',
-        rowList: []
+        rowList: [{
+          materialName:'',
+          unit:'',
+          materialId:'',
+          num:'',
+          specs:'',
+          reason:''
+        }]
       },
       rules: {
         departmentName: [
@@ -817,10 +824,17 @@ export default {
         departmentName: '',
         materialName: '',
         materialId: '',
-        returnDate: new Date(),
+        returnDate: new Date().format("yyyy-MM-dd"),
         endDate: '',
         price: '',
-        rowList: []
+        rowList: [{
+          materialName:'',
+          unit:'',
+          materialId:'',
+          num:'',
+          specs:'',
+          reason:''
+        }]
       }
       this.dialogVisible = true
     },

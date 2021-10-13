@@ -1,6 +1,6 @@
 <template>
   <!-- 打印入库单据24cm的适配宽度 -->
-  <div style="width: 750px;">
+  <div style="width: 780px;">
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
       <div  class='tab_company_out'>
@@ -26,13 +26,13 @@
         <table cellpadding='0' cellspacing='0' >
           <tr>
             <th width='10%'>材料编号</th>
-            <th width='24%'>材料名称</th>
-            <th width='7%'>规格</th>
-            <th width='10%'>单号</th>
+            <th width='28%'>材料名称</th>
+            <th width='13%'>规格</th>
+            <th width='9%'>单号</th>
             <th width='7%'>计价数量</th>
-            <th width='12%'>单位</th>
+            <th width='7%'>单位</th>
             <th width='8%'>单价</th>
-            <th width='12%'>总金额</th>
+            <th width='9%'>总金额</th>
             <th width='10%'>备注</th>
 
           </tr>

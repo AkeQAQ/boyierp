@@ -42,7 +42,7 @@
       </el-form>
 
       <div class="bottom" >
-        <el-button type="primary" style="margin-bottom: 10px" v-show="editForm2.status===1" :loading="isLoad" @click="submitForm('editForm2')">
+        <el-button type="primary" style="margin-bottom: 10px" v-show="editForm2.status===1 || isCopy===true" :loading="isLoad" @click="submitForm('editForm2')">
           保存报价
         </el-button>
         <el-button type="danger"  @click="returnPage">

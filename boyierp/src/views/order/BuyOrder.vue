@@ -87,7 +87,7 @@
 
         <el-form-item v-if="hasAuth('order:buyOrder:push')">
           <el-button size="mini" icon="el-icon-plus" type="primary"
-                     @click="pushPage(null)"
+                     @click="pushPage(-1)"
                      >下推入库
           </el-button>
         </el-form-item>
@@ -231,7 +231,7 @@
             fixed="right"
         >
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="edit(scope.row.id)"
+            <el-button type="text" size="small" @click.stop="edit(scope.row.id)"
                        v-if="hasAuth('order:buyOrder:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
             </el-button>
 
@@ -244,14 +244,14 @@
                 <el-popconfirm @confirm="del(scope.row.id)"
                                title="确定删除吗？"
                 >
-                  <el-button type="text" size="small" slot="reference">删除</el-button>
+                  <el-button type="text" size="small" slot="reference" @click.stop="">删除</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
 
 
             <el-button style="padding: 0px" type="text"  size="mini"
-                       v-if="hasAuth('order:buyOrder:push') " @click="pushPage(scope.row.id)"> 单据下推
+                       v-if="hasAuth('order:buyOrder:push') " @click.stop="pushPage(scope.row.id)"> 单据下推
             </el-button>
 
           </template>
@@ -642,7 +642,7 @@ export default {
       pushForm: {
         orderDetailIds:[],
         supplierDocumentNum: '',
-        buyInDate: '',
+        buyInDate: new Date().format("yyyy-MM-dd"),
         id:''
       },
       editForm: {
@@ -652,7 +652,7 @@ export default {
         supplierName: '',
         materialName: '',
         materialId: '',
-        orderDate: '',
+        orderDate: new Date().format("yyyy-MM-dd"),
         endDate: '',
         price: '',
         rowList: []
@@ -667,7 +667,7 @@ export default {
       },
       pushRules: {
         buyInDate: [
-          {required: true, message: '请输入入库日期', change: 'blur'}
+          {required: true, message: '请输入入库日期', trigger: 'blur'}
         ],
         supplierDocumentNum: [
           {required: true, message: '请输入供应商单据号', trigger: 'blur'}
@@ -757,6 +757,7 @@ export default {
       obj.specs = ''
       obj.comment = ''
       obj.orderSeq = ''
+      obj.status = 1;
 
       this.editForm.rowList.push(obj);
       console.log("现有的数据:", this.editForm.rowList)
@@ -790,7 +791,8 @@ export default {
         obj.doneDate = last.doneDate
         obj.status = 1;
         let nextStr = dealfun(last.orderSeq)
-        console.log("自增:",nextStr)
+        console.log("自增:",obj)
+        console.log("自增:",obj.amount == null)
         obj.orderSeq = nextStr
 
         this.editForm.rowList.push(obj);
@@ -808,13 +810,26 @@ export default {
           });
         }else{
           this.editForm.rowList.splice(this.editForm.rowList.length-1,1)
-
         }
       } else {
-        let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
-        this.editForm.rowList = newArr
+
+        try{
+          this.checkedDetail.forEach(theSeq => {
+            let theRow = this.editForm.rowList[theSeq-1];
+            if(theRow.status === 0){
+              this.$message({
+                message: '不可删除已下推的记录！',
+                type: 'error'
+              });
+              throw new Error();
+            }
+          })
+
+          let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
+          this.editForm.rowList = newArr
+        }catch (err) {
+        }
       }
-      this.checkedDetail=[]
     },
     handleDeleteAllDetails() {
       this.editForm.rowList = [];
@@ -930,7 +945,6 @@ export default {
             rowObj.price = '';
             rowObj.num = ''
             rowObj.comment = ''
-            rowObj.amount=''
           }
         })
       } catch (err) {
@@ -956,7 +970,7 @@ export default {
         supplierName: '',
         materialName: '',
         materialId: '',
-        orderDate: '',
+        orderDate: new Date().format("yyyy-MM-dd"),
         endDate: '',
         price: '',
         rowList: []

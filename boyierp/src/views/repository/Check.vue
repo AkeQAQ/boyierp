@@ -336,13 +336,13 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="盘点数量" align="center" width="85" prop="checkNum">
+          <el-table-column label="盘点数量" align="center" width="120" prop="checkNum">
             <template slot-scope="scope">
               <el-input  @change="checkNum(scope.row)" :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].checkNum"/>
             </template>
           </el-table-column>
 
-          <el-table-column label="账存数量" align="center" prop="stockNum" width="100">
+          <el-table-column label="账存数量" align="center" prop="stockNum" width="120">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].stockNum"></el-input>
             </template>
@@ -593,7 +593,7 @@ export default {
         id: '',
         materialName: '',
         materialId: '',
-        checkDate: '',
+        checkDate: new Date().format("yyyy-MM-dd"),
         checkUser: '',
         rowList: []
       }
