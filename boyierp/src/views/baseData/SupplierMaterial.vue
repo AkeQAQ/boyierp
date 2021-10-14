@@ -18,6 +18,7 @@
         <el-form-item>
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'" clearable
+                           style="width: 300px"
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySupplierSearchValide"
@@ -29,6 +30,7 @@
 
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
+                           style="width: 300px"
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"
@@ -254,7 +256,7 @@
               </i>
               <template slot-scope="{ item }">
                 <div class="name">{{ item.value }}</div>
-                <span class="addr">{{ item.unit }}</span>
+                <span class="unit">{{ item.unit }}</span>
               </template>
             </el-autocomplete>
           </el-form-item>
@@ -654,22 +656,22 @@ export default {
 
 }
 .my-autocomplete {
-li {
-  line-height: normal;
-  padding: 7px;
+    li {
+      line-height: normal;
+      padding: 7px;
+    
+      .name {
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+      .unit {
+        font-size: 12px;
+        color: #b4b4b4;
+      }
 
-.name {
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-.addr {
-  font-size: 12px;
-  color: #b4b4b4;
-}
-
-.highlighted .addr {
-  color: #ddd;
-}
-}
+      .highlighted .unit {
+        color: #ddd;
+      }
+    }
 }
 </style>

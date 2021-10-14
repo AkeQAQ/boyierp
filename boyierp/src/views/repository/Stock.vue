@@ -19,6 +19,7 @@
         <el-form-item>
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
+                           style="width: 300px"
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"
@@ -29,6 +30,7 @@
 
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialId'" clearable
+                           style="width: 300px"
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"

@@ -20,6 +20,7 @@
 
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
+                           style="width: 300px"
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
@@ -31,6 +32,7 @@
 
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
+                    style="width: 300px"
                     placeholder="请输入搜索内容"></el-input>
 
         </el-form-item>

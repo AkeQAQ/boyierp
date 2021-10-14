@@ -19,6 +19,7 @@
         <el-form-item>
           <!-- 列表界面-供应商搜索 -->
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'"
+                           style="width: 300px"
                            clearable
                            class="inline-input"
                            v-model="searchStr"
@@ -30,6 +31,7 @@
 
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
+                           style="width: 300px"
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
@@ -41,6 +43,7 @@
 
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
+                    style="width: 300px"
                     placeholder="请输入搜索内容"></el-input>
 
         </el-form-item>
@@ -376,7 +379,7 @@
           <el-form-item label="供应商" prop="supplierName" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
-                style="width: 150px"
+                style="width: 250px"
                 :disabled="this.hasPushed"
                 class="inline-input"
                 v-model="editForm.supplierName"
@@ -475,9 +478,9 @@
             </template>
           </el-table-column>
 
-          <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="200" prop="materialId">
+          <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="260" prop="materialId">
             <template slot-scope="scope">
-              <el-autocomplete size="mini" clearable
+              <el-autocomplete size="mini" clearable style="width: 250px"
                                class="inline-input"
                                :disabled="editForm.rowList[scope.row.seqNum-1].status === 0"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
@@ -491,9 +494,9 @@
 
           </el-table-column>
 
-          <el-table-column label="物料名称" align="center" prop="materialName" width="180">
+          <el-table-column label="物料名称" align="center" prop="materialName" width="210">
             <template slot-scope="scope">
-              <el-input size="mini" :disabled="true"
+              <el-input size="mini" :disabled="true" style="200px"
                         v-model="editForm.rowList[scope.row.seqNum-1].materialName"></el-input>
             </template>
           </el-table-column>
@@ -518,6 +521,7 @@
             <template slot-scope="scope">
               <el-input
                         :ref='"input_num_"+scope.row.seqNum'
+                        @input="changeNum(scope.row.seqNum,editForm.supplierId,scope.row.materialId,editForm.orderDate)"
                         @keyup.enter.native="numEnter(scope.row.seqNum)"
                         @keyup.up.native="numUp(scope.row.seqNum)"
                         @keyup.down.native="numEnter(scope.row.seqNum)"
@@ -527,7 +531,7 @@
 
           <el-table-column label="金额" align="center" width="115" prop="amount">
             <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].amount ==null ? null :editForm.rowList[scope.row.seqNum-1].amount.toFixed(2)"/>
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].amount === '' ? null :editForm.rowList[scope.row.seqNum-1].amount"/>
             </template>
           </el-table-column>
 
@@ -655,7 +659,18 @@ export default {
         orderDate: new Date().format("yyyy-MM-dd"),
         endDate: '',
         price: '',
-        rowList: []
+        rowList: [{
+          materialName:'',
+          unit:'',
+          materialId:'',
+          price:'',
+          num:'',
+          specs:'',
+          comment:'',
+          orderSeq:'',
+          status:1,
+          amount:''
+        }]
       },
       rules: {
         supplierName: [
@@ -686,7 +701,23 @@ export default {
     }
   },
   methods: {
+    changeNum(seq,supplierId,materialId,buyIndate){
+      console.log("supplierId materialid:,buyIndate",supplierId,materialId,buyIndate)
+      // 获取该物料，该日期的单价信息
+      if(this.editForm.rowList[seq-1].price === ''){
+        request.get('/baseData/supplierMaterial/queryByValidPrice?supplierId='+supplierId+'&&materialId='+materialId
+            +'&&date='+buyIndate).then(res => {
+          if(res.data.data != null){
+            this.editForm.rowList[seq-1].price = res.data.data
+            console.log("amount",(this.editForm.rowList[seq-1].price * this.editForm.rowList[seq-1].num))
+            this.editForm.rowList[seq-1].amount = (this.editForm.rowList[seq-1].price * this.editForm.rowList[seq-1].num).toFixed(2)
+          }
+        })
+      }else{
+        this.editForm.rowList[seq-1].amount = (this.editForm.rowList[seq-1].price *  this.editForm.rowList[seq-1].num).toFixed(2)
+      }
 
+    },
     pinSelect(item, index){
       console.log("pinselect")
       const data = this.$refs.multipleTable.tableData; // 获取所以数据
@@ -789,6 +820,7 @@ export default {
         obj.specs = last.specs
         obj.comment = last.comment
         obj.doneDate = last.doneDate
+        obj.amount = last.amount
         obj.status = 1;
         let nextStr = dealfun(last.orderSeq)
         console.log("自增:",obj)
@@ -973,7 +1005,18 @@ export default {
         orderDate: new Date().format("yyyy-MM-dd"),
         endDate: '',
         price: '',
-        rowList: []
+        rowList: [{
+          materialName:'',
+          unit:'',
+          materialId:'',
+          price:'',
+          num:'',
+          specs:'',
+          comment:'',
+          orderSeq:'',
+          status:1,
+          amount:''
+        }]
       }
       this.dialogVisible = true
     },
@@ -1313,7 +1356,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 7 || index === 8) {
+        if (index === 9 || index === 8) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {

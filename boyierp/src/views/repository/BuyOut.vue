@@ -20,6 +20,7 @@
           <!-- 列表界面-供应商搜索 -->
           <el-autocomplete
               size="mini" v-if="selectedName==='supplierName'"
+              style="width: 300px"
                            clearable
                            class="inline-input"
                            v-model="searchStr"
@@ -31,6 +32,7 @@
 
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
+                           style="width: 300px"
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
@@ -42,6 +44,7 @@
 
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
+                    style="width: 300px"
                     placeholder="请输入搜索内容"></el-input>
 
         </el-form-item>
@@ -122,7 +125,7 @@
         <el-table-column
             label="单据编号"
 
-            prop="id" width="70px"
+            prop="id" width="80px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -355,9 +358,9 @@
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="200" prop="materialId">
+          <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="310" prop="materialId">
             <template slot-scope="scope">
-              <el-autocomplete size="mini" clearable
+              <el-autocomplete size="mini" clearable style="width: 300px"
                                :disabled="editForm.status===0 "
                                class="inline-input"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
@@ -371,9 +374,9 @@
 
           </el-table-column>
 
-          <el-table-column label="物料名称" align="center" prop="materialName" width="180">
+          <el-table-column label="物料名称" align="center" prop="materialName" width="210">
             <template slot-scope="scope">
-              <el-input size="mini" :disabled="true"
+              <el-input size="mini" :disabled="true" style="width: 200px"
                         v-model="editForm.rowList[scope.row.seqNum-1].materialName"></el-input>
             </template>
           </el-table-column>
