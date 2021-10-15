@@ -125,7 +125,7 @@
         <el-table-column
             label="单据编号"
 
-            prop="id" width="80px"
+            prop="id" width="90px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -207,7 +207,7 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('repository:buyOut:update') && scope.row.status ===1   "></el-divider>
+                        v-if="hasAuth('repository:buyOut:valid') && scope.row.status ===1   "></el-divider>
 
             <el-button style="padding: 0px" type="text"
                        v-if="hasAuth('repository:buyOut:valid')  && scope.row.status ===1   ">
@@ -394,6 +394,7 @@
           <el-table-column label="退料数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
               <el-input
+                  onkeyup="value=value.replace(/[^0-9.]/g,'')"
                   :ref='"input_num_"+scope.row.seqNum'
                   @keyup.up.native="numUp(scope.row.seqNum)"
                   @keyup.down.native="numDown(scope.row.seqNum)"
@@ -838,14 +839,28 @@ export default {
           let validateFlag = true;
           let validateMaterial = true;
           console.log(this.editForm.rowList)
-          this.editForm.rowList.forEach(obj => {
+
+          let emptyArr = []; // 存放空内容 的 下标。
+          for (let i = 0; i < this.editForm.rowList.length; i++) {
+            let obj = this.editForm.rowList[i];
+
+            if((obj.num === undefined || obj.num === '') && (obj.materialId === '')){
+              emptyArr.push(i+1);
+              continue;
+            }
             if (obj.num === undefined || obj.num === '') {
               validateFlag = false
             }
             if (obj.materialId === '') {
               validateMaterial = false
             }
-          })
+          }
+          // 移除空的数组内容
+          console.log("移除前的内容:",this.editForm.rowList)
+          let newArr = this.getNewArr(this.editForm.rowList,emptyArr);
+          this.editForm.rowList = newArr
+          console.log("移除后的内容:",this.editForm.rowList)
+
           if (validateMaterial === false) {
             this.$message({
               message: '物料不能为空!',
@@ -857,6 +872,13 @@ export default {
           if (validateFlag === false) {
             this.$message({
               message: '退料数量不能为空!',
+              type: 'error'
+            });
+            return
+          }
+          if(this.editForm.rowList.length === 0){
+            this.$message({
+              message: '详情内容不能为空!',
               type: 'error'
             });
             return

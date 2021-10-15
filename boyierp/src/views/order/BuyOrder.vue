@@ -124,7 +124,7 @@
         <el-table-column
             label="单据编号"
 
-            prop="id" width="70px"
+            prop="id" width="90px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -179,6 +179,7 @@
         <el-table-column
             prop="materialName"
             label="物料名称"
+            width="120px"
             show-overflow-tooltip>
         </el-table-column>
 

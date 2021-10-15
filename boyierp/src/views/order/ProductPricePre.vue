@@ -506,6 +506,8 @@ export default {
       this.fileSizeIsSatisfy = file.size < 5 * 1024 * 1024 ? true : false;
       return this.fileSizeIsSatisfy
     },
+
+
     // 编辑页面
     realEdit(id) {
       this.addOrUpdate = "update"

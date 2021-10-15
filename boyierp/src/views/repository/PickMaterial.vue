@@ -89,7 +89,6 @@
 
         </el-form-item>
 
-
         <el-form-item  v-if="hasAuth('repository:pickMaterial:export')">
           <el-dropdown   @command="expChange">
             <el-button  icon="el-icon-download" size="mini" type="success">
@@ -100,6 +99,24 @@
               <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
+        </el-form-item>
+
+
+        <el-form-item v-if="hasAuth('repository:pickMaterial:save')">
+          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:pickMaterial:save')"
+                     @click="dialogImportVisible = true;"
+
+          >导入
+          </el-button>
+        </el-form-item>
+
+        <el-form-item v-if="hasAuth('repository:pickMaterial:save')">
+          <el-button size="mini" icon="el-icon-download" type="primary" v-if="hasAuth('repository:pickMaterial:save')"
+                     @click="downImportDemo()"
+
+          >导入模板下载
+          </el-button>
+
         </el-form-item>
 
       </el-form>
@@ -127,7 +144,7 @@
         <el-table-column
             label="单据编号"
 
-            prop="id" width="80px"
+            prop="id" width="90px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -215,7 +232,7 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('repository:pickMaterial:update') && scope.row.status ===1   "></el-divider>
+                        v-if="hasAuth('repository:pickMaterial:valid') && scope.row.status ===1   "></el-divider>
 
             <el-button style="padding: 0px" type="text"
                        v-if="hasAuth('repository:pickMaterial:valid')  && scope.row.status ===1   ">
@@ -279,8 +296,6 @@
         </vue-easy-print>
 
       </el-dialog>
-
-
 
       <!-- 领料弹窗 -->
 
@@ -413,6 +428,7 @@
           <el-table-column label="领料数量" align="center" width="85" prop="num">
             <template slot-scope="scope">
               <el-input  :ref='"input_num_"+scope.row.seqNum'
+                         onkeyup="value=value.replace(/[^0-9.]/g,'')"
                          @keyup.up.native="numUp(scope.row.seqNum)"
                          @keyup.down.native="numDown(scope.row.seqNum)"
                          :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
@@ -420,6 +436,106 @@
           </el-table-column>
 
         </el-table>
+
+      </el-dialog>
+
+      <el-dialog
+          title="导入信息"
+          :visible.sync="dialogImportVisible"
+          :before-close="handleImportClose"
+          fullscreen
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 :inline="true"
+                 size="mini"
+                 label-width="100px"
+                 :model="editImportForm" :rules="rules" ref="editImportForm"
+                 class="demo-editForm myFormClass">
+
+          <el-form-item label="单据编号" prop="id" style="margin-bottom: 20px;width: 300px">
+            <el-input class="elInput_my" :disabled=true placeholder="保存自动生成" v-model="editImportForm.id">
+            </el-input>
+          </el-form-item>
+
+          <el-form-item v-if="false" prop="departmentId">
+            <el-input v-model="editImportForm.departmentId"></el-input>
+          </el-form-item>
+
+          <el-form-item  label="领料人" prop="pickUser" style="padding: 0px 0 ;margin-bottom: 20px;margin-left: -30px">
+            <el-input   size="mini" clearable style="width: 100px" v-model="editImportForm.pickUser">
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="领料部门" prop="departmentName" style="margin-bottom: 20px">
+            <!-- 搜索框 -->
+            <el-autocomplete
+                style="width: 150px"
+                class="inline-input"
+                v-model="editImportForm.departmentName"
+                :fetch-suggestions="querySearch"
+                placeholder="请输入部门"
+                @select="handleImportSelect"
+                @change="moveImportMouse"
+                clearable
+            >
+            </el-autocomplete>
+          </el-form-item>
+
+          <el-form-item label="领料日期" prop="pickDate">
+            <el-date-picker  style="width: 150px"
+                            value-format="yyyy-MM-dd"
+                            v-model="editImportForm.pickDate"
+                            type="date"
+                            clearable
+                            placeholder="选择日期">
+            </el-date-picker>
+          </el-form-item>
+
+          <el-form-item label="上传文件:">
+            <el-upload
+                class="upload-demo"
+                ref="upload"
+                :file-list="fileList"
+                :http-request="uploadRequest"
+                action=""
+                :on-change="addFile"
+                :on-remove="removeFile"
+                :auto-upload="false"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div class="el-upload__tip" slot="tip">只能上传一个，且不超过5M</div>
+            </el-upload>
+          </el-form-item>
+
+
+          <el-form-item style="margin-left: 100px">
+            <el-button type="primary"  @click="importExcel('editImportForm')">
+              保存
+            </el-button>
+          </el-form-item>
+
+        </el-form>
+
+
+        <el-table
+            ref="multipleTable2"
+            :data="tableData2"
+            v-if="tableData2.length>0"
+            border
+            stripe
+            size="mini"
+            :cell-style="{padding:'0'}"
+            height="500px"
+            tooltip-effect="dark"
+            style="width: 100%;color:black;font-size: 20px">
+          <el-table-column
+              label="提示信息"
+              prop="content"
+          >
+          </el-table-column>
+
+        </el-table>
+
 
       </el-dialog>
 
@@ -467,7 +583,9 @@ export default {
   },
   data() {
     return {
-
+      // 导入
+      fileList: [],
+      fileSizeIsSatisfy: false,
 
       // vue 前端的 导出table 数据功能
       //导出表格字段及formatter信息
@@ -582,9 +700,17 @@ export default {
           specs:''
         }]
       },
+      editImportForm: {
+        status: 1, // 编辑表单初始默认值
+        id: '',
+        departmentId: '',
+        departmentName: '',
+        pickDate: new Date().format("yyyy-MM-dd"),
+        pickUser:'',
+      },
       rules: {
         departmentName: [
-          {required: true, message: '请输入领料部门', change: 'blur'}
+          {required: true, message: '请输入领料部门', trigger: 'blur'}
         ],
         pickDate: [
           {required: true, message: '请输入领料日期', trigger: 'blur'}
@@ -592,7 +718,9 @@ export default {
       }
       ,
       dialogVisible: false,
+      dialogImportVisible: false,
       tableData: [],
+      tableData2: [],
       spanArr: [],
       pos: '',
       multipleSelection: [] // 多选框数组
@@ -600,6 +728,93 @@ export default {
     }
   },
   methods: {
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    downImportDemo() {
+
+      request2.post('/repository/pickMaterial/down',null,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'领料模板.xlsx')
+      }).catch()
+    },
+
+    importExcel(formName) {
+      this.$refs[formName].validate((valid) => {
+        console.log("valid",valid)
+        console.log("this.fileList",this.fileList)
+        console.log("this.fileSizeIsSatisfy",this.fileSizeIsSatisfy)
+
+        if(this.fileList.length <= 0 || this.fileList.length > 1){
+          this.$message.error("请上传一个文件！");
+          return;
+        }
+        if (!this.fileSizeIsSatisfy) {
+          this.$message.error("上传失败！存在文件大小超过5M！");
+          return;
+        }
+        if (valid) {
+          this.$refs.upload.submit();
+        }
+      })
+    }
+    ,
+    // 文件导入--------------------
+    uploadRequest(fileobj) {
+      let param = new FormData()
+      param.append('files', fileobj.file)
+
+      request({
+        method: 'post',
+        url: '/repository/pickMaterial/upload?pickUser=' + this.editImportForm.pickUser + "&&departmentId="
+            + this.editImportForm.departmentId + "&&pickDate=" + this.editImportForm.pickDate,
+        headers: {'Content-Type': 'multipart/form-data'},
+        data: param
+      }).then(res => {
+        let theData = res.data.data;
+        console.log("返回的内容:",theData)
+        if(theData instanceof Array && theData.length > 0){
+          this.tableData2 = theData
+        }else {
+          // 成功
+          this.$message({
+            message: '导入成功!',
+            type: 'success'
+          });
+          // 关闭弹窗并且重置内容
+          this.$refs['editImportForm'].resetFields();
+          this.tableData2 = []
+          this.fileList=[]
+          this.fileSizeIsSatisfy=false;
+          this.$refs.upload.clearFiles();
+          this.dialogImportVisible = false;
+          this.getPickDocumentList()
+        }
+
+      })
+    },
+
+    // 文件上传功能
+    uploadUrl: function () {
+      return "#";
+    }
+    ,
+    // 判断文件大小
+    addFile(file, fileList) {
+      console.log("addFile")
+      this.fileList = fileList;
+      //限制上传文件为5M
+      console.log("文件大小", file.size)
+      this.fileSizeIsSatisfy = file.size < 5 * 1024 * 1024 ? true : false;
+      return this.fileSizeIsSatisfy
+    },
+    // 判断文件大小
+    removeFile(file, fileList) {
+      console.log("removeFile")
+      this.fileList = fileList;
+    },
+
+
     // 数量的上下光标事件
     numDown(seqNum){
       if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
@@ -764,6 +979,11 @@ export default {
         return (restaurant.obj.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
     },
+    handleImportSelect(item) {
+      this.editImportForm.departmentId = item.id
+      this.editImportForm.departmentName = item.name
+      console.log("选中：", item);
+    },
     handleSelect(item) {
       this.editForm.departmentId = item.id
       this.editForm.departmentName = item.name
@@ -791,6 +1011,23 @@ export default {
             this.editForm.departmentId = ''
             console.log("没有匹配到", text, item.name)
             this.editForm.departmentName = ''
+          }
+        })
+      } catch (err) {
+      }
+    },
+    moveImportMouse(text) {
+      try {
+        // foreach 只能抛出异常结束
+        this.restaurants.forEach(item => {
+          if (text === item.name) {
+            this.editImportForm.departmentId = item.id
+            this.editImportForm.departmentName = item.name
+            throw new Error();
+          } else {
+            this.editImportForm.departmentId = ''
+            console.log("没有匹配到", text, item.name)
+            this.editImportForm.departmentName = ''
           }
         })
       } catch (err) {
@@ -910,15 +1147,27 @@ export default {
 
           let validateFlag = true;
           let validateMaterial = true;
-          console.log(this.editForm.rowList)
-          this.editForm.rowList.forEach(obj => {
+          let emptyArr = []; // 存放空内容 的 下标。
+          for (let i = 0; i < this.editForm.rowList.length; i++) {
+            let obj = this.editForm.rowList[i];
+
+            if((obj.num === undefined || obj.num === '') && (obj.materialId === '')){
+              emptyArr.push(i+1);
+              continue;
+            }
             if (obj.num === undefined || obj.num === '') {
               validateFlag = false
             }
             if (obj.materialId === '') {
               validateMaterial = false
             }
-          })
+          }
+          // 移除空的数组内容
+          console.log("移除前的内容:",this.editForm.rowList)
+          let newArr = this.getNewArr(this.editForm.rowList,emptyArr);
+          this.editForm.rowList = newArr
+          console.log("移除后的内容:",this.editForm.rowList)
+
           if (validateMaterial === false) {
             this.$message({
               message: '物料不能为空!',
@@ -930,6 +1179,14 @@ export default {
           if (validateFlag === false) {
             this.$message({
               message: '领料数量不能为空!',
+              type: 'error'
+            });
+            return
+          }
+
+          if(this.editForm.rowList.length === 0){
+            this.$message({
+              message: '详情内容不能为空!',
               type: 'error'
             });
             return
@@ -1044,8 +1301,17 @@ export default {
     // 关闭弹窗处理动作
     handleClose(done) {
       this.$refs['editForm'].resetFields();
-
       this.handleDeleteAllDetails()
+      console.log("关闭窗口")
+      done();
+    },
+    // 关闭弹窗处理动作
+    handleImportClose(done) {
+      this.$refs['editImportForm'].resetFields();
+      this.tableData2 = []
+      this.fileList=[]
+      this.fileSizeIsSatisfy=false;
+      this.$refs.upload.clearFiles();
       console.log("关闭窗口")
       done();
     },
@@ -1237,7 +1503,7 @@ export default {
 </script>
 
 
-<style scoped>
+<style>
 
 .el-pagination {
   float: right;
@@ -1247,5 +1513,8 @@ export default {
 .el-table--mini td {
   padding: 0 0;
 }
-
+.myFormClass .el-upload-dragger{
+    width: 200px;
+  height: 200px;
+}
 </style>

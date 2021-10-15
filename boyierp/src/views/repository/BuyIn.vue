@@ -131,7 +131,7 @@
         <el-table-column
             label="单据编号"
 
-            prop="id" width="80px"
+            prop="id" width="90px"
         >
           <template slot-scope="scope"   >
             <el-button type="text" size="small"
@@ -294,8 +294,6 @@
           </template>
         </el-table-column>
 
-
-
         <el-table-column
             prop="action"
             label="操作"
@@ -303,14 +301,14 @@
             fixed="right"
         >
           <template slot-scope="scope">
-            <el-button class="elInput_action_my" type="text" size="small" @click="edit(scope.row.id)"
+            <el-button class="elInput_action_my" type="text" size="small" @click="edit(scope.row.id)"  style="padding: 0px"
                        v-if="hasAuth('repository:buyIn:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('repository:buyIn:update') && scope.row.status ===1   "></el-divider>
+                        v-if="hasAuth('repository:buyIn:valid') && scope.row.status ===1   "></el-divider>
 
-            <el-button class="elInput_action_my" type="text"
+            <el-button class="elInput_action_my" type="text" style="padding: 0px"
                        v-if="hasAuth('repository:buyIn:valid')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
@@ -321,7 +319,7 @@
               </template>
             </el-button>
 
-            <el-button class="elInput_action_my" type="text"
+            <el-button class="elInput_action_my" type="text"  style="padding: 0px"
                        v-if="hasAuth('repository:buyIn:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
@@ -335,7 +333,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:buyIn:del')  && scope.row.status ===1  "></el-divider>
 
-            <el-button class="elInput_action_my" type="text"
+            <el-button class="elInput_action_my" type="text"  style="padding: 0px"
                        v-if="hasAuth('repository:buyIn:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
@@ -518,6 +516,7 @@
           <el-table-column label="入库数量" align="center" width="85" prop="num" >
             <template slot-scope="scope">
               <el-input @keyup.enter.native="handleAddDetails"
+                        onkeyup="value=value.replace(/[^0-9.]/g,'')"
                         @input="changeNum(scope.row.seqNum,editForm.supplierId,scope.row.materialId,editForm.buyInDate)"
                         :ref='"input_num_"+scope.row.seqNum'
                         @keyup.up.native="numUp(scope.row.seqNum)"
@@ -833,7 +832,7 @@ export default {
     handleDeleteAllDetails() {
       this.editForm.rowList = [];
     },
-    // arr: 原数组，delIndexArr：删除下标数组
+    // arr: 原数组，delIndexArr：删除下标数组（下标要从1开始）
     getNewArr(arr,delIndexArr){
       let test = []
       test = arr.filter((item, index) =>{
@@ -1069,14 +1068,28 @@ export default {
           let validateFlag = true;
           let validateMaterial = true;
           console.log(this.editForm.rowList)
-          this.editForm.rowList.forEach(obj => {
+          let emptyArr = []; // 存放空内容 的 下标。
+          for (let i = 0; i < this.editForm.rowList.length; i++) {
+            let obj = this.editForm.rowList[i];
+
+            if((obj.num === undefined || obj.num === '') && (obj.materialId === '')){
+              emptyArr.push(i+1);
+              continue;
+            }
             if (obj.num === undefined || obj.num === '') {
               validateFlag = false
             }
             if (obj.materialId === '') {
               validateMaterial = false
             }
-          })
+          }
+
+          // 移除空的数组内容
+          console.log("移除前的内容:",this.editForm.rowList)
+          let newArr = this.getNewArr(this.editForm.rowList,emptyArr);
+          this.editForm.rowList = newArr
+          console.log("移除后的内容:",this.editForm.rowList)
+
           if (validateMaterial === false) {
             this.$message({
               message: '物料不能为空!',
@@ -1088,6 +1101,14 @@ export default {
           if (validateFlag === false) {
             this.$message({
               message: '入库数量不能为空!',
+              type: 'error'
+            });
+            return
+          }
+
+          if(this.editForm.rowList.length === 0){
+            this.$message({
+              message: '详情内容不能为空!',
               type: 'error'
             });
             return
