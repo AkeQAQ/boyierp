@@ -3,10 +3,10 @@ import router from "@/router";
 import Element from "element-ui"
 
 // axios.defaults.baseURL = "http://192.168.8.204:8081" // 定义请求的前缀
- axios.defaults.baseURL = "http://192.168.8.13:8081" // 定义请求的前缀
+ axios.defaults.baseURL = "http://192.168.8.16:8081" // 定义请求的前缀
 
 const request2 =axios.create({
-    timeout:10000,
+    timeout:100000,
     headers:{
         'Authorization' : localStorage.getItem("token")
     }
@@ -14,7 +14,7 @@ const request2 =axios.create({
 
 // 声明请求实例
 const request =axios.create({
-    timeout:10000,
+    timeout:100000,
     headers:{
         'Content-Type':"application/json;charset=utf-8"
     }
@@ -30,8 +30,9 @@ request.interceptors.request.use(config=>{
 // 请求后置拦截器
 request.interceptors.response.use(response=>{
     let result = response.data
+    console.log("请求后置拦截器==============响应的response内容:",response)
     console.log("请求后置拦截器==============响应的data内容:",result)
-    console.log("请求后置拦截器==============响应的data内容:"+result.code)
+    console.log("请求后置拦截器==============响应的data内容:"+response.code)
 
     if(result.code === 200){
         return response

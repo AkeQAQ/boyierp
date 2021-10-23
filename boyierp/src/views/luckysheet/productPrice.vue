@@ -34,6 +34,11 @@
             {{this.isCopy ? '已复制':'复制'}}
           </el-button>
         </el-form-item>
+        <el-form-item label="">
+          <el-button type="success" icon="el-icon-download"  style="margin-bottom: 10px" @click="exportExcel()">
+            导出
+          </el-button>
+        </el-form-item>
 
         <el-form-item>
           <el-input size="mini" v-show="false" v-model="editForm2.excelJson">
@@ -42,10 +47,10 @@
       </el-form>
 
       <div class="bottom" >
-        <el-button type="primary" style="margin-bottom: 10px" v-show="editForm2.status===1 || isCopy===true" :loading="isLoad" @click="submitForm('editForm2')">
+        <el-button type="primary" ref="saveBtn" style="margin-bottom: 10px" v-show="editForm2.status===1 || isCopy===true" :loading="isLoad" @click="submitForm('editForm2')">
           保存报价
         </el-button>
-        <el-button type="danger"  @click="returnPage">
+        <el-button type="danger" ref="returnBtn" @click="returnPage">
           返回
         </el-button>
       </div>
@@ -62,8 +67,8 @@
 
 <script>
 import {request} from "@/axios";
+import {request2} from "@/axios";
 import LuckyExcel from 'luckyexcel'
-
 export default {
   name: "productPrice-lk",
   data() {
@@ -128,6 +133,46 @@ export default {
         });
       });
     },
+    // 导出
+    exportExcel(){
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      this.$refs['saveBtn'].disabled = true
+      this.$refs['returnBtn'].disabled = true
+//这里你要自己写个后台接口，处理上传上来的Excel数据，用post传输。我用的是Java后台处理导出！这里只是写了post请求的写法
+      let that = this;
+      request2.post("/order/productPricePre/export", {
+        exceldatas: JSON.stringify(luckysheet.getAllSheets())
+      }, {responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,that.editForm2.companyNum+"_"+that.editForm2.customer+'.xlsx')
+        load.close()
+        this.$refs['saveBtn'].disabled = false
+        this.$refs['returnBtn'].disabled = false
+      }).catch()
+
+
+    },
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
     copy(){
       this.isCopy = true
       this.editForm2.companyNum = ''
@@ -170,7 +215,6 @@ export default {
   created() {
     console.log("id=",this.$route.params.id)
     console.log("addOrUpdate=",this.$route.params.addOrUpdate)
-
     this.$nextTick(() => {
 
       if(this.$route.params.addOrUpdate==='update'){
@@ -230,7 +274,7 @@ export default {
 </script>
 
 <style scoped>
-.bottom{position:fixed; bottom:100px;right: 50px;  z-index:99999;
+.bottom{position:fixed; bottom:100px;right: 50px;  z-index:2001;
   width: 100px;
 }
 </style>

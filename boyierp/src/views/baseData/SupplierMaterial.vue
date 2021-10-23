@@ -23,6 +23,7 @@
                            v-model="searchStr"
                            :fetch-suggestions="querySupplierSearchValide"
                            placeholder="请输入内容"
+                           :trigger-on-focus="false"
                            @select="searchSelect"
 
           >
@@ -35,6 +36,8 @@
                            v-model="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"
                            placeholder="请输入内容"
+                           :trigger-on-focus="false"
+
                            @select="searchSelect"
           >
           </el-autocomplete>
@@ -42,7 +45,7 @@
 
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getSupplierMaterialList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
         </el-form-item>
 
 
@@ -68,6 +71,7 @@
           border
           stripe
           fit
+          height="520px"
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
@@ -228,6 +232,7 @@
                 v-model="editForm.supplierName"
                 :fetch-suggestions="querySupplierSearchValide"
                 placeholder="请输入内容"
+                :trigger-on-focus="false"
                 @select="handleSelect"
                 @change="moveMouse"
                 clearable
@@ -246,6 +251,7 @@
                 v-model="editForm.materialName"
                 :fetch-suggestions="queryMaterialSearchValide"
                 placeholder="请输入内容"
+                :trigger-on-focus="false"
                 @select="handleSelect2"
                 @change="moveMaterialMouse"
                 clearable
@@ -501,7 +507,10 @@ export default {
         }
       });
     },
-
+    search(){
+      this.currentPage = 1;
+      this.getSupplierMaterialList()
+    },
     // 查询价目表单列表数据
     getSupplierMaterialList() {
       console.log("搜索字段:", this.select)
@@ -517,6 +526,9 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         console.log("获取用户表单数据", res.data.data.records)
+        this.$nextTick(() => {
+          this.$refs['multipleTable'].doLayout();
+        })
       })
     },
     // 编辑页面

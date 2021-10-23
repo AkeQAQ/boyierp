@@ -25,6 +25,7 @@
                            v-model="searchStr"
                            :fetch-suggestions="querySearch"
                            placeholder="请输入搜索内容"
+                           :trigger-on-focus="false"
                            @select="searchSelect"
           >
           </el-autocomplete>
@@ -36,6 +37,7 @@
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
                            placeholder="请输入搜索内容"
+                           :trigger-on-focus="false"
                            @select="searchSelect"
 
           >
@@ -76,7 +78,7 @@
 
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getBuyOrderDocumentList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
         </el-form-item>
 
 
@@ -104,7 +106,7 @@
           :span-method="objectSpanMethod"
           border
           fit
-
+          height="520px"
           :summary-method="getSummaries"
           show-summary
           size="mini"
@@ -386,6 +388,7 @@
                 v-model="editForm.supplierName"
                 :fetch-suggestions="querySearch"
                 placeholder="请输入供应商"
+                :trigger-on-focus="false"
                 @select="handleSelect"
                 @change="moveMouse"
 
@@ -487,6 +490,7 @@
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
                                placeholder="请输入内容"
+                               :trigger-on-focus="false"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1])"
               >
@@ -1135,7 +1139,10 @@ export default {
         }
       });
     },
-
+    search(){
+      this.currentPage = 1
+      this.getBuyOrderDocumentList()
+    },
     // 查询价目表单列表数据
     getBuyOrderDocumentList() {
       console.log("搜索字段:", this.select)
@@ -1158,6 +1165,9 @@ export default {
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
         console.log("获取用户表单数据", res.data.data.records)
+        this.$nextTick(() => {
+          this.$refs['multipleTable'].doLayout();
+        })
       })
     },
 

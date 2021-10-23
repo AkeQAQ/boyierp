@@ -61,6 +61,11 @@ import {request} from "@/axios";
 
 export default {
   name: "Home",
+  data(){
+    return {
+      timer:''
+    }
+  },
   computed:{
     userInfo:{
       get(){
@@ -90,11 +95,16 @@ export default {
       this.$store.commit("addTab",{routerName:"UserCenter",title:'个人中心'})
       this.$router.push("/userCenter")
     }*/
+    ,heartSend(){
+      request.get('/common/heart/sendHeart').then(res => {
+      })
+    }
 
   }
   ,
   created() {
     this.getUserInfo()
+    this.timer = setInterval(this.heartSend, 5000);
   }
 }
 Date.prototype.format = function(fmt) {

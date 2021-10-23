@@ -24,7 +24,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
         </el-form-item>
 
         <el-form-item v-if="hasAuth('order:productPricePre:save')">
@@ -49,6 +49,7 @@
           :data="tableData"
           border
           fit
+          height="520px"
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
@@ -438,7 +439,6 @@
 import {request} from "@/axios";
 
 import {request2} from "@/axios";
-
 // 导入SpreadJS
 
 export default {
@@ -510,6 +510,8 @@ export default {
 
     // 编辑页面
     realEdit(id) {
+      this.$store.commit("SET_PRODUCTPRICEDATA", {select:this.select,searchStr:this.searchStr})
+
       this.addOrUpdate = "update"
       this.$router.push({name:'LKProductPrice_real',params:{id:id}});
      /* this.dialogVisibleReal = true
@@ -523,6 +525,8 @@ export default {
     },
     // 编辑页面
     edit(id) {
+      this.$store.commit("SET_PRODUCTPRICEDATA", {select:this.select,searchStr:this.searchStr})
+
       this.addOrUpdate = "update"
       this.$router.push({name:'LKProductPrice',params:{id:id,addOrUpdate:this.addOrUpdate}});
       /*this.dialogVisible2 = true
@@ -539,6 +543,8 @@ export default {
     },
     // 点击添加按钮
     add() {
+      this.$store.commit("SET_PRODUCTPRICEDATA", {select:this.select,searchStr:this.searchStr})
+
       this.addOrUpdate = "save"
       this.$router.push({name:'LKProductPrice',params:{addOrUpdate:this.addOrUpdate}});
       /*this.addOrUpdate = 'save'
@@ -560,6 +566,8 @@ export default {
     },
     // 点击设置模板按钮
       getSpreadDemo() {
+        this.$store.commit("SET_PRODUCTPRICEDATA", {select:this.select,searchStr:this.searchStr})
+
         this.$router.push({name:'LKProductPrice_demo'});
         // this.dialogSpreadDemoVisible = true
     },
@@ -649,6 +657,11 @@ export default {
     }
     ,
 
+    search(){
+      this.currentPage = 1
+      this.getList()
+    },
+
     // 查询价目表单列表数据
     getList() {
       console.log("搜索字段:", this.select)
@@ -666,6 +679,9 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         console.log("获取用户表单数据", res.data.data.records)
+        this.$nextTick(() => {
+          this.$refs['multipleTable'].doLayout();
+        })
       })
     }
 
@@ -780,8 +796,34 @@ export default {
     ,
   },
   created() {
+    console.log("select:",    this.$store.state.producePriceData.select)
+    if(this.$store.state.producePriceData.select != undefined){
+      this.select = this.$store.state.producePriceData.select;
+    }
+    if(this.$store.state.producePriceData.searchStr != undefined){
+      this.searchStr = this.$store.state.producePriceData.searchStr;
+    }
+    console.log("searchStr:",    this.$store.state.producePriceData.searchStr)
     this.getList()
-  }
+  },
+  /*activated(){
+    console.log("激活。。")
+    let main = this
+    //根据key名获取传递回来的参数，data就是map
+    productPriceEB.$on('searchType', function(data){
+      //赋值给首页的附近医院数据模型
+      console.log("激活。。select:data:",data)
+      main.select = data;
+    }.bind(this));
+
+    //根据key名获取传递回来的参数，data就是map
+    productPriceEB.$on('searchStr', function(data){
+      //赋值给首页的附近医院数据模型
+      console.log("激活。。searchStr:data:",data)
+      main.searchStr = data;
+    }.bind(this));
+
+  }*/
 
 }
 

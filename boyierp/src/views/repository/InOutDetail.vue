@@ -2,7 +2,6 @@
 
   <el-container>
     <el-main class="elMain_my">
-      <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
           <el-select size="mini" style="width: 130px" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段" >
@@ -25,7 +24,6 @@
                            :fetch-suggestions="queryMaterialSearchValide"
                            placeholder="请输入内容"
                            :trigger-on-focus="false"
-
                            @select="searchSelect"
           >
           </el-autocomplete>
@@ -38,49 +36,72 @@
                            :fetch-suggestions="queryMaterialSearchValide"
                            placeholder="请输入内容"
                            :trigger-on-focus="false"
-
                            @select="searchSelect"
           >
           </el-autocomplete>
+        </el-form-item>
+
+
+        <el-form-item>
+
+          <!-- 列表界面-日期搜索 -->
+          <el-date-picker style="width: 130px;"
+                          size="mini"
+                          value-format="yyyy-MM-dd"
+                          v-model="searchStartDate"
+                          type="date"
+                          clearable
+                          placeholder="开始日期">
+          </el-date-picker>
+        </el-form-item>
+
+        <el-form-item>
+          <el-date-picker style="width: 130px;"
+                          size="mini"
+                          value-format="yyyy-MM-dd"
+                          v-model="searchEndDate"
+                          type="date"
+                          clearable
+                          placeholder="结束日期">
+          </el-date-picker>
+
+        </el-form-item>
+
+        <el-form-item >
+          <el-select
+              size ="mini"
+              v-model="checkedBox"
+              multiple
+              collapse-tags
+              style="margin-left: 0px;"
+              placeholder="请选择状态">
+            <el-option
+                v-for="item in statusArr"
+                :key="item.val"
+                :label="item.name"
+                :value="item.val">
+            </el-option>
+          </el-select>
         </el-form-item>
 
         <el-form-item>
           <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('repository:stock:export')">
-          <el-dropdown   @command="expChange">
-            <el-button  icon="el-icon-download" size="mini" type="success">
-              导出<i class="el-icon-arrow-down el-icon--right"></i>
-            </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="all">导出全部</el-dropdown-item>
-              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </el-form-item>
-        <el-form-item>
-          <el-button @click="preViewPrint()" size="mini" icon="el-icon-printer" type="primary"
-          >打印预览
-          </el-button>
-        </el-form-item>
-
-
       </el-form>
 
       <el-table
           show-summary
+          height="520px"
           :summary-method="getSummaries"
           ref="multipleTable"
           :data="tableData"
           border
-          stripe
-          height="520px"
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
-          :cell-style="{padding:'0'}"
-          @selection-change="handleSelectionChange">
+          :row-class-name="tableRowClassName"
+          :cell-style="{padding:'0'}">
         <el-table-column
             type="selection"
             width="50">
@@ -99,9 +120,33 @@
         </el-table-column>
 
         <el-table-column
-            prop="num"
-            label="库存数量"
+            prop="status"
+            label="状态"
+            width="100px"
+        >
+          <template slot-scope="scope">
+            <el-tag size="mini" v-if="scope.row.status === 0" type="success">已审核</el-tag>
+            <el-tag size="mini" v-else-if="scope.row.status===1" type="danger">暂存</el-tag>
+            <el-tag size="mini" v-else-if="scope.row.status===2" type="danger">审核中</el-tag>
+            <el-tag size="mini" v-else-if="scope.row.status===3" type="danger">重新审核</el-tag>
+          </template>
+        </el-table-column>
 
+
+        <el-table-column
+            prop="date"
+            label="日期">
+        </el-table-column>
+
+        <el-table-column
+            prop="docName"
+            label="单据名称"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="docNum"
+            label="单据编号"
         >
         </el-table-column>
 
@@ -109,38 +154,34 @@
             prop="unit"
             label="基本单位"
             width="70px"
-            >
+        >
         </el-table-column>
 
+        <el-table-column
+            prop="startNum"
+            label="期初数量"
+        >
+        </el-table-column>
 
         <el-table-column
-            prop="specs"
-            label="规格型号"
-            width="100px"
+            prop="addNum"
+            label="收入数量"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="subNum"
+            label="减少数量"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="afterNum"
+            label="结存数量"
         >
         </el-table-column>
 
       </el-table>
-
-      <el-dialog
-          title=""
-          :visible.sync="dialogVisiblePrint"
-          width="65%"
-          class="elDialog_print_my"
-          :before-close="printClose"
-      >
-        <el-button v-if="dialogVisiblePrint"
-                   @click="printDemo"
-                   v-focus ref="printBtn"
-                   size="mini" icon="el-icon-printer" type="primary">打印
-        </el-button>
-        <vue-easy-print tableShow ref="easyPrint">
-          <template slot-scope="func">
-            <print :tableData="tableData" :getChineseNumber="func.getChineseNumber"></print>
-          </template>
-        </vue-easy-print>
-
-      </el-dialog>
 
       <!--价目列表 分页组件 -->
       <el-pagination
@@ -154,11 +195,6 @@
       </el-pagination>
     </el-main>
 
-    <!-- 导出功能 -->
-    <export-excel-common ref="myChild" :exportExcelInfo="exportExcelInfo" :tableData="tableData" :exportExcelArry="exportExcelArry"></export-excel-common>
-
-
-
   </el-container>
 
 
@@ -166,58 +202,14 @@
 
 <script>
 import {request, request2} from "@/axios";
-import vueEasyPrint from "vue-easy-print";
-import print from "@/views/printModule/printStock";
-import exportExcelCommon from "@/views/common/ExportExcelCommon";
-
 export default {
-  name: "stock",
-  // 引入打印模块基础组件和该打印模块的模板页面
-  components: {
-    vueEasyPrint,
-    print,
-    exportExcelCommon
-  },
+  name: "inOutDetail",
   data() {
     return {
-      dialogVisiblePrint:false,
-
-      // vue 前端的 导出table 数据功能
-      //导出表格字段及formatter信息
-      exportExcelArry: [{
-        prop: 'materialId',
-        label: '物料编码',
-        formatterFlag: false
-      },
-        {
-          prop: 'materialName',
-          label: '物料名称',
-          formatterFlag: false
-        }
-        ,{
-          prop: 'num',
-          label: '库存数量',
-          formatterFlag: false
-        },
-        {
-          prop: 'unit',
-          label: '基本单位',
-          formatterFlag: false
-        }
-        ,{
-          prop: 'specs',
-          label: '规格型号',
-          formatterFlag: false
-        }
-      ],
-      //导出excel表格id及excel名称
-      exportExcelInfo: {
-        excelId: 'record-table',
-        excelName: '库存列表.xlsx'
-      },
-      //需要导出的table数据
-      tableAllData: [],
-
+      searchStartDate: new Date().format("yyyy-MM-dd"),
+      searchEndDate: new Date().format("yyyy-MM-dd"),
+      statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
+      checkedBox:[1,2,3,0],
       // 搜索字段
       selectedName: 'materialName',// 搜索默认值
       options: [
@@ -240,73 +232,11 @@ export default {
     }
   },
   methods: {
-    // 打印按钮事件
-    printDemo() {
-      this.$refs.easyPrint.print()
-    },
-    // 关闭打印弹窗弹窗处理动作
-    printClose(done) {
-      this.$refs.easyPrint.tableShow = false;
-      done();
-    },
-
-    preViewPrint() {
-      if (this.tableData) {
-        console.log("打印时的easyPrint：", this.$refs.easyPrint)
-        console.log("打印时的editForm：", this.tableData)
-        if (this.$refs.easyPrint) {
-
-          this.$refs.easyPrint.tableData = this.tableData
-
-        }
-        this.dialogVisiblePrint = true
-      } else {
-        this.$message({
-          message: '没有内容!',
-          type: 'error'
-        });
+    tableRowClassName({row, rowIndex}) {
+      if (row.status === -1) {
+        return 'start-row';
       }
-    },
-    expChange(item) {
-      console.log("导出:",item)
-      if (item === 'currentList') {
-        this.exportExcel()
-      } else if(item === 'all'){
-        this.exportList()
-      }
-    },
-    // 导出按钮
-    exportExcel () {
-      this.$refs.myChild.exportExcel();
-    },
-    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
-    exportList() {
-
-      request2.post('/repository/stock/export?currentPage='+this.currentPage+
-          "&&pageSize="+this.pageSize+
-          "&&total="+this.total+
-          "&&searchStr="+this.searchStr+
-          "&&searchField="+this.select
-          ,null,{responseType:'arraybuffer'}).then(res=>{
-        // 这里使用blob做一个转换
-        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-
-        this.saveFile(blob,'库存全部列表.xlsx')
-      }).catch()
-    },
-    // POI- 服务端写出字节流到浏览器，进行保存
-    saveFile(data,name){
-      try {
-        const blobUrl = window.URL.createObjectURL(data)
-        const a = document.createElement('a')
-        a.style.display = 'none'
-        a.download = name
-        a.href = blobUrl
-        a.click()
-
-      } catch (e) {
-        alert('保存文件出错')
-      }
+      return '';
     },
     loadMaterialValideAll() {
       request.post('/baseData/material/getSearchAllData').then(res => {
@@ -338,53 +268,50 @@ export default {
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize = val
-      this.getStockList()
+      this.getList()
 
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.currentPage = val
-      this.getStockList()
+      this.getList()
 
     },
-    // 多选框方法
-    toggleSelection(rows) {
-      if (rows) {
-        rows.forEach(row => {
-          this.$refs.multipleTable.toggleRowSelection(row);
-        });
-      } else {
-        this.$refs.multipleTable.clearSelection();
-      }
-    },
-    handleSelectionChange(val) {
-      console.log("多选框 val ", val)
-      this.multipleSelection = []
-
-      val.forEach(theId => {
-        this.multipleSelection.push(theId.id)
-      })
-      console.log("多选框 选中的 ", this.multipleSelection)
-    },
-
     search(){
       this.currentPage = 1;
-      this.getStockList();
+      this.getList();
     },
-    // 查询价目表单列表数据
-    getStockList() {
-      request.get('/repository/stock/list', {
+    getList() {
+      if(this.searchStartDate === '' || this.searchEndDate===''){
+        this.$message({
+          message: '时间不能为空!',
+          type: 'error'
+        });
+        return;
+      }
+      if(this.checkedBox.length === 0){
+        this.$message({
+          message: '状态不能为空',
+          type: 'error'
+        });
+        return;
+      }
+      let checkStr = this.checkedBox.join(",");
+      console.log("多选框：",checkStr )
+      request.get('/repository/inOutDetail/list', {
         params: {
           currentPage: this.currentPage
           , pageSize: this.pageSize
           , total: this.total
           , searchStr: this.searchStr
+          , searchStartDate: this.searchStartDate
+          , searchEndDate: this.searchEndDate
           , searchField: this.select
+          , searchStatus:checkStr
         }
       }).then(res => {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
-        console.log("获取库存表单数据", res.data.data.records)
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
@@ -401,7 +328,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 3 ) {
+        if (index === 8 || index === 9 || index === 10) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -425,26 +352,23 @@ export default {
   },
   // 页面初始化时调用的方法
   created() {
-    this.getStockList()
+    this.getList()
     this.loadMaterialValideAll()
-  }// 自定义指令，，insert在DOM加入的时候才生效
-  , directives: {
-    // 声明自定义指令v-focus
-    focus: {
-      // v-foucs指令的钩子函数
-      inserted: function (el, binding) {
-        console.log("聚焦...")
-        el.focus();
-      },
-    },
   }
 
 }
 </script>
-
 <style scoped>
+
+</style>
+<!-- 不加scoped ，可以修改其他第三方组件的样式内容-->
+<style >
 .el-pagination {
   float: right;
 
 }
+.el-table .start-row {
+  background: #cccccc;
+}
+
 </style>

@@ -4,7 +4,7 @@
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
-          <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
+          <el-select style="width: 130px" size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
                 v-for="item in options"
                 :key="item.value"
@@ -18,11 +18,12 @@
         <el-form-item>
           <!-- 列表界面-供应商搜索 -->
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'"
-                           style="width: 300px"
+                           style="width: 250px"
                            clearable
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch"
+                           :trigger-on-focus="false"
                            placeholder="请输入搜索内容"
                            @select="searchSelect"
           >
@@ -30,10 +31,11 @@
 
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
-                           style="width: 300px"
+                           style="width: 250px"
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
+                           :trigger-on-focus="false"
                            placeholder="请输入搜索内容"
                            @select="searchSelect"
 
@@ -42,7 +44,7 @@
 
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
-                    style="width: 300px"
+                    style="width: 250px"
                     placeholder="请输入搜索内容"></el-input>
 
         </el-form-item>
@@ -72,9 +74,25 @@
 
         </el-form-item>
 
+        <el-form-item >
+          <el-select
+              size ="mini"
+              v-model="checkedBox"
+              multiple
+              collapse-tags
+              style="margin-left: 0px;"
+              placeholder="请选择状态">
+            <el-option
+                v-for="item in statusArr"
+                :key="item.val"
+                :label="item.name"
+                :value="item.val">
+            </el-option>
+          </el-select>
+        </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getBuyInDocumentList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
         </el-form-item>
 
 
@@ -115,7 +133,7 @@
           :span-method="objectSpanMethod"
           border
           fit
-
+          height="520px"
           :summary-method="getSummaries"
           show-summary
           size="mini"
@@ -172,10 +190,15 @@
 
         <el-table-column
             prop="status"
-            label="状态">
+            label="状态"
+            width="87px"
+        >
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.status === 0" type="success">审核完成</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">待审核</el-tag>
+            <el-tag size="small" v-if="scope.row.status === 0" type="success">已审核</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">暂存</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===2" type="danger">审核中</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===3" type="danger">重新审核</el-tag>
+
           </template>
         </el-table-column>
 
@@ -302,14 +325,42 @@
         >
           <template slot-scope="scope">
             <el-button class="elInput_action_my" type="text" size="small" @click="edit(scope.row.id)"  style="padding: 0px"
-                       v-if="hasAuth('repository:buyIn:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
+                       v-if="hasAuth('repository:buyIn:update') || (hasAuth('repository:buyIn:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('repository:buyIn:valid') && scope.row.status ===1   "></el-divider>
+                        v-if="hasAuth('repository:buyIn:save') && scope.row.status === 1   "></el-divider>
 
             <el-button class="elInput_action_my" type="text" style="padding: 0px"
-                       v-if="hasAuth('repository:buyIn:valid')  && scope.row.status ===1   ">
+                       v-if="hasAuth('repository:buyIn:save')  && scope.row.status === 1   ">
+              <template>
+                <el-popconfirm @confirm="statusSubmit(scope.row.id)"
+                               title="确定提交吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">提交</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-divider direction="vertical"
+                        v-if="hasAuth('repository:buyIn:save') && (scope.row.status === 2 || scope.row.status === 3 )   "></el-divider>
+
+            <el-button class="elInput_action_my" type="text" style="padding: 0px"
+                       v-if="hasAuth('repository:buyIn:save')  && (scope.row.status === 2 || scope.row.status === 3)   ">
+              <template>
+                <el-popconfirm @confirm="statusSubReturn(scope.row.id)"
+                               title="确定撤销吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">撤销</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+<!--            <el-divider direction="vertical"
+                        v-if="hasAuth('repository:buyIn:valid') && (scope.row.status === 2 || scope.row.status === 3)  "></el-divider>-->
+
+            <el-button class="elInput_action_my" type="text" style="padding: 0px"
+                       v-if="hasAuth('repository:buyIn:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
                                title="确定设置审核通过吗？"
@@ -320,7 +371,7 @@
             </el-button>
 
             <el-button class="elInput_action_my" type="text"  style="padding: 0px"
-                       v-if="hasAuth('repository:buyIn:valid')  && scope.row.status ===0  ">
+                       v-if="hasAuth('repository:buyIn:valid')  && scope.row.status === 0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"
@@ -403,10 +454,11 @@
             <!-- 搜索框 -->
             <el-autocomplete
                 style="width: 250px"
-                :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"
+                :disabled="this.editForm.status!=1 ||  this.editForm.sourceType === 1"
                 class="inline-input elAutocomplete_my"
                 v-model="editForm.supplierName"
                 :fetch-suggestions="querySearch"
+                :trigger-on-focus="false"
                 placeholder="请输入供应商"
                 @select="handleSelect"
                 @change="moveMouse"
@@ -417,12 +469,12 @@
           </el-form-item>
 
           <el-form-item  label="供应商单号" prop="supplierDocumentNum" >
-            <el-input :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1"  size="mini" clearable style="width: 120px;" v-model="editForm.supplierDocumentNum">
+            <el-input :disabled="this.editForm.status!=1 ||  this.editForm.sourceType === 1"  size="mini" clearable style="width: 120px;" v-model="editForm.supplierDocumentNum">
             </el-input>
           </el-form-item>
 
           <el-form-item label="入库日期" prop="buyInDate">
-            <el-date-picker :disabled="this.editForm.status===0 ||  this.editForm.sourceType === 1" style="width: 130px;"
+            <el-date-picker :disabled="this.editForm.status!=1 ||  this.editForm.sourceType === 1" style="width: 130px;"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.buyInDate"
                             type="date"
@@ -477,11 +529,12 @@
           <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="310" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete size="mini" clearable style="width: 300px"
-                               :disabled="editForm.status===0 ||  editForm.sourceType === 1"
+                               :disabled="editForm.status!=1 ||  editForm.sourceType === 1"
                                class="inline-input"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
                                placeholder="请输入内容"
+                               :trigger-on-focus="false"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
               >
@@ -521,7 +574,7 @@
                         :ref='"input_num_"+scope.row.seqNum'
                         @keyup.up.native="numUp(scope.row.seqNum)"
                         @keyup.down.native="numDown(scope.row.seqNum)"
-                        :disabled="editForm.status===0 ||  editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+                        :disabled="editForm.status!=1 ||  editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -534,7 +587,7 @@
 
           <el-table-column label="备注" align="center" width="150" prop="comment">
             <template slot-scope="scope">
-              <el-input  :disabled="editForm.status===0 || editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
+              <el-input  :disabled="editForm.status!=1 || editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].comment"/>
             </template>
           </el-table-column>
 
@@ -548,7 +601,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[100, 200, 300, 400]"
+          :page-sizes="[10, 200, 300, 400]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
@@ -589,7 +642,8 @@ export default {
   },
   data() {
     return {
-
+      statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
+      checkedBox:[1,2,3,0],
       // vue 前端的 导出table 数据功能
       //导出表格字段及formatter信息
       exportExcelArry: [{
@@ -691,7 +745,7 @@ export default {
 
       // 分页字段
       currentPage: 1 // 当前页
-      , pageSize: 100 // 一页多少条
+      , pageSize: 10 // 一页多少条
       , total: 0 // 总共多少数据
       ,
       // 表单字段
@@ -958,14 +1012,17 @@ export default {
     // 导出列表数据- 服务端写出字节流到浏览器，进行保存
     exportList() {
 
+      let checkStr = this.checkedBox.join(",");
       request2.post('/repository/buyIn/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
           "&&searchStr="+this.searchStr+
           "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
-          "&&searchField="+this.select
-      ,null,{responseType:'arraybuffer'}).then(res=>{
+          "&&searchField="+this.select+
+          "&&searchStatus="+checkStr
+
+          ,null,{responseType:'arraybuffer'}).then(res=>{
         // 这里使用blob做一个转换
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
@@ -1119,12 +1176,20 @@ export default {
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
             });
+            if(!this.editForm.id){
+              console.log("回显的ID：",res.data.data)
+              this.editForm.id = res.data.data;
+              this.addOrUpdate = "update"
+            }
+
 
             // 关闭弹窗并且重置内容
-            this.dialogVisible = false;
-            this.resetForm("editForm")
-            this.handleDeleteAllDetails()
-            this.getBuyInDocumentList()
+            // this.dialogVisible = false;
+            // this.resetForm("editForm")
+            // this.handleDeleteAllDetails()
+            // this.getBuyInDocumentList()
+
+
 
           })
         } else {
@@ -1133,19 +1198,26 @@ export default {
         }
       });
     },
+    search(){
+      this.currentPage = 1;
+      this.getBuyInDocumentList();
+    },
 
     // 查询价目表单列表数据
     getBuyInDocumentList() {
+      let checkStr = this.checkedBox.join(",");
+      console.log("多选框：",checkStr )
       console.log("搜索字段:", this.select)
       request.get('/repository/buyIn/list', {
         params: {
-        currentPage: this.currentPage
+             currentPage: this.currentPage
             , pageSize: this.pageSize
             , total: this.total
             , searchStr: this.searchStr
             , searchStartDate: this.searchStartDate
             , searchEndDate: this.searchEndDate
             , searchField: this.select
+            , searchStatus:checkStr
       }
       }).then(res => {
         this.tableData = res.data.data.records
@@ -1153,6 +1225,9 @@ export default {
         this.getSpanArr(this.tableData)
         console.log("id:",res.data.data.records[0].orderId ===null)
         console.log("获取用户表单数据", res.data.data.records)
+        this.$nextTick(() => {
+          this.$refs['multipleTable'].doLayout();
+        })
       })
     },
     // 编辑页面
@@ -1165,13 +1240,13 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          this.restaurants3.forEach(obj => {
+          /*this.restaurants3.forEach(obj => {
             console.log("obj:", obj, result.rowList.materialId)
 
             if (obj.id === result.materialId) {
               console.log("obj:", obj, result.materialId)
             }
-          })
+          })*/
         })
 
       })
@@ -1200,6 +1275,26 @@ export default {
 
       })
     },
+    // 撤销提交
+    statusSubReturn(id) {
+      request.get('/repository/buyIn/statusSubReturn?id=' + id).then(res => {
+        this.$message({
+          message: '已撤销!',
+          type: 'success'
+        });
+        this.getBuyInDocumentList()
+      })
+    },
+    // 状态提交
+    statusSubmit(id) {
+      request.get('/repository/buyIn/statusSubmit?id=' + id).then(res => {
+        this.$message({
+          message: '已提交!',
+          type: 'success'
+        });
+        this.getBuyInDocumentList()
+      })
+    },
     // 状态待审核
     statusPass(id) {
       request.get('/repository/buyIn/statusPass?id=' + id).then(res => {
@@ -1225,6 +1320,7 @@ export default {
       this.$refs['editForm'].resetFields();
 
       this.handleDeleteAllDetails()
+      this.getBuyInDocumentList()
       console.log("关闭窗口")
       done();
     },
@@ -1389,14 +1485,14 @@ export default {
       if (this.editForm) {
         console.log("打印时的easyPrint：", this.$refs.easyPrint)
         console.log("打印时的editForm：", this.editForm)
+        console.log("this.$refs.easyPrint",this.$refs.easyPrint)
         if (this.$refs.easyPrint) {
           console.log("设置前打印内容", this.$refs.easyPrint.tableData)
 
           this.$refs.easyPrint.tableData = this.editForm
-          console.log("设置后打印内容", this.$refs.easyPrint.tableData)
-
         }
         this.dialogVisiblePrint = true
+
       } else {
         this.$message({
           message: '没有内容!',

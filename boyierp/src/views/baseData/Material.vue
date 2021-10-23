@@ -83,7 +83,7 @@
 <!--                      <el-option label="子编码" value="subId"></el-option>-->
                       <el-option label="名称" value="name"></el-option>
                     </el-select>
-                    <el-button slot="append" icon="el-icon-search"  @click="getMaterialList"></el-button>
+                    <el-button slot="append" icon="el-icon-search"  @click="search()"></el-button>
 
                   </el-input>
 
@@ -109,6 +109,7 @@
                 border
                 stripe
                 fit
+                height="480px"
                 size="mini"
                 tooltip-effect="dark"
                 style="width: 100%;color:black"
@@ -350,6 +351,7 @@ export default {
   methods: {
 
     nodeDbClick(event,data){
+      this.currentPage = 1
       console.log("双击获取分组的ID：",data.id)
       request.get('/baseData/material/listByGroupCode', {
         params: {
@@ -578,7 +580,10 @@ export default {
         this.authorityDialogVisible = false;
       });
     },
-
+    search(){
+      this.currentPage = 1
+      this.getMaterialList()
+    },
     // 查询物料表单列表数据
     getMaterialList() {
       console.log("搜索字段:",this.select)
@@ -594,6 +599,9 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         console.log("获取用户表单数据", res.data.data.records)
+        this.$nextTick(() => {
+          this.$refs['multipleTable'].doLayout();
+        })
       })
     },
     // 物料分组 查询分组列表数据

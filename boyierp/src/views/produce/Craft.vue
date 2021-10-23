@@ -26,7 +26,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
         </el-form-item>
 
         <el-form-item v-if="hasAuth('produce:craft:save')">
@@ -52,6 +52,7 @@
           :data="tableData"
           border
           fit
+          height="520px"
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
@@ -262,21 +263,29 @@ export default {
   methods: {
     // 最终编辑页面
     realEdit(id) {
+      this.$store.commit("SET_CRAFTDATA", {select:this.select,searchStr:this.searchStr})
+
       this.addOrUpdate = "update"
       this.$router.push({name:'LKCraft_real',params:{id:id}});
     },
     // 编辑页面
      edit(id) {
+       this.$store.commit("SET_CRAFTDATA", {select:this.select,searchStr:this.searchStr})
+
        this.addOrUpdate = "update"
        this.$router.push({name:'LKCraft',params:{id:id,addOrUpdate:this.addOrUpdate}});
     },
     // 点击添加按钮
     add() {
+      this.$store.commit("SET_CRAFTDATA", {select:this.select,searchStr:this.searchStr})
+
       this.addOrUpdate = "save"
       this.$router.push({name:'LKCraft',params:{addOrUpdate:this.addOrUpdate}});
     },
     // 点击设置模板按钮
     getSpreadDemo() {
+      this.$store.commit("SET_CRAFTDATA", {select:this.select,searchStr:this.searchStr})
+
       this.$router.push({name:'LKCraft_demo'});
     },
 
@@ -293,6 +302,10 @@ export default {
       this.currentPage = val
       this.getList()
 
+    },
+    search(){
+      this.currentPage = 1
+      this.getList()
     },
     // 查询价目表单列表数据
     getList() {
@@ -399,6 +412,13 @@ export default {
     }
   },
   created() {
+    console.log("select:",    this.$store.state.craftData.select)
+    if(this.$store.state.craftData.select != undefined){
+      this.select = this.$store.state.craftData.select;
+    }
+    if(this.$store.state.craftData.searchStr != undefined){
+      this.searchStr = this.$store.state.craftData.searchStr;
+    }
     this.getList()
   }
 

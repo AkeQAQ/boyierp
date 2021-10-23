@@ -6,7 +6,7 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button size="mini" icon="el-icon-search" @click="getList">搜索</el-button>
+        <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
       </el-form-item>
 
       <el-form-item v-if="hasAuth('baseData:department:save')">
@@ -27,6 +27,7 @@
         :data="tableData"
         border
         stripe
+        height="500px"
         size="mini"
         :cell-style="{padding:'0'}"
         fit
@@ -203,7 +204,10 @@ export default {
         }
       });
     },
-
+    search(){
+      this.currentPage = 1
+      this.getList()
+    },
     // 查询部门表单列表数据
     getList() {
       request.get('/baseData/department/list', {
@@ -216,6 +220,9 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         console.log("获取部门表单数据", res.data.data.records)
+        this.$nextTick(() => {
+          this.$refs['multipleTable'].doLayout();
+        })
       })
     },
     // 编辑页面

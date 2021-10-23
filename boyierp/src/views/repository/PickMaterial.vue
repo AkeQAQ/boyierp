@@ -5,7 +5,7 @@
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
-          <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
+          <el-select size="mini" style="width: 130px" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
                 v-for="item in options"
                 :key="item.value"
@@ -25,6 +25,7 @@
                            v-model="searchStr"
                            :fetch-suggestions="querySearch"
                            placeholder="请输入搜索内容"
+
                            @select="searchSelect"
           >
           </el-autocomplete>
@@ -36,6 +37,8 @@
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
                            placeholder="请输入搜索内容"
+                           :trigger-on-focus="false"
+
                            @select="searchSelect"
 
           >
@@ -74,9 +77,25 @@
 
         </el-form-item>
 
+        <el-form-item >
+          <el-select
+              size ="mini"
+              v-model="checkedBox"
+              multiple
+              collapse-tags
+              style="margin-left: 0px;"
+              placeholder="请选择状态">
+            <el-option
+                v-for="item in statusArr"
+                :key="item.val"
+                :label="item.name"
+                :value="item.val">
+            </el-option>
+          </el-select>
+        </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getPickDocumentList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
         </el-form-item>
 
 
@@ -128,7 +147,7 @@
           :span-method="objectSpanMethod"
           border
           fit
-
+          height="520px"
           :summary-method="getSummaries"
           show-summary
           size="mini"
@@ -175,8 +194,10 @@
             width="110px"
             label="状态">
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.status === 0" type="success">审核完成</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">待审核</el-tag>
+            <el-tag size="small" v-if="scope.row.status === 0" type="success">已审核</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">暂存</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===2" type="danger">审核中</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===3" type="danger">重新审核</el-tag>
           </template>
         </el-table-column>
 
@@ -228,14 +249,40 @@
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('repository:pickMaterial:update')   ">{{ scope.row.status === 0 ? '查看' : '编辑' }}
+              v-if="hasAuth('repository:pickMaterial:update') || (hasAuth('repository:pickMaterial:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('repository:pickMaterial:valid') && scope.row.status ===1   "></el-divider>
+                        v-if="hasAuth('repository:pickMaterial:save') && scope.row.status ===1   "></el-divider>
 
             <el-button style="padding: 0px" type="text"
-                       v-if="hasAuth('repository:pickMaterial:valid')  && scope.row.status ===1   ">
+                       v-if="hasAuth('repository:pickMaterial:save')  && scope.row.status ===1   ">
+              <template>
+                <el-popconfirm @confirm="statusSubmit(scope.row.id)"
+                               title="确定提交吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">提交</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-divider direction="vertical"
+                        v-if="hasAuth('repository:pickMaterial:save') && (scope.row.status === 2 || scope.row.status === 3 )   "></el-divider>
+
+            <el-button class="elInput_action_my" type="text" style="padding: 0px"
+                       v-if="hasAuth('repository:pickMaterial:save')  && (scope.row.status === 2 || scope.row.status === 3)   ">
+              <template>
+                <el-popconfirm @confirm="statusSubReturn(scope.row.id)"
+                               title="确定撤销吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">撤销</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-button style="padding: 0px" type="text"
+              v-if="hasAuth('repository:pickMaterial:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
+
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
                                title="确定设置审核通过吗？"
@@ -323,7 +370,7 @@
           <el-form-item label="领料部门" prop="departmentName" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
-                :disabled="this.editForm.status===0"
+                :disabled="this.editForm.status!=1"
                 style="width: 150px"
                 class="inline-input"
                 v-model="editForm.departmentName"
@@ -338,12 +385,12 @@
           </el-form-item>
 
           <el-form-item  label="领料人" prop="pickUser" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 100px" v-model="editForm.pickUser">
+            <el-input :disabled="this.editForm.status!=1"  size="mini" clearable style="width: 100px" v-model="editForm.pickUser">
             </el-input>
           </el-form-item>
 
           <el-form-item label="领料日期" prop="pickDate">
-            <el-date-picker :disabled="this.editForm.status===0" style="width: 150px"
+            <el-date-picker :disabled="this.editForm.status!=1" style="width: 150px"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.pickDate"
                             type="date"
@@ -395,11 +442,13 @@
             <template slot-scope="scope">
               <el-autocomplete style="width: 300px"
                                 size="mini" clearable
-                               :disabled="editForm.status===0"
+                               :disabled="editForm.status!=1"
                                class="inline-input"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
                                placeholder="请输入内容"
+                               :trigger-on-focus="false"
+
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
               >
@@ -431,7 +480,7 @@
                          onkeyup="value=value.replace(/[^0-9.]/g,'')"
                          @keyup.up.native="numUp(scope.row.seqNum)"
                          @keyup.down.native="numDown(scope.row.seqNum)"
-                         :disabled="editForm.status===0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+                         :disabled="editForm.status!=1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
 
@@ -583,6 +632,8 @@ export default {
   },
   data() {
     return {
+      statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
+      checkedBox:[1,2,3,0],
       // 导入
       fileList: [],
       fileSizeIsSatisfy: false,
@@ -1197,12 +1248,16 @@ export default {
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
             });
-
+            if(!this.editForm.id){
+              console.log("回显的ID：",res.data.data)
+              this.editForm.id = res.data.data;
+              this.addOrUpdate = "update"
+            }
             // 关闭弹窗并且重置内容
-            this.dialogVisible = false;
-            this.resetForm("editForm")
-            this.handleDeleteAllDetails()
-            this.getPickDocumentList()
+            // this.dialogVisible = false;
+            // this.resetForm("editForm")
+            // this.handleDeleteAllDetails()
+            // this.getPickDocumentList()
 
           })
         } else {
@@ -1211,9 +1266,13 @@ export default {
         }
       });
     },
-
+    search(){
+      this.currentPage = 1;
+      this.getPickDocumentList()
+    },
     // 查询价目表单列表数据
     getPickDocumentList() {
+      let checkStr = this.checkedBox.join(",");
       console.log("搜索字段:", this.select)
       request.get('/repository/pickMaterial/list', {
         params: {
@@ -1224,13 +1283,17 @@ export default {
             , searchStartDate: this.searchStartDate
             , searchEndDate: this.searchEndDate
             , searchField: this.select
-      }
+          , searchStatus:checkStr
+        }
       }).then(res => {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
         console.log("id:",res.data.data.records[0].orderId ===null)
         console.log("获取表单数据", res.data.data.records)
+        this.$nextTick(() => {
+          this.$refs['multipleTable'].doLayout();
+        })
       })
     },
     // 编辑页面
@@ -1278,6 +1341,27 @@ export default {
 
       })
     },
+
+    // 撤销提交
+    statusSubReturn(id) {
+      request.get('/repository/pickMaterial/statusSubReturn?id=' + id).then(res => {
+        this.$message({
+          message: '已撤销!',
+          type: 'success'
+        });
+        this.getPickDocumentList()
+      })
+    },
+    // 状态提交
+    statusSubmit(id) {
+      request.get('/repository/pickMaterial/statusSubmit?id=' + id).then(res => {
+        this.$message({
+          message: '已提交!',
+          type: 'success'
+        });
+        this.getPickDocumentList()
+      })
+    },
     // 状态待审核
     statusPass(id) {
       request.get('/repository/pickMaterial/statusPass?id=' + id).then(res => {
@@ -1302,6 +1386,8 @@ export default {
     handleClose(done) {
       this.$refs['editForm'].resetFields();
       this.handleDeleteAllDetails()
+      this.getPickDocumentList()
+
       console.log("关闭窗口")
       done();
     },

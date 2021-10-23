@@ -5,7 +5,7 @@
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
-          <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
+          <el-select size="mini" style="width: 130px" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
                 v-for="item in options"
                 :key="item.value"
@@ -25,6 +25,8 @@
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
                            placeholder="请输入搜索内容"
+                           :trigger-on-focus="false"
+
                            @select="searchSelect"
 
           >
@@ -65,7 +67,7 @@
 
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="getList">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
         </el-form-item>
 
 
@@ -87,9 +89,7 @@
           :span-method="objectSpanMethod"
           border
           fit
-
-          :summary-method="getSummaries"
-          show-summary
+          height="520px"
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
@@ -313,6 +313,7 @@
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
                                placeholder="请输入内容"
+                               :trigger-on-focus="false"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
               >
@@ -693,7 +694,10 @@ export default {
         }
       });
     },
-
+    search(){
+      this.currentPage = 1;
+      this.getList()
+    },
     // 查询价目表单列表数据
     getList() {
       console.log("搜索字段:", this.select)
@@ -711,7 +715,12 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
+        this.$nextTick(() => {
+          this.$refs['multipleTable'].doLayout();
+        })
       })
+      this.loadTableSearchMaterialDetailAllWithStock()
+
     },
     // 编辑页面
     edit(id) {
