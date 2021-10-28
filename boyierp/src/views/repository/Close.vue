@@ -100,6 +100,7 @@ export default {
             message: (this.editForm.id ? '编辑' : '新增') + '成功!',
             type: 'success'
           });
+          this.tableData2 = []
           this.getList();
         }
 

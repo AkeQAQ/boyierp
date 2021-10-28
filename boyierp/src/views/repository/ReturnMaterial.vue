@@ -81,7 +81,7 @@
               v-model="checkedBox"
               multiple
               collapse-tags
-              style="margin-left: 0px;"
+              style="margin-left: 0px;width: 150px"
               placeholder="请选择状态">
             <el-option
                 v-for="item in statusArr"
@@ -123,6 +123,9 @@
 
           ref="multipleTable"
           :data="tableData"
+          v-loading = "tableLoad"
+          element-loading-background = "rgba(255, 255, 255, .5)"
+          element-loading-text = "加载中，请稍后..."
           :span-method="objectSpanMethod"
           border
           fit
@@ -227,7 +230,7 @@
                        v-if="hasAuth('repository:returnMaterial:update') || (hasAuth('repository:returnMaterial:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
             </el-button>
 
-            <el-divider direction="vertical"
+<!--            <el-divider direction="vertical"
                         v-if="hasAuth('repository:returnMaterial:save') && scope.row.status ===1   "></el-divider>
 
             <el-button style="padding: 0px" type="text"
@@ -253,7 +256,7 @@
                   <el-button type="text" size="small" slot="reference">撤销</el-button>
                 </el-popconfirm>
               </template>
-            </el-button>
+            </el-button>-->
 
             <el-button style="padding: 0px" type="text"
                        v-if="hasAuth('repository:returnMaterial:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
@@ -374,10 +377,21 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item style="margin-left: 100px">
-            <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
-              保存
-            </el-button>
+          <el-form-item >
+            <el-dropdown   @command="action">
+              <el-button  icon="" size="mini" type="success">
+                操作<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="save" v-show="hasAuth('repository:returnMaterial:save') && this.editForm.status===1" >
+                  提交单据</el-dropdown-item>
+                <el-dropdown-item command="subReturn" v-show="hasAuth('repository:returnMaterial:save') && (this.editForm.status===2 || this.editForm.status===3)">
+                  撤销</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </el-form-item>
+
+          <el-form-item >
             <el-button size="mini" @click="preViewPrint()" icon="el-icon-printer" type="primary"
             >打印预览
             </el-button>
@@ -446,7 +460,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="退料数量" align="center" width="85" prop="num">
+          <el-table-column label="退料数量" align="center" width="100" prop="num">
             <template slot-scope="scope">
               <el-input  :ref='"input_num_"+scope.row.seqNum'
                          onkeyup="value=value.replace(/[^0-9.]/g,'')"
@@ -510,6 +524,7 @@ export default {
   },
   data() {
     return {
+      tableLoad:false,
       statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
       checkedBox:[1,2,3,0],
       // vue 前端的 导出table 数据功能
@@ -649,7 +664,23 @@ export default {
         this.$refs['input_num_'+(seqNum - 1)].focus()
       }
     },
-
+    action(item) {
+      if(this.editForm.id === null || this.editForm.id === ''){
+        this.addOrUpdate = 'save';
+      }else{
+        this.addOrUpdate = 'update';
+      }
+      if (item === 'save') {
+        this.submitForm('editForm',this.addOrUpdate)
+      } else if(item === 'subReturn'){
+        console.log("撤销id:",this.editForm.id);
+        if(this.editForm.id != ''){
+          this.statusSubReturn(this.editForm.id)
+        }else{
+          this.$message.error("id 为空")
+        }
+      }
+    },
     // 导出
     expChange(item) {
       console.log("导出:",item)
@@ -730,10 +761,14 @@ export default {
     // 退料详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
-        this.$message({
-          message: '请先选择要删除的数据!',
-          type: 'error'
-        });
+        if(this.editForm.rowList.length === 0){
+          this.$message({
+            message: '没有记录可删除!',
+            type: 'error'
+          });
+        }else{
+          this.editForm.rowList.splice(this.editForm.rowList.length-1,1)
+        }
       }else {
         let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
         this.editForm.rowList = newArr
@@ -998,12 +1033,7 @@ export default {
               this.editForm.id = res.data.data;
               this.addOrUpdate = "update"
             }
-            // 关闭弹窗并且重置内容
-            // this.dialogVisible = false;
-            // this.resetForm("editForm")
-            // this.handleDeleteAllDetails()
-            // this.getReturnDocumentList()
-
+            this.editForm.status = 2;
           })
         } else {
           console.log('error submit!!');
@@ -1018,6 +1048,7 @@ export default {
     },
     // 查询价目表单列表数据
     getReturnDocumentList() {
+      this.tableLoad = true;
       let checkStr = this.checkedBox.join(",");
       console.log("搜索字段:", this.select)
       request.get('/repository/returnMaterial/list', {
@@ -1035,11 +1066,13 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
-        console.log("id:",res.data.data.records[0].orderId ===null)
-        console.log("获取表单数据", res.data.data.records)
+        this.tableLoad = false;
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
+      }).catch(error=>{
+        this.tableLoad = false;
+        console.log("error:",error)
       })
     },
     // 编辑页面
@@ -1095,6 +1128,7 @@ export default {
           message: '已撤销!',
           type: 'success'
         });
+        this.editForm.status = 1;
         this.getReturnDocumentList()
       })
     },
@@ -1130,12 +1164,15 @@ export default {
     },
     // 关闭弹窗处理动作
     handleClose(done) {
-      this.$refs['editForm'].resetFields();
-
-      this.handleDeleteAllDetails()
-      this.getReturnDocumentList()
-      console.log("关闭窗口")
-      done();
+      this.$confirm('确认关闭？')
+          .then(_ => {
+            this.$refs['editForm'].resetFields();
+            this.handleDeleteAllDetails()
+            this.getReturnDocumentList()
+            console.log("关闭窗口")
+            done();
+          })
+          .catch(_ => {});
     },
     // 重置表单
     resetForm(formName) {
@@ -1234,6 +1271,9 @@ export default {
             sums[index] = sums[index].toFixed(2);
           } else {
             sums[index] = 'N/A';
+          }
+          if(index === 6){
+            this.editForm.totalNum = sums[index];
           }
         }
 

@@ -19,7 +19,7 @@
         <el-form-item>
           <!-- 列表界面-部门搜索 -->
           <el-autocomplete size="mini" v-if="selectedName==='departmentName'"
-                           style="width: 300px"
+                           style="width: 250px"
                            clearable
                            class="inline-input"
                            v-model="searchStr"
@@ -83,7 +83,7 @@
               v-model="checkedBox"
               multiple
               collapse-tags
-              style="margin-left: 0px;"
+              style="margin-left: 0px;width: 150px"
               placeholder="请选择状态">
             <el-option
                 v-for="item in statusArr"
@@ -121,6 +121,18 @@
         </el-form-item>
 
 
+        <el-form-item  v-if="hasAuth('repository:pickMaterial:save')">
+          <el-dropdown   @command="expChangeImport">
+            <el-button  icon="el-icon-plus" size="mini" type="primary">
+              导入<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="import">导入</el-dropdown-item>
+              <el-dropdown-item command="importDemo">导入模板下载</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-form-item>
+<!--
         <el-form-item v-if="hasAuth('repository:pickMaterial:save')">
           <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:pickMaterial:save')"
                      @click="dialogImportVisible = true;"
@@ -136,7 +148,7 @@
           >导入模板下载
           </el-button>
 
-        </el-form-item>
+        </el-form-item>-->
 
       </el-form>
 
@@ -144,6 +156,9 @@
 
           ref="multipleTable"
           :data="tableData"
+          v-loading = "tableLoad"
+          element-loading-background = "rgba(255, 255, 255, .5)"
+          element-loading-text = "加载中，请稍后..."
           :span-method="objectSpanMethod"
           border
           fit
@@ -252,7 +267,7 @@
               v-if="hasAuth('repository:pickMaterial:update') || (hasAuth('repository:pickMaterial:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
             </el-button>
 
-            <el-divider direction="vertical"
+<!--            <el-divider direction="vertical"
                         v-if="hasAuth('repository:pickMaterial:save') && scope.row.status ===1   "></el-divider>
 
             <el-button style="padding: 0px" type="text"
@@ -278,7 +293,7 @@
                   <el-button type="text" size="small" slot="reference">撤销</el-button>
                 </el-popconfirm>
               </template>
-            </el-button>
+            </el-button>-->
 
             <el-button style="padding: 0px" type="text"
               v-if="hasAuth('repository:pickMaterial:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
@@ -403,10 +418,21 @@
             </el-input>
           </el-form-item>-->
 
-          <el-form-item style="margin-left: 100px">
-            <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
-              保存
-            </el-button>
+          <el-form-item >
+            <el-dropdown   @command="action">
+              <el-button  icon="" size="mini" type="success">
+                操作<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="save" v-show="hasAuth('repository:pickMaterial:save') && this.editForm.status===1" >
+                  提交单据</el-dropdown-item>
+                <el-dropdown-item command="subReturn" v-show="hasAuth('repository:pickMaterial:save') && (this.editForm.status===2 || this.editForm.status===3)">
+                  撤销</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </el-form-item>
+
+          <el-form-item >
             <el-button size="mini" @click="preViewPrint()" icon="el-icon-printer" type="primary"
             >打印预览
             </el-button>
@@ -474,7 +500,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="领料数量" align="center" width="85" prop="num">
+          <el-table-column label="领料数量" align="center" width="100" prop="num">
             <template slot-scope="scope">
               <el-input  :ref='"input_num_"+scope.row.seqNum'
                          onkeyup="value=value.replace(/[^0-9.]/g,'')"
@@ -632,6 +658,7 @@ export default {
   },
   data() {
     return {
+      tableLoad:false,
       statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
       checkedBox:[1,2,3,0],
       // 导入
@@ -739,7 +766,7 @@ export default {
         departmentName: '',
         materialName: '',
         materialId: '',
-        pickDate: '',
+        pickDate: new Date().format("yyyy-MM-dd"),
         pickUser:'',
         endDate: '',
         produceDocNum: '',
@@ -761,7 +788,7 @@ export default {
       },
       rules: {
         departmentName: [
-          {required: true, message: '请输入领料部门', trigger: 'blur'}
+          {required: true, message: '请输入领料部门', change: 'blur'}
         ],
         pickDate: [
           {required: true, message: '请输入领料日期', trigger: 'blur'}
@@ -877,7 +904,32 @@ export default {
         this.$refs['input_num_'+(seqNum - 1)].focus()
       }
     },
+    // 导入
+    expChangeImport(item) {
+      if (item === 'import') {
+        this.dialogImportVisible = true;
+      } else if(item === 'importDemo'){
+        this.downImportDemo();
+      }
+    },
+    action(item) {
 
+      if(this.editForm.id === null || this.editForm.id === ''){
+        this.addOrUpdate = 'save';
+      }else{
+        this.addOrUpdate = 'update';
+      }
+      if (item === 'save') {
+        this.submitForm('editForm',this.addOrUpdate)
+      } else if(item === 'subReturn'){
+        console.log("撤销id:",this.editForm.id);
+        if(this.editForm.id != ''){
+          this.statusSubReturn(this.editForm.id)
+        }else{
+          this.$message.error("id 为空")
+        }
+      }
+    },
     // 导出
     expChange(item) {
       console.log("导出:",item)
@@ -958,10 +1010,14 @@ export default {
     // 领料详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
-        this.$message({
-          message: '请先选择要删除的数据!',
-          type: 'error'
-        });
+        if(this.editForm.rowList.length === 0){
+          this.$message({
+            message: '没有记录可删除!',
+            type: 'error'
+          });
+        }else{
+          this.editForm.rowList.splice(this.editForm.rowList.length-1,1)
+        }
       } else {
         let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
         this.editForm.rowList = newArr
@@ -1253,11 +1309,7 @@ export default {
               this.editForm.id = res.data.data;
               this.addOrUpdate = "update"
             }
-            // 关闭弹窗并且重置内容
-            // this.dialogVisible = false;
-            // this.resetForm("editForm")
-            // this.handleDeleteAllDetails()
-            // this.getPickDocumentList()
+            this.editForm.status = 2;
 
           })
         } else {
@@ -1272,6 +1324,7 @@ export default {
     },
     // 查询价目表单列表数据
     getPickDocumentList() {
+      this.tableLoad = true;
       let checkStr = this.checkedBox.join(",");
       console.log("搜索字段:", this.select)
       request.get('/repository/pickMaterial/list', {
@@ -1289,11 +1342,13 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
-        console.log("id:",res.data.data.records[0].orderId ===null)
-        console.log("获取表单数据", res.data.data.records)
+        this.tableLoad = false;
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
+      }).catch(error=>{
+        this.tableLoad = false;
+        console.log("error:",error)
       })
     },
     // 编辑页面
@@ -1306,13 +1361,21 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          this.restaurants3.forEach(obj => {
-            console.log("obj:", obj, result.rowList.materialId)
 
-            if (obj.id === result.materialId) {
-              console.log("obj:", obj, result.materialId)
-            }
-          })
+        })
+
+      })
+    },
+    // 一键生产领料
+    queryByBuyInId(id) {
+      request.get('/repository/pickMaterial/queryByBuyInId?buyInId=' + id).then(res => {
+        let result = res.data.data
+        this.dialogVisible = true
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.editForm = result
+          this.editForm.pickDate = new Date().format("yyyy-MM-dd");
         })
 
       })
@@ -1349,6 +1412,7 @@ export default {
           message: '已撤销!',
           type: 'success'
         });
+        this.editForm.status = 1;
         this.getPickDocumentList()
       })
     },
@@ -1384,12 +1448,15 @@ export default {
     },
     // 关闭弹窗处理动作
     handleClose(done) {
-      this.$refs['editForm'].resetFields();
-      this.handleDeleteAllDetails()
-      this.getPickDocumentList()
-
-      console.log("关闭窗口")
-      done();
+      this.$confirm('确认关闭？')
+          .then(_ => {
+            this.$refs['editForm'].resetFields();
+            this.handleDeleteAllDetails()
+            this.getPickDocumentList()
+            console.log("关闭窗口")
+            done();
+          })
+          .catch(_ => {});
     },
     // 关闭弹窗处理动作
     handleImportClose(done) {
@@ -1500,6 +1567,9 @@ export default {
           } else {
             sums[index] = 'N/A';
           }
+          if(index === 6){
+            this.editForm.totalNum = sums[index];
+          }
         }
 
       });
@@ -1570,6 +1640,15 @@ export default {
     this.loadDepartmentAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+  },
+  // 每次页面切换进入则激活
+  activated() {
+    let id = this.$route.params.id
+    console.log("1激活activated钩子函数id:",id);
+    if(id != '' && id !=undefined && id != null){
+      this.queryByBuyInId(id)
+    }
+
   }
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {

@@ -130,7 +130,7 @@
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
-                       @click=" edit(scope.row.id)"
+                       @click="hasAuth('order:buyOrder:update') && edit(scope.row.id)"
             >{{ scope.row.id }}
             </el-button>
           </template>
@@ -221,7 +221,9 @@
 
         <el-table-column
             prop="amount"
-            label="金额">
+            label="金额"
+            width="100px"
+        >
         </el-table-column>
 
 
@@ -510,13 +512,13 @@
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].specs"></el-input>
             </template>
           </el-table-column>
-          <el-table-column label="物料单位" align="center" prop="unit" width="75">
+          <el-table-column label="物料单位" align="center" prop="unit" width="100">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].unit"></el-input>
             </template>
           </el-table-column>
 
-          <el-table-column label="入库单价" align="center" width="75" prop="price">
+          <el-table-column label="入库单价" align="center" width="90" prop="price">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].price"/>
             </template>
@@ -846,6 +848,14 @@ export default {
             type: 'error'
           });
         }else{
+          let theRow = this.editForm.rowList[this.editForm.rowList.length-1];
+          if(theRow.status === 0){
+            this.$message({
+              message: '不可删除已下推的记录！',
+              type: 'error'
+            });
+            throw new Error();
+          }
           this.editForm.rowList.splice(this.editForm.rowList.length-1,1)
         }
       } else {
@@ -864,6 +874,8 @@ export default {
 
           let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
           this.editForm.rowList = newArr
+          this.checkedDetail=[]
+
         }catch (err) {
         }
       }
@@ -1073,7 +1085,7 @@ export default {
             // 关闭弹窗并且重置内容
             this.pushDialogVisible = false;
             this.resetForm("pushForm")
-            this.$router.push("/repository/BuyIn")
+            this.$router.push({name:'repository:buyIn:list',params:{refresh:'true'}});
           })
         } else {
           console.log('error submit!!');
@@ -1197,13 +1209,15 @@ export default {
       this.pushForm.orderId = id
     },*/
     pushPage(id){
-      if(id === null && (this.multipleSelection===[] || this.multipleSelection.length ===0)){
+      console.log(id)
+      if((this.multipleSelection===[] || this.multipleSelection.length ===0)  && (id ===-1) ){
         this.$message({
           message: '请选择下推的选项!',
           type: 'error'
         });
         return
       }
+
 
       this.pushDialogVisible = true
       this.pushForm.orderDetailIds = this.multipleSelection // 部分下推有值
@@ -1272,12 +1286,15 @@ export default {
     },
     // 关闭弹窗处理动作
     handleClose(done) {
-      this.$refs['editForm'].resetFields();
-
-      this.handleDeleteAllDetails()
-      this.hasPushed = false
-      console.log("关闭窗口")
-      done();
+      this.$confirm('确认关闭？')
+          .then(_ => {
+            this.$refs['editForm'].resetFields();
+            this.handleDeleteAllDetails()
+            this.hasPushed = false
+            console.log("关闭窗口")
+            done();
+          })
+          .catch(_ => {});
     },
     // 关闭打印弹窗弹窗处理动作
     printClose(done) {

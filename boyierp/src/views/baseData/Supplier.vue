@@ -36,6 +36,7 @@
           :visible.sync="groupDialogVisible"
           width="30%"
           :before-close="handleClose_group"
+          :append-to-body="true"
       >
 
         <el-form :model="groupEditForm" :rules="groupRules" ref="groupEditForm" label-width="100px"
@@ -106,6 +107,9 @@
 
                 ref="multipleTable"
                 :data="tableData"
+                v-loading = "tableLoad"
+                element-loading-background = "rgba(255, 255, 255, .5)"
+                element-loading-text = "加载中，请稍后..."
                 border
                 stripe
                 fit
@@ -260,6 +264,7 @@ export default {
 
   data() {
     return {
+      tableLoad:false,
       select:'',
       defaulExpandedKeys: [0],
       currentPage: 1 // 当前页
@@ -323,13 +328,6 @@ export default {
       // 供应商分组 上次点击的TreeNode
       lastClickTreeNode: {},
 
-      // 搜索框列表数据存放
-      restaurants: [
-      ]/*,
-      // 搜索字段 数据存放
-      restaurants2: [
-        {value:'唯一编码'},{value:'分组编码'},{value:'子编码'},{value:'名称'}
-      ]*/
     }
   },
   methods: {
@@ -358,33 +356,6 @@ export default {
       })
     },
 
-    // 获取基本单位的所有数据
-    loadUnitAll() {
-      request.post('/baseData/unit/getSearchAllData', this.editForm).then(res => {
-          this.restaurants = res.data.data
-      })
-    },
-/*
-    // 查询搜索字段类型
-    querySearch2(queryString, cb) {
-      var restaurants2 = this.restaurants2;
-      var results = queryString ? restaurants2.filter(this.createFilter(queryString)) : restaurants2;
-      // 调用 callback 返回建议列表的数据
-      cb(results);
-    },*/
-
-    // 查询搜索框列表数据
-    querySearch(queryString, cb) {
-      var restaurants = this.restaurants;
-      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-      // 调用 callback 返回建议列表的数据
-      cb(results);
-    },
-    createFilter(queryString) {
-      return (restaurant) => {
-        return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
-      };
-    },
     handleSelect(item) {
       console.log(item);
     },
@@ -573,6 +544,7 @@ export default {
     },
     // 查询供应商表单列表数据
     getSupplierList() {
+      this.tableLoad = true;
       console.log("搜索字段:",this.select)
       request.get('/baseData/supplier/list', {
         params: {
@@ -586,6 +558,7 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         console.log("获取用户表单数据", res.data.data.records)
+        this.tableLoad = false;
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
@@ -731,7 +704,6 @@ export default {
   created() {
     this.getSupplierList()
     this.getMaterialGroupList()
-    this.loadUnitAll()
   }
 
 }

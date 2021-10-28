@@ -12,14 +12,14 @@ export default {
     mutations:{
         SET_MENULIST: (state, menuList_p) => {
             state.menuList = menuList_p
-            localStorage.setItem("menuList", menuList_p)
+            sessionStorage.setItem("menuList", menuList_p)
         },
         SET_MENUINITFLAG: (state, flag_p) => {
             state.menuInitFlag = flag_p
         },
         SET_AUTHLIST: (state, authList_p) => {
             state.authList = authList_p
-            localStorage.setItem("authList", authList_p)
+            sessionStorage.setItem("authList", authList_p)
         },
         reset(state){
             console.log("menu 重置")

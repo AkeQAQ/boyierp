@@ -17,25 +17,24 @@ export default new Vuex.Store({
     mutations: {
         SET_TOKEN: (state, token_p) => {
             state.token = token_p
-            localStorage.setItem("token", token_p)
+            sessionStorage.setItem("token", token_p)
         },
         LOGOUT: (state) => {
             state.token = ''
             state.user_info = {}
-            localStorage.clear()
             sessionStorage.clear()
         },
         SET_USERINFO:(state,user_info_p)=>{
             state.user_info = user_info_p;
-            localStorage.setItem("user_info", user_info_p)
+            sessionStorage.setItem("user_info", user_info_p)
         },
         SET_PRODUCTPRICEDATA:(state,data)=>{
             state.producePriceData = data;
-            localStorage.setItem("producePriceData", data)
+            sessionStorage.setItem("producePriceData", data)
         },
         SET_CRAFTDATA:(state,data)=>{
             state.craftData = data;
-            localStorage.setItem("craftData", data)
+            sessionStorage.setItem("craftData", data)
         },
 
     },

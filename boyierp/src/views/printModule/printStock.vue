@@ -17,8 +17,8 @@
           </tr>
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
-            <td style="text-align: left">{{row.materialId}}</td>
-            <td style="text-align: left">{{row.materialName}}</td>
+            <td style="text-align: left;padding-left: 8px">{{row.materialId}}</td>
+            <td style="text-align: center">{{row.materialName}}</td>
             <td style="text-align: center">{{row.num}}</td>
             <td style="text-align: center">{{row.unit}}</td>
             <td style="text-align: center">{{row.specs}}</td>

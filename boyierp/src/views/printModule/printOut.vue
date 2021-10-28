@@ -1,6 +1,6 @@
 <template>
   <!-- 打印入库单据24cm的适配宽度 -->
-  <div style="width: 750px;">
+  <div style="width: 780px;">
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
       <div  class='tab_company_out'>
@@ -33,8 +33,8 @@
           </tr>
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.rowList.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
-            <td style="text-align: left">{{row.materialId}}</td>
-            <td style="text-align: left">{{row.materialName}}</td>
+            <td style="text-align: left;padding-left: 8px">{{row.materialId}}</td>
+            <td style="text-align: center">{{row.materialName}}</td>
             <td style="text-align: center">{{row.specs}}</td>
             <td style="text-align: center">{{row.num}}</td>
             <td style="text-align: center">{{row.unit}}</td>
@@ -203,8 +203,8 @@ table tr td {
   border: 1px solid #000;
   border-bottom: none;
   border-right: none;
-  height: 20px;
-  line-height: 20px;
+  height: 28px;
+  line-height: 28px;
 }
 table tr td:last-of-type,
 table tr th:last-of-type {

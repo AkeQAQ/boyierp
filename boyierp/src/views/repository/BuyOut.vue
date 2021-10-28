@@ -84,7 +84,7 @@
               v-model="checkedBox"
               multiple
               collapse-tags
-              style="margin-left: 0px;"
+              style="margin-left: 0px;width: 150px"
               placeholder="请选择状态">
             <el-option
                 v-for="item in statusArr"
@@ -125,6 +125,9 @@
 
           ref="multipleTable"
           :data="tableData"
+          v-loading = "tableLoad"
+          element-loading-background = "rgba(255, 255, 255, .5)"
+          element-loading-text = "加载中，请稍后..."
           :span-method="objectSpanMethod"
           border
           height="520px"
@@ -227,7 +230,7 @@
                        v-if="hasAuth('repository:buyOut:update') || (hasAuth('repository:buyOut:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
             </el-button>
 
-            <el-divider direction="vertical"
+<!--            <el-divider direction="vertical"
                         v-if="hasAuth('repository:buyOut:save') && scope.row.status ===1   "></el-divider>
 
             <el-button style="padding: 0px" type="text"
@@ -253,7 +256,7 @@
                   <el-button type="text" size="small" slot="reference">撤销</el-button>
                 </el-popconfirm>
               </template>
-            </el-button>
+            </el-button>-->
 
             <el-button class="elInput_action_my" type="text" style="padding: 0px"
                        v-if="hasAuth('repository:buyOut:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
@@ -369,10 +372,23 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item style="margin-left: 100px">
-            <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
-              保存单据
-            </el-button>
+          <el-form-item >
+            <el-dropdown   @command="action">
+              <el-button  icon="" size="mini" type="success">
+                操作<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="save" v-show="hasAuth('repository:buyOut:save') && this.editForm.status===1" >
+                  提交单据</el-dropdown-item>
+                <el-dropdown-item command="subReturn" v-show="hasAuth('repository:buyOut:save') && (this.editForm.status===2 || this.editForm.status===3)">
+                  撤销</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </el-form-item>
+
+          <el-form-item style="margin-left: 0px">
+
+
             <el-button @click="preViewPrint()" icon="el-icon-printer" type="primary"
             >打印预览
             </el-button>
@@ -438,14 +454,20 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="退料数量" align="center" width="85" prop="num">
+          <el-table-column label="退料数量" align="center" width="100" prop="num">
             <template slot-scope="scope">
               <el-input
                   onkeyup="value=value.replace(/[^0-9.]/g,'')"
                   :ref='"input_num_"+scope.row.seqNum'
+                  @input="changeNum(scope.row.seqNum,editForm.supplierId,scope.row.materialId,editForm.buyOutDate)"
                   @keyup.up.native="numUp(scope.row.seqNum)"
                   @keyup.down.native="numDown(scope.row.seqNum)"
                   :disabled="editForm.status!=1 " size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+            </template>
+          </el-table-column>
+          <el-table-column label="金额" align="center" width="115" prop="amount">
+            <template slot-scope="scope">
+              <el-input size="mini" :disabled=true v-model="editForm.rowList[scope.row.seqNum-1].amount"/>
             </template>
           </el-table-column>
 
@@ -505,6 +527,7 @@ export default {
   },
   data() {
     return {
+      tableLoad:false,
       statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
       checkedBox:[1,2,3,0],
       // vue 前端的 导出table 数据功能
@@ -603,7 +626,8 @@ export default {
           num:'',
           specs:'',
           comment:'',
-
+          price:'',
+          amount:''
         }]
       },
       rules: {
@@ -628,6 +652,23 @@ export default {
     }
   },
   methods: {
+     changeNum(seq,supplierId,materialId,buyIndate){
+      console.log("supplierId materialid:,buyIndate",supplierId,materialId,buyIndate)
+      // 获取该物料，该日期的单价信息
+      if(this.editForm.rowList[seq-1].price === '' || this.editForm.rowList[seq-1].price === undefined){
+         request.get('/baseData/supplierMaterial/queryByValidPrice?supplierId='+supplierId+'&&materialId='+materialId
+            +'&&date='+buyIndate).then(res => {
+          if(res.data.data != null){
+            this.editForm.rowList[seq-1].price = res.data.data
+            this.editForm.rowList[seq-1].amount = (this.editForm.rowList[seq-1].price * this.editForm.rowList[seq-1].num).toFixed(2)
+          }
+        })
+      }else{
+        console.log("price:,num",this.editForm.rowList[seq-1].price,this.editForm.rowList[seq-1].num)
+        this.editForm.rowList[seq-1].amount = (this.editForm.rowList[seq-1].price *  this.editForm.rowList[seq-1].num).toFixed(2)
+      }
+
+    },
 // 数量的上下光标事件
     numDown(seqNum){
       if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
@@ -670,17 +711,22 @@ export default {
       obj.num = ''
       obj.specs = ''
       obj.comment = ''
-
+      obj.price = ''
+      obj.amount = ''
       this.editForm.rowList.push(obj);
       console.log("现有的数据:", this.editForm.rowList)
     },
     // 采购退料详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
-        this.$message({
-          message: '请先选择要删除的数据!',
-          type: 'error'
-        });
+        if(this.editForm.rowList.length === 0){
+          this.$message({
+            message: '没有记录可删除!',
+            type: 'error'
+          });
+        }else{
+          this.editForm.rowList.splice(this.editForm.rowList.length-1,1)
+        }
       }else {
         let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
         this.editForm.rowList = newArr
@@ -765,13 +811,11 @@ export default {
         // foreach 只能抛出异常结束
         this.restaurants.forEach(item => {
           if (text === item.name) {
-            console.log("匹配到:", text, item.name, this.editForm.supplierId, item.id)
             this.editForm.supplierId = item.id
             this.editForm.supplierName = item.name
             throw new Error();
           } else {
             this.editForm.supplierId = ''
-            console.log("没有匹配到", text, item.name)
             this.editForm.supplierName = ''
           }
         })
@@ -798,9 +842,7 @@ export default {
 
             rowObj.num = ''
             rowObj.comment = ''
-            console.log("没有匹配到", selectItem, item.id)
           }
-          console.log("设置rowObj:{},",this.editForm.rowList)
 
         })
       } catch (err) {
@@ -833,7 +875,8 @@ export default {
           num:'',
           specs:'',
           comment:'',
-
+          price:'',
+          amount:''
         }]
       }
       this.dialogVisible = true
@@ -944,6 +987,7 @@ export default {
               this.editForm.id = res.data.data;
               this.addOrUpdate = "update"
             }
+            this.editForm.status = 2;
 
             // 关闭弹窗并且重置内容
             // this.dialogVisible = false;
@@ -964,6 +1008,7 @@ export default {
     },
     // 查询价目表单列表数据
     getBuyOutDocumentList() {
+      this.tableLoad = true;
       let checkStr = this.checkedBox.join(",");
       console.log("搜索字段:", this.select)
       request.get('/repository/buyOut/list', {
@@ -981,11 +1026,13 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
-        console.log("id:",res.data.data.records[0].orderId ===null)
-        console.log("获取用户表单数据", res.data.data.records)
+        this.tableLoad = false;
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
+      }).catch(error=>{
+        this.tableLoad = false;
+        console.log("error:",error)
       })
     },
     // 编辑页面
@@ -998,12 +1045,8 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          this.restaurants3.forEach(obj => {
-            console.log("obj:", obj, result.rowList.materialId)
-
-            if (obj.id === result.materialId) {
-              console.log("obj:", obj, result.materialId)
-            }
+          this.editForm.rowList.forEach(obj => {
+            obj.amount = (obj.price * obj.num).toFixed(2)
           })
         })
 
@@ -1040,6 +1083,7 @@ export default {
           message: '已撤销!',
           type: 'success'
         });
+        this.editForm.status = 1;
         this.getBuyOutDocumentList()
       })
     },
@@ -1075,12 +1119,17 @@ export default {
     },
     // 关闭弹窗处理动作
     handleClose(done) {
-      this.$refs['editForm'].resetFields();
+      this.$confirm('确认关闭？')
+          .then(_ => {
+            this.$refs['editForm'].resetFields();
 
-      this.handleDeleteAllDetails()
-      this.getBuyOutDocumentList()
-      console.log("关闭窗口")
-      done();
+            this.handleDeleteAllDetails()
+            this.getBuyOutDocumentList()
+            console.log("关闭窗口")
+            done();
+          })
+          .catch(_ => {});
+
     },
     // 关闭打印弹窗弹窗处理动作
     printClose(done) {
@@ -1177,7 +1226,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 6) {
+        if (index === 6 || index === 7) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1191,6 +1240,11 @@ export default {
             sums[index] = sums[index].toFixed(2);
           } else {
             sums[index] = 'N/A';
+          }
+          if(index === 6){
+            this.editForm.totalNum = sums[index];
+          }else if(index === 7){
+            this.editForm.totalAmount = sums[index];
           }
         }
 
@@ -1252,7 +1306,23 @@ export default {
       return 'padding:0 0'
     },
 
-
+    action(item) {
+      if(this.editForm.id === null || this.editForm.id === ''){
+        this.addOrUpdate = 'save';
+      }else{
+        this.addOrUpdate = 'update';
+      }
+      if (item === 'save') {
+        this.submitForm('editForm',this.addOrUpdate)
+      } else if(item === 'subReturn'){
+        console.log("撤销id:",this.editForm.id);
+        if(this.editForm.id != ''){
+          this.statusSubReturn(this.editForm.id)
+        }else{
+          this.$message.error("id 为空")
+        }
+      }
+    },
     expChange(item) {
       console.log("导出:",item)
       if (item === 'currentList') {

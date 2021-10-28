@@ -36,6 +36,8 @@
           :visible.sync="groupDialogVisible"
           width="30%"
           :before-close="handleClose_group"
+          :append-to-body="true"
+
       >
 
         <el-form :model="groupEditForm" :rules="groupRules" ref="groupEditForm" label-width="100px"
@@ -105,6 +107,9 @@
             <el-table
 
                 ref="multipleTable"
+                v-loading = "tableLoad"
+                element-loading-background = "rgba(255, 255, 255, .5)"
+                element-loading-text = "加载中，请稍后..."
                 :data="tableData"
                 border
                 stripe
@@ -275,6 +280,7 @@ export default {
 
   data() {
     return {
+      tableLoad:false,
       select:'',
       defaulExpandedKeys: [0],
       currentPage: 1 // 当前页
@@ -586,6 +592,7 @@ export default {
     },
     // 查询物料表单列表数据
     getMaterialList() {
+      this.tableLoad = true;
       console.log("搜索字段:",this.select)
       request.get('/baseData/material/list', {
         params: {
@@ -599,6 +606,7 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         console.log("获取用户表单数据", res.data.data.records)
+        this.tableLoad = false;
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })

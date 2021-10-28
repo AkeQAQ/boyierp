@@ -68,6 +68,9 @@
 
           ref="multipleTable"
           :data="tableData"
+          v-loading = "tableLoad"
+          element-loading-background = "rgba(255, 255, 255, .5)"
+          element-loading-text = "加载中，请稍后..."
           border
           stripe
           fit
@@ -327,6 +330,7 @@ export default {
 
   data() {
     return {
+      tableLoad:false,
       // 搜索字段
       selectedName: 'supplierName',// 搜索默认值
       options: [
@@ -513,6 +517,7 @@ export default {
     },
     // 查询价目表单列表数据
     getSupplierMaterialList() {
+      this.tableLoad = true;
       console.log("搜索字段:", this.select)
       request.get('/baseData/supplierMaterial/list', {
         params: {
@@ -526,6 +531,7 @@ export default {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         console.log("获取用户表单数据", res.data.data.records)
+        this.tableLoad = false;
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })

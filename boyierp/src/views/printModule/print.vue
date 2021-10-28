@@ -38,8 +38,8 @@
           </tr>
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.rowList.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
-            <td style="text-align: left">{{row.materialId}}</td>
-            <td style="text-align: left">{{row.materialName}}</td>
+            <td style="text-align: left;padding-left: 8px">  {{row.materialId}}</td>
+            <td style="text-align: center">{{row.materialName}}</td>
             <td style="text-align: center">{{row.specs}}</td>
             <td style="text-align: center">{{row.orderNum}}</td>
             <td style="text-align: center">{{row.num}}</td>
@@ -221,8 +221,8 @@ table tr th:last-of-type {
 table tr th {
   border-top: 1px solid #000;
   border-left: 1px solid #000;
-  height: 22px;
-  line-height: 22px;
+  height: 28px;
+  line-height: 28px;
   font-size: 12px;
 }
 table tr th:nth-child(2) {

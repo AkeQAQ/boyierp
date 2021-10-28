@@ -96,8 +96,10 @@ export default {
       this.$router.push("/userCenter")
     }*/
     ,heartSend(){
-      request.get('/common/heart/sendHeart').then(res => {
-      })
+      if(sessionStorage.getItem("token") != null){
+        request.get('/common/heart/sendHeart').then(res => {
+        })
+      }
     }
 
   }

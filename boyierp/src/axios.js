@@ -2,14 +2,11 @@ import axios from "axios";
 import router from "@/router";
 import Element from "element-ui"
 
-// axios.defaults.baseURL = "http://192.168.8.204:8081" // 定义请求的前缀
+// axios.defaults.baseURL = "http://192.168.8.252:8081" // 定义请求的前缀
  axios.defaults.baseURL = "http://192.168.8.16:8081" // 定义请求的前缀
 
 const request2 =axios.create({
-    timeout:100000,
-    headers:{
-        'Authorization' : localStorage.getItem("token")
-    }
+    timeout:100000
 })
 
 // 声明请求实例
@@ -23,9 +20,17 @@ const request =axios.create({
 // 请求前置拦截器
 request.interceptors.request.use(config=>{
     // 给请求头添加 Authorization 信息
-    config.headers['Authorization'] = localStorage.getItem("token")
+    config.headers['Authorization'] = sessionStorage.getItem("token")
     return config
 })
+
+// 请求前置拦截器
+request2.interceptors.request.use(config=>{
+    // 给请求头添加 Authorization 信息
+    config.headers['Authorization'] = sessionStorage.getItem("token")
+    return config
+})
+
 
 // 请求后置拦截器
 request.interceptors.response.use(response=>{
