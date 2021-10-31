@@ -249,7 +249,7 @@
         <el-table-column
             prop="num"
             label="数量"
-            width="80px"
+            width="100px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -324,7 +324,7 @@
         <el-table-column
             prop="action"
             label="操作"
-            width="170px"
+            width="120px"
             fixed="right"
         >
           <template slot-scope="scope">
@@ -437,6 +437,7 @@
           :before-close="handleClose"
           fullscreen
           ref="buyIn_dialog"
+          @opened="dialogOpend()"
       >
         <el-form
                  size="mini" :inline="true"
@@ -491,9 +492,9 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item >
+          <el-form-item v-if="hasAuth('repository:buyIn:save')">
             <el-dropdown   @command="action">
-              <el-button  icon="" size="mini" type="success">
+              <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
@@ -515,8 +516,8 @@
 
           </el-form-item>
 
-          <el-form-item>
-            <el-popconfirm @confirm="pickMaterial()" title="信息保存了吗？">
+          <el-form-item v-if="hasAuth('repository:pickMaterial:save')">
+            <el-popconfirm @confirm="pickMaterial()" title="确定跳转？">
               <el-button size="mini" icon="el-icon-share" :disabled="this.editForm.rowList.length === 0 " type="danger"
                          slot="reference">跳转领料
               </el-button>
@@ -828,6 +829,14 @@ export default {
       pos: '',
       multipleSelection: [] // 多选框数组
 
+    }
+  },
+  watch :{
+    'editForm.status':{
+      handler(newVal,oldVal){
+        console.log("监听editForm.status.  old: , new :",oldVal,newVal)
+      },
+      deep:true
     }
   },
   methods: {
@@ -1349,16 +1358,31 @@ export default {
     },
     // 关闭弹窗处理动作
     handleClose(done) {
-      this.$confirm('确认关闭？')
-          .then(_ => {
-            this.$refs['editForm'].resetFields();
+      console.log("dialogVisiable:",this.dialogVisible)
+      if(this.editForm.status === 1){
+        this.$confirm('确认关闭？')
+            .then(_ => {
+              this.closeMethod();
+              done();
+            })
+            .catch(_ => {});
+      }else{
+        this.closeMethod();
+        done();
+        console.log("dialogVisiable:",this.dialogVisible)
 
-            this.handleDeleteAllDetails()
-            this.getBuyInDocumentList()
-            console.log("buyIn关闭窗口")
-            done();
-          })
-          .catch(_ => {});
+      }
+    },
+    closeMethod(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("关闭编辑页面.打开锁...",this.editForm.id);
+        request.get('/repository/buyIn/lockOpenById?id=' + this.editForm.id)
+      }
+      this.$refs['editForm'].resetFields();
+      this.handleDeleteAllDetails()
+      this.getBuyInDocumentList()
+
+      console.log("buyIn关闭窗口")
     },
     // 关闭打印弹窗弹窗处理动作
     printClose(done) {
@@ -1561,14 +1585,17 @@ export default {
         });
       }
     },
+    dialogOpend(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("打开编辑页面.锁住...",this.editForm.id);
+        request.get('/repository/buyIn/lockById?id=' + this.editForm.id)
+      }
+    },
     pickMaterial(){
       if(this.editForm.id != ''){
         let pickId = this.editForm.id;
-
-        this.$refs['editForm'].resetFields();
-        this.handleDeleteAllDetails()
+        this.closeMethod()
         this.dialogVisible = false;
-        this.getBuyInDocumentList()
         this.$router.push({name:'repository:pickMaterial:list',params:{id:pickId}});
       }else {
         this.$message.error("无单据编号的不能领料")
@@ -1578,6 +1605,13 @@ export default {
     // el-table 单元格样式修改
     cellStyle() {
       return 'padding:0 0'
+    },
+
+    async closeBrowser(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("关闭编辑页面.打开锁...",this.editForm.id);
+        await request.get('/repository/buyIn/lockOpenById?id=' + this.editForm.id)
+      }
     }
 
   },
@@ -1587,6 +1621,9 @@ export default {
     this.loadSupplierAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+  },
+  mounted() {
+    window.addEventListener( 'beforeunload', e => this.closeBrowser() );
   },
   // 每次页面切换进入则激活
   activated() {

@@ -222,7 +222,7 @@
         <el-table-column
             prop="action"
             label="操作"
-            width="170px"
+            width="120px"
             fixed="right"
         >
           <template slot-scope="scope">
@@ -328,6 +328,7 @@
           :visible.sync="dialogVisible"
           :before-close="handleClose"
           fullscreen
+          @opened="dialogOpend()"
       >
         <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
                  size="mini" :inline="true"
@@ -372,9 +373,9 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item >
+          <el-form-item v-if="hasAuth('repository:buyIn:save')">
             <el-dropdown   @command="action">
-              <el-button  icon="" size="mini" type="success">
+              <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
@@ -387,8 +388,6 @@
           </el-form-item>
 
           <el-form-item style="margin-left: 0px">
-
-
             <el-button @click="preViewPrint()" icon="el-icon-printer" type="primary"
             >打印预览
             </el-button>
@@ -652,6 +651,13 @@ export default {
     }
   },
   methods: {
+    dialogOpend(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("打开编辑页面.锁住...",this.editForm.id);
+        request.get('/repository/buyOut/lockById?id=' + this.editForm.id)
+      }
+    },
+
      changeNum(seq,supplierId,materialId,buyIndate){
       console.log("supplierId materialid:,buyIndate",supplierId,materialId,buyIndate)
       // 获取该物料，该日期的单价信息
@@ -1119,17 +1125,27 @@ export default {
     },
     // 关闭弹窗处理动作
     handleClose(done) {
-      this.$confirm('确认关闭？')
-          .then(_ => {
-            this.$refs['editForm'].resetFields();
+       if(this.editForm.status === 1){
+         this.$confirm('确认关闭？')
+             .then(_ => {
+               this.closeMethod();
+               done();
+             })
+             .catch(_ => {});
+       }else{
+         this.closeMethod();
+         done();
+       }
 
-            this.handleDeleteAllDetails()
-            this.getBuyOutDocumentList()
-            console.log("关闭窗口")
-            done();
-          })
-          .catch(_ => {});
-
+    },
+    closeMethod(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("关闭编辑页面.打开锁...",this.editForm.id);
+        request.get('/repository/buyOut/lockOpenById?id=' + this.editForm.id)
+      }
+      this.$refs['editForm'].resetFields();
+      this.handleDeleteAllDetails()
+      this.getBuyOutDocumentList()
     },
     // 关闭打印弹窗弹窗处理动作
     printClose(done) {
@@ -1367,6 +1383,12 @@ export default {
         alert('保存文件出错')
       }
     },
+    async closeBrowser(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("关闭编辑页面.打开锁...",this.editForm.id);
+        await request.get('/repository/buyOut/lockOpenById?id=' + this.editForm.id)
+      }
+    }
 
   },
   created() {
@@ -1374,7 +1396,10 @@ export default {
     this.loadSupplierAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+  },mounted() {
+    window.addEventListener( 'beforeunload', e => this.closeBrowser() );
   }
+
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {
     // 声明自定义指令v-focus

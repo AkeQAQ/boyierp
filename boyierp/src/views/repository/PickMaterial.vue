@@ -123,7 +123,7 @@
 
         <el-form-item  v-if="hasAuth('repository:pickMaterial:save')">
           <el-dropdown   @command="expChangeImport">
-            <el-button  icon="el-icon-plus" size="mini" type="primary">
+            <el-button  icon="el-icon-upload2" size="mini" type="primary">
               导入<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
@@ -251,7 +251,7 @@
         <el-table-column
             prop="num"
             label="数量"
-            width="80px"
+            width="100px"
 
         >
         </el-table-column>
@@ -259,7 +259,7 @@
         <el-table-column
             prop="action"
             label="操作"
-            width="170px"
+            width="120px"
             fixed="right"
         >
           <template slot-scope="scope">
@@ -366,6 +366,7 @@
           :visible.sync="dialogVisible"
           :before-close="handleClose"
           fullscreen
+          @opened="dialogOpend()"
       >
         <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
                  size="mini" :inline="true"
@@ -418,9 +419,9 @@
             </el-input>
           </el-form-item>-->
 
-          <el-form-item >
+          <el-form-item v-if="hasAuth('repository:buyIn:save')">
             <el-dropdown   @command="action">
-              <el-button  icon="" size="mini" type="success">
+              <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
@@ -806,6 +807,12 @@ export default {
     }
   },
   methods: {
+    dialogOpend(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("打开编辑页面.锁住...",this.editForm.id);
+        request.get('/repository/pickMaterial/lockById?id=' + this.editForm.id)
+      }
+    },
     // 导出列表数据- 服务端写出字节流到浏览器，进行保存
     downImportDemo() {
 
@@ -1448,15 +1455,27 @@ export default {
     },
     // 关闭弹窗处理动作
     handleClose(done) {
-      this.$confirm('确认关闭？')
-          .then(_ => {
-            this.$refs['editForm'].resetFields();
-            this.handleDeleteAllDetails()
-            this.getPickDocumentList()
-            console.log("关闭窗口")
-            done();
-          })
-          .catch(_ => {});
+      if(this.editForm.status === 1){
+        this.$confirm('确认关闭？')
+            .then(_ => {
+              this.closeMethod();
+              done();
+            })
+            .catch(_ => {});
+      }else{
+        this.closeMethod();
+        done();
+      }
+
+    },
+    closeMethod(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("关闭编辑页面.打开锁...",this.editForm.id);
+        request.get('/repository/pickMaterial/lockOpenById?id=' + this.editForm.id)
+      }
+      this.$refs['editForm'].resetFields();
+      this.handleDeleteAllDetails()
+      this.getPickDocumentList()
     },
     // 关闭弹窗处理动作
     handleImportClose(done) {
@@ -1632,6 +1651,12 @@ export default {
     // el-table 单元格样式修改
     cellStyle() {
       return 'padding:0 0'
+    },
+    async closeBrowser(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("关闭编辑页面.打开锁...",this.editForm.id);
+        await request.get('/repository/pickMaterial/lockOpenById?id=' + this.editForm.id)
+      }
     }
 
   },
@@ -1640,6 +1665,8 @@ export default {
     this.loadDepartmentAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+  },mounted() {
+    window.addEventListener( 'beforeunload', e => this.closeBrowser() );
   },
   // 每次页面切换进入则激活
   activated() {

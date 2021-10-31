@@ -214,7 +214,7 @@
         <el-table-column
             prop="num"
             label="数量"
-            width="80px"
+            width="100px"
 
         >
         </el-table-column>
@@ -222,7 +222,7 @@
         <el-table-column
             prop="action"
             label="操作"
-            width="170px"
+            width="120px"
             fixed="right"
         >
           <template slot-scope="scope">
@@ -329,6 +329,7 @@
           :visible.sync="dialogVisible"
           :before-close="handleClose"
           fullscreen
+          @opened="dialogOpend()"
       >
         <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
                  size="mini" :inline="true"
@@ -377,9 +378,9 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item >
+          <el-form-item v-if="hasAuth('repository:buyIn:save')">
             <el-dropdown   @command="action">
-              <el-button  icon="" size="mini" type="success">
+              <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
@@ -653,6 +654,12 @@ export default {
     }
   },
   methods: {
+    dialogOpend(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("打开编辑页面.锁住...",this.editForm.id);
+        request.get('/repository/returnMaterial/lockById?id=' + this.editForm.id)
+      }
+    },
     // 数量的上下光标事件
     numDown(seqNum){
       if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
@@ -1164,15 +1171,26 @@ export default {
     },
     // 关闭弹窗处理动作
     handleClose(done) {
-      this.$confirm('确认关闭？')
-          .then(_ => {
-            this.$refs['editForm'].resetFields();
-            this.handleDeleteAllDetails()
-            this.getReturnDocumentList()
-            console.log("关闭窗口")
-            done();
-          })
-          .catch(_ => {});
+      if(this.editForm.status === 1){
+        this.$confirm('确认关闭？')
+            .then(_ => {
+              this.closeMethod();
+              done();
+            })
+            .catch(_ => {});
+      }else{
+        this.closeMethod();
+        done();
+      }
+    },
+    closeMethod(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("关闭编辑页面.打开锁...",this.editForm.id);
+        request.get('/repository/returnMaterial/lockOpenById?id=' + this.editForm.id)
+      }
+      this.$refs['editForm'].resetFields();
+      this.handleDeleteAllDetails()
+      this.getReturnDocumentList()
     },
     // 重置表单
     resetForm(formName) {
@@ -1345,6 +1363,12 @@ export default {
     printDemo() {
       this.$refs.easyPrint.print()
     },
+    async closeBrowser(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("关闭编辑页面.打开锁...",this.editForm.id);
+        await request.get('/repository/returnMaterial/lockOpenById?id=' + this.editForm.id)
+      }
+    }
 
 
   },
@@ -1353,6 +1377,8 @@ export default {
     this.loadDepartmentAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+  },mounted() {
+    window.addEventListener( 'beforeunload', e => this.closeBrowser() );
   }
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {

@@ -359,6 +359,8 @@
           :before-close="handleClose"
           :append-to-body="true"
           fullscreen
+          @opened="dialogOpend()"
+
       >
         <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
                  size="mini" :inline="true"
@@ -708,6 +710,13 @@ export default {
     }
   },
   methods: {
+    dialogOpend(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("打开编辑页面.锁住...",this.editForm.id);
+        request.get('/order/buyOrder/lockById?id=' + this.editForm.id)
+      }
+    },
+
     changeNum(seq,supplierId,materialId,buyIndate){
       console.log("supplierId materialid:,buyIndate",supplierId,materialId,buyIndate)
       // 获取该物料，该日期的单价信息
@@ -1288,6 +1297,10 @@ export default {
     handleClose(done) {
       this.$confirm('确认关闭？')
           .then(_ => {
+            if(this.editForm.id != '' && this.editForm.id != undefined){
+              console.log("关闭编辑页面.打开锁...",this.editForm.id);
+              request.get('/order/buyOrder/lockOpenById?id=' + this.editForm.id)
+            }
             this.$refs['editForm'].resetFields();
             this.handleDeleteAllDetails()
             this.hasPushed = false
@@ -1463,6 +1476,12 @@ export default {
     },
     addSupplier(){
       this.supplierVisible = true;
+    },
+    async closeBrowser(){
+      if(this.editForm.id != '' && this.editForm.id != undefined){
+        console.log("关闭编辑页面.打开锁...",this.editForm.id);
+        await request.get('/order/buyOrder/lockOpenById?id=' + this.editForm.id)
+      }
     }
 
   },
@@ -1473,7 +1492,8 @@ export default {
     this.loadTableSearchMaterialDetailAll()
   },
   mounted() {
-    // shift 按住
+    window.addEventListener( 'beforeunload', e => this.closeBrowser() );
+  // shift 按住
     window.addEventListener('keydown',code=>{
       if(code.keyCode === 16 && code.shiftKey){
         this.pin = true

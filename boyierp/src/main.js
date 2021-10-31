@@ -10,6 +10,10 @@ import Element from 'element-ui'
 import "element-ui/lib/theme-chalk/index.css"
 Vue.use(Element)
 
+// 引入echat (npm install echarts --save)
+import * as echarts from 'echarts';
+Vue.prototype.$echarts = echarts;
+
 //  引入axios 拦截器
 import request from "./axios"
     // 把vue的axios 实例改成我们的

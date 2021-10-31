@@ -183,7 +183,7 @@
         <el-table-column
             prop="action"
             label="操作"
-            width="170px"
+            width="120px"
             fixed="right"
         >
           <template slot-scope="scope">
