@@ -1,6 +1,6 @@
 <template>
 
-  <el-container>
+  <el-container id="buyOut">
     <el-main class="elMain_my">
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
@@ -28,7 +28,9 @@
                            :trigger-on-focus="false"
 
                             placeholder="请输入搜索内容"
-                           @select="searchSelect"
+                            @select="searchSelect"
+                            @focus="searchSupplierFocus()"
+
           >
           </el-autocomplete>
 
@@ -41,6 +43,7 @@
                            placeholder="请输入搜索内容"
                            :trigger-on-focus="false"
                            @select="searchSelect"
+                           @focus="searchMmaterialFocus()"
 
           >
           </el-autocomplete>
@@ -113,8 +116,8 @@
               导出<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="all">导出全部</el-dropdown-item>
-              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>
+              <el-dropdown-item command="all">导出当前查询条件</el-dropdown-item>
+<!--              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>-->
             </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
@@ -357,6 +360,7 @@
                 placeholder="请输入供应商"
                 @select="handleSelect"
                 @change="moveMouse"
+                @focus="searchSupplierFocus()"
 
                 clearable
             >
@@ -383,6 +387,10 @@
                   提交单据</el-dropdown-item>
                 <el-dropdown-item command="subReturn" v-show="hasAuth('repository:buyOut:save') && (this.editForm.status===2 || this.editForm.status===3)">
                   撤销</el-dropdown-item>
+                <el-dropdown-item command="addNew" v-show="hasAuth('repository:buyOut:save') ">
+                  新增</el-dropdown-item>
+                <el-dropdown-item command="copy" v-show="hasAuth('repository:buyOut:save') ">
+                  复制</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
@@ -430,6 +438,7 @@
                                :trigger-on-focus="false"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
+                               @focus="searchMaterialAllFocus()"
               >
               </el-autocomplete>
             </template>
@@ -1298,6 +1307,8 @@ export default {
       return sums;
     },
     preViewPrint() {
+      console.log("buyout print：")
+
       if (this.editForm) {
         console.log("打印时的easyPrint：", this.$refs.easyPrint)
         console.log("打印时的editForm：", this.editForm)
@@ -1337,6 +1348,17 @@ export default {
         }else{
           this.$message.error("id 为空")
         }
+      }
+      else if(item === 'addNew'){
+        console.log("详情页新增")
+        this.closeBrowser();
+        this.addSupplierMaterial();
+      }
+      else if(item === 'copy'){
+        this.closeBrowser();
+        this.editForm.id = '';
+        this.editForm.status = 1;
+        this.addOrUpdate = 'save';
       }
     },
     expChange(item) {
@@ -1388,6 +1410,30 @@ export default {
         console.log("关闭编辑页面.打开锁...",this.editForm.id);
         await request.get('/repository/buyOut/lockOpenById?id=' + this.editForm.id)
       }
+    },
+    searchMmaterialFocus(){
+      console.log("物料搜索框聚焦")
+      this.loadMaterialAll()
+    },
+    searchSupplierFocus(){
+      console.log("供应商搜索框聚焦")
+      this.loadSupplierAll()
+    },
+    searchMaterialAllFocus(){
+      this.loadTableSearchMaterialDetailAll()
+    },
+    handleEvent(){
+      console.log("returnM print")
+
+      if (event.keyCode === 80&& event.ctrlKey) {
+        this.preViewPrint();
+        this.$nextTick(() => {
+          this.printDemo()
+        })
+        event.preventDefault();
+        event.returnValue = false;
+        return false;
+      }
     }
 
   },
@@ -1398,7 +1444,15 @@ export default {
     this.loadTableSearchMaterialDetailAll()
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
+
   }
+  /*,
+  activated() {
+    document.addEventListener('keydown',this.handleEvent)
+  },
+  deactivated() {
+    document.removeEventListener('keydown',this.handleEvent)
+  }*/
 
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {

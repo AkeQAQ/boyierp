@@ -28,6 +28,7 @@
                            :trigger-on-focus="false"
 
                            @select="searchSelect"
+                           @focus="searchMaterialFocus()"
 
           >
           </el-autocomplete>
@@ -316,6 +317,7 @@
                                :trigger-on-focus="false"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
+                               @focus="searchMaterialStockFocus()"
               >
               </el-autocomplete>
             </template>
@@ -948,7 +950,13 @@ export default {
     // el-table 单元格样式修改
     cellStyle() {
       return 'padding:0 0'
-    }
+    },
+    searchMaterialFocus(){
+      this.loadMaterialAll()
+    },
+    searchMaterialStockFocus(){
+      this.loadTableSearchMaterialDetailAllWithStock()
+    },
 
   },
   created() {

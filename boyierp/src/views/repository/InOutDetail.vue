@@ -25,6 +25,7 @@
                            placeholder="请输入内容"
                            :trigger-on-focus="false"
                            @select="searchSelect"
+                           @focus="searchMaterialFocus()"
           >
           </el-autocomplete>
 
@@ -37,6 +38,7 @@
                            placeholder="请输入内容"
                            :trigger-on-focus="false"
                            @select="searchSelect"
+                           @focus="searchMaterialFocus()"
           >
           </el-autocomplete>
         </el-form-item>
@@ -348,6 +350,9 @@ export default {
       });
 
       return sums;
+    },
+    searchMaterialFocus(){
+      this.loadMaterialValideAll()
     },
   },
   // 页面初始化时调用的方法

@@ -26,6 +26,7 @@
                            :fetch-suggestions="querySearch"
                            placeholder="请输入搜索内容"
                            :trigger-on-focus="false"
+                           @focus="searchSupplierFocus()"
                            @select="searchSelect"
           >
           </el-autocomplete>
@@ -39,6 +40,7 @@
                            placeholder="请输入搜索内容"
                            :trigger-on-focus="false"
                            @select="searchSelect"
+                           @focus="searchMmaterialFocus()"
 
           >
           </el-autocomplete>
@@ -103,6 +105,9 @@
 
           ref="multipleTable"
           :data="tableData"
+          v-loading = "tableLoad"
+          element-loading-background = "rgba(255, 255, 255, .5)"
+          element-loading-text = "加载中，请稍后..."
           :span-method="objectSpanMethod"
           border
           fit
@@ -224,6 +229,11 @@
             label="金额"
             width="100px"
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+            >{{ scope.row.amount ==null? null :scope.row.amount.toFixed(2) }}
+            </el-button>
+          </template>
         </el-table-column>
 
 
@@ -396,6 +406,7 @@
                 @select="handleSelect"
                 @change="moveMouse"
 
+                @focus="searchSupplierFocus()"
                 clearable
             >
             </el-autocomplete>
@@ -495,6 +506,8 @@
                                :fetch-suggestions="tableSearch"
                                placeholder="请输入内容"
                                :trigger-on-focus="false"
+
+                               @focus="searchMaterialAllFocus()"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1])"
               >
@@ -619,6 +632,7 @@ export default {
   },
   data() {
     return {
+      tableLoad:false,
 
       // shift 多选
       origin:-1,  // 变量起点
@@ -1146,12 +1160,12 @@ export default {
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
             });
-
-            // 关闭弹窗并且重置内容
-            this.dialogVisible = false;
-            this.resetForm("editForm")
-            this.handleDeleteAllDetails()
-            this.getBuyOrderDocumentList()
+            console.log("!this.editForm.id",this.editForm.id)
+            if(!this.editForm.id){
+              console.log("回显的ID：",res.data.data)
+              this.editForm.id = res.data.data;
+              this.addOrUpdate = "update"
+            }
 
           })
         } else {
@@ -1166,6 +1180,8 @@ export default {
     },
     // 查询价目表单列表数据
     getBuyOrderDocumentList() {
+      this.tableLoad = true;
+
       console.log("搜索字段:", this.select)
       request.get('/order/buyOrder/list', {
         params: {
@@ -1185,10 +1201,15 @@ export default {
         })
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
+        this.tableLoad = false;
+
         console.log("获取用户表单数据", res.data.data.records)
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
+      }).catch(error=>{
+        this.tableLoad = false;
+        console.log("error:",error)
       })
     },
 
@@ -1303,6 +1324,7 @@ export default {
             }
             this.$refs['editForm'].resetFields();
             this.handleDeleteAllDetails()
+            this.getBuyOrderDocumentList()
             this.hasPushed = false
             console.log("关闭窗口")
             done();
@@ -1482,7 +1504,20 @@ export default {
         console.log("关闭编辑页面.打开锁...",this.editForm.id);
         await request.get('/order/buyOrder/lockOpenById?id=' + this.editForm.id)
       }
+    },
+    searchMmaterialFocus(){
+      console.log("物料搜索框聚焦")
+      this.loadMaterialAll()
+    },
+    searchSupplierFocus(){
+      console.log("供应商搜索框聚焦")
+      this.loadSupplierAll()
+    },
+    searchMaterialAllFocus(){
+      this.loadTableSearchMaterialDetailAll()
     }
+
+
 
   },
   created() {

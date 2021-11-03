@@ -27,6 +27,7 @@
                            placeholder="请输入搜索内容"
 
                            @select="searchSelect"
+                           @focus="searchDepartmentFocus()"
           >
           </el-autocomplete>
 
@@ -40,6 +41,7 @@
                            :trigger-on-focus="false"
 
                            @select="searchSelect"
+                           @focus="searchMmaterialFocus()"
 
           >
           </el-autocomplete>
@@ -114,8 +116,8 @@
               导出<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="all">导出全部</el-dropdown-item>
-              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>
+              <el-dropdown-item command="all">导出当前查询条件</el-dropdown-item>
+<!--              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>-->
             </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
@@ -394,6 +396,7 @@
                 placeholder="请输入部门"
                 @select="handleSelect"
                 @change="moveMouse"
+                @focus="searchDepartmentFocus()"
 
                 clearable
             >
@@ -429,6 +432,10 @@
                   提交单据</el-dropdown-item>
                 <el-dropdown-item command="subReturn" v-show="hasAuth('repository:pickMaterial:save') && (this.editForm.status===2 || this.editForm.status===3)">
                   撤销</el-dropdown-item>
+                <el-dropdown-item command="addNew" v-show="hasAuth('repository:pickMaterial:save') ">
+                  新增</el-dropdown-item>
+                <el-dropdown-item command="copy" v-show="hasAuth('repository:pickMaterial:save') ">
+                  复制</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
@@ -478,6 +485,8 @@
 
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
+                               @focus="searchMaterialAllFocus()"
+
               >
               </el-autocomplete>
             </template>
@@ -552,6 +561,8 @@
                 placeholder="请输入部门"
                 @select="handleImportSelect"
                 @change="moveImportMouse"
+                @focus="searchDepartmentFocus()"
+
                 clearable
             >
             </el-autocomplete>
@@ -935,6 +946,17 @@ export default {
         }else{
           this.$message.error("id 为空")
         }
+      }
+      else if(item === 'addNew'){
+        console.log("详情页新增")
+        this.closeBrowser();
+        this.addPickMaterial();
+      }
+      else if(item === 'copy'){
+        this.closeBrowser();
+        this.editForm.id = '';
+        this.editForm.status = 1;
+        this.addOrUpdate = 'save';
       }
     },
     // 导出
@@ -1625,6 +1647,8 @@ export default {
       return sums;
     },
     preViewPrint() {
+      console.log("pick print：")
+
       if (this.editForm) {
         console.log("打印时的easyPrint：", this.$refs.easyPrint)
         console.log("打印时的editForm：", this.editForm)
@@ -1657,6 +1681,27 @@ export default {
         console.log("关闭编辑页面.打开锁...",this.editForm.id);
         await request.get('/repository/pickMaterial/lockOpenById?id=' + this.editForm.id)
       }
+    },
+    searchMmaterialFocus(){
+      this.loadMaterialAll()
+    },
+    searchDepartmentFocus(){
+      this.loadDepartmentAll()
+    },
+    searchMaterialAllFocus(){
+      this.loadTableSearchMaterialDetailAll()
+    },
+    handleEvent(){
+      console.log("pick print")
+      if (event.keyCode === 80&& event.ctrlKey) {
+        this.preViewPrint();
+        this.$nextTick(() => {
+          this.printDemo()
+        })
+        event.preventDefault();
+        event.returnValue = false;
+        return false;
+      }
     }
 
   },
@@ -1667,9 +1712,12 @@ export default {
     this.loadTableSearchMaterialDetailAll()
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
-  },
+  }
+  ,
   // 每次页面切换进入则激活
   activated() {
+    // document.addEventListener('keydown',e=>this.handleEvent)
+
     let id = this.$route.params.id
     console.log("1激活activated钩子函数id:",id);
     if(id != '' && id !=undefined && id != null){
@@ -1677,6 +1725,9 @@ export default {
     }
 
   }
+  /*, deactivated() {
+    document.removeEventListener('keydown',e=>this.handleEvent)
+  }*/
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {
     // 声明自定义指令v-focus

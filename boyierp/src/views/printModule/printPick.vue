@@ -15,7 +15,7 @@
           </div>
           </el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
-            <span>单号：{{tableData.id}}</span>
+            <span>单号：{{"SCLL"+tableData.id}}</span>
           </div>
           </el-col>
         </el-row>
@@ -32,7 +32,7 @@
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.rowList.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
             <td style="text-align: left;padding-left: 8px">{{row.materialId}}</td>
-            <td style="text-align: center">{{row.materialName}}</td>
+            <td style="text-align: center">{{row.materialName.length >22 ? row.materialName.substring(0,22):row.materialName}}</td>
             <td style="text-align: center">{{row.specs}}</td>
             <td style="text-align: center">{{row.num}}</td>
             <td style="text-align: center">{{row.unit}}</td>

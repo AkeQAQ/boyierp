@@ -26,6 +26,7 @@
                            :fetch-suggestions="querySearch"
                            placeholder="请输入搜索内容"
                            @select="searchSelect"
+                           @focus="searchDepartmentFocus()"
           >
           </el-autocomplete>
 
@@ -38,6 +39,7 @@
                            placeholder="请输入搜索内容"
                            :trigger-on-focus="false"
                            @select="searchSelect"
+                           @focus="searchMmaterialFocus()"
 
           >
           </el-autocomplete>
@@ -111,8 +113,8 @@
               导出<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="all">导出全部</el-dropdown-item>
-              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>
+              <el-dropdown-item command="all">导出当前查询条件</el-dropdown-item>
+<!--              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>-->
             </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
@@ -357,7 +359,7 @@
                 placeholder="请输入部门"
                 @select="handleSelect"
                 @change="moveMouse"
-
+                @focus="searchDepartmentFocus()"
                 clearable
             >
             </el-autocomplete>
@@ -378,7 +380,7 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item v-if="hasAuth('repository:buyIn:save')">
+          <el-form-item v-if="hasAuth('repository:returnMaterial:save')">
             <el-dropdown   @command="action">
               <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
@@ -388,6 +390,10 @@
                   提交单据</el-dropdown-item>
                 <el-dropdown-item command="subReturn" v-show="hasAuth('repository:returnMaterial:save') && (this.editForm.status===2 || this.editForm.status===3)">
                   撤销</el-dropdown-item>
+                <el-dropdown-item command="addNew" v-show="hasAuth('repository:returnMaterial:save') ">
+                  新增</el-dropdown-item>
+                <el-dropdown-item command="copy" v-show="hasAuth('repository:returnMaterial:save') ">
+                  复制</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
@@ -438,6 +444,8 @@
 
                                 @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
+                                @focus="searchMaterialAllFocus()"
+
               >
               </el-autocomplete>
             </template>
@@ -686,6 +694,17 @@ export default {
         }else{
           this.$message.error("id 为空")
         }
+      }
+      else if(item === 'addNew'){
+        console.log("详情页新增")
+        this.closeBrowser();
+        this.addReturnMaterial();
+      }
+      else if(item === 'copy'){
+        this.closeBrowser();
+        this.editForm.id = '';
+        this.editForm.status = 1;
+        this.addOrUpdate = 'save';
       }
     },
     // 导出
@@ -1368,8 +1387,29 @@ export default {
         console.log("关闭编辑页面.打开锁...",this.editForm.id);
         await request.get('/repository/returnMaterial/lockOpenById?id=' + this.editForm.id)
       }
-    }
+    },
+    searchMmaterialFocus(){
+      this.loadMaterialAll()
+    },
+    searchDepartmentFocus(){
+      this.loadDepartmentAll()
+    },
+    searchMaterialAllFocus(){
+      this.loadTableSearchMaterialDetailAll()
+    },
+    handleEvent(){
+      console.log("returnM print")
 
+      if (event.keyCode === 80&& event.ctrlKey) {
+        this.preViewPrint();
+        this.$nextTick(() => {
+          this.printDemo()
+        })
+        event.preventDefault();
+        event.returnValue = false;
+        return false;
+      }
+    }
 
   },
   created() {
@@ -1379,6 +1419,8 @@ export default {
     this.loadTableSearchMaterialDetailAll()
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
+    // document.addEventListener('keydown',this.handleEvent)
+
   }
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {

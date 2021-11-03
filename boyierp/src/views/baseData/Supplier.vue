@@ -479,9 +479,12 @@ export default {
               type: 'success'
             });
 
-            // 关闭弹窗并且重置内容
-            this.dialogVisible = false;
-            this.resetForm("editForm")
+            if(!this.editForm.subId) {
+              console.log("回显的ID：", res.data.data)
+              this.editForm.subId = res.data.data.subId;
+              this.editForm.id = res.data.data.id;
+              this.addOrUpdate = "update"
+            }
             this.getSupplierList();
 
           })

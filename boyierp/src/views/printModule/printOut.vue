@@ -15,14 +15,14 @@
           </div>
           </el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
-            <span>单号：{{tableData.id}}</span>
+            <span>单号：{{"CGTL"+tableData.id}}</span>
           </div>
           </el-col>
         </el-row>
         <table cellpadding='0' cellspacing='0' >
           <tr>
-            <th width='10%'>材料编号</th>
-            <th width='26%'>材料名称</th>
+            <th width='12%'>材料编号</th>
+            <th width='24%'>材料名称</th>
             <th width='12%'>规格</th>
             <th width='7%'>计价数量</th>
             <th width='12%'>单位</th>
@@ -34,7 +34,7 @@
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.rowList.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
             <td style="text-align: left;padding-left: 8px">{{row.materialId}}</td>
-            <td style="text-align: center">{{row.materialName}}</td>
+            <td style="text-align: center">{{row.materialName.length >20 ? row.materialName.substring(0,20):row.materialName}}</td>
             <td style="text-align: center">{{row.specs}}</td>
             <td style="text-align: center">{{row.num}}</td>
             <td style="text-align: center">{{row.unit}}</td>

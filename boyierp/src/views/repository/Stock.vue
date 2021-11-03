@@ -27,6 +27,7 @@
                            :trigger-on-focus="false"
 
                            @select="searchSelect"
+                           @focus="searchMmaterialFocus()"
           >
           </el-autocomplete>
 
@@ -40,6 +41,7 @@
                            :trigger-on-focus="false"
 
                            @select="searchSelect"
+                           @focus="searchMmaterialFocus()"
           >
           </el-autocomplete>
         </el-form-item>
@@ -421,6 +423,10 @@ export default {
       });
 
       return sums;
+    },
+    searchMmaterialFocus(){
+      console.log("物料搜索框聚焦")
+      this.loadMaterialValideAll()
     },
   },
   // 页面初始化时调用的方法
