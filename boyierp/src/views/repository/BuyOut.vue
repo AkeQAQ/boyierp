@@ -810,7 +810,10 @@ export default {
     handleSelect(item) {
       this.editForm.supplierId = item.id
       this.editForm.supplierName = item.name
-      console.log("选中：", item);
+      this.editForm.rowList.forEach(rows=>{
+        rows.price = ''
+        rows.amount = ''
+      })
     },
     handleSelect2(item) {
       this.editForm.materialId = item.id
@@ -1446,13 +1449,13 @@ export default {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
 
   }
-  /*,
+  ,
   activated() {
     document.addEventListener('keydown',this.handleEvent)
   },
   deactivated() {
     document.removeEventListener('keydown',this.handleEvent)
-  }*/
+  }
 
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {

@@ -1004,7 +1004,10 @@ export default {
     handleSelect(item) {
       this.editForm.supplierId = item.id
       this.editForm.supplierName = item.name
-      console.log("选中：", item);
+      this.editForm.rowList.forEach(rows=>{
+        rows.price = ''
+        rows.amount = ''
+      })
     },
     handleSelect2(item) {
       this.editForm.materialId = item.id
@@ -1013,11 +1016,6 @@ export default {
     },
     searchSelect(item) {
       this.searchStr = item.name
-      this.editForm.rowList.forEach(rows=>{
-        rows.price = ''
-        rows.amount = ''
-      })
-      console.log("选中：", item);
     },
     moveMouse(text) {
       try {
@@ -1552,6 +1550,7 @@ export default {
           }
           if(index === 8){
             this.editForm.totalNum = sums[index];
+            console.log("this.editForm.totalNum:",this.editForm.totalNum)
           }else if(index === 9){
             this.editForm.totalAmount = sums[index];
           }
@@ -1675,11 +1674,16 @@ export default {
     this.loadTableSearchMaterialDetailAll()
   },
   mounted() {
+    console.log("mounted........")
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
+
   },
 
   // 每次页面切换进入则激活
   activated() {
+    console.log("buyIn activated")
+    document.addEventListener('keydown',this.handleEvent)
+
     let refreshStr = this.$route.params.refresh
     console.log("1激活activated钩子函数refreshStr:",refreshStr);
     // document.addEventListener('keydown',this.handleEvent)
@@ -1688,10 +1692,10 @@ export default {
       this.getBuyInDocumentList();
     }
   }
-  /*,
+  ,
   deactivated() {
     document.removeEventListener('keydown',this.handleEvent)
-  }*/
+  }
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {
     // 声明自定义指令v-focus

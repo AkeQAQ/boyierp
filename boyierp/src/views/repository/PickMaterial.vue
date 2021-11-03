@@ -1,6 +1,6 @@
 <template>
 
-  <el-container>
+  <el-container id="pick">
     <el-main class="elMain_my">
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
@@ -364,6 +364,7 @@
       <!-- 领料弹窗 -->
 
       <el-dialog
+          id="pickDialog"
           title="领料信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"
@@ -1712,11 +1713,13 @@ export default {
     this.loadTableSearchMaterialDetailAll()
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
+    console.log("mounted.........")
   }
   ,
   // 每次页面切换进入则激活
   activated() {
-    // document.addEventListener('keydown',e=>this.handleEvent)
+    console.log("pick activated")
+    document.addEventListener('keydown',this.handleEvent)
 
     let id = this.$route.params.id
     console.log("1激活activated钩子函数id:",id);
@@ -1725,9 +1728,10 @@ export default {
     }
 
   }
-  /*, deactivated() {
-    document.removeEventListener('keydown',e=>this.handleEvent)
-  }*/
+  , deactivated() {
+    console.log("pick deactivated")
+    document.removeEventListener('keydown',this.handleEvent)
+  }
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {
     // 声明自定义指令v-focus

@@ -1419,8 +1419,12 @@ export default {
     this.loadTableSearchMaterialDetailAll()
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
-    // document.addEventListener('keydown',this.handleEvent)
-
+  },
+  activated() {
+    document.addEventListener('keydown',this.handleEvent)
+  },
+  deactivated() {
+    document.removeEventListener('keydown',this.handleEvent)
   }
   // 自定义指令，，insert在DOM加入的时候才生效
   , directives: {
