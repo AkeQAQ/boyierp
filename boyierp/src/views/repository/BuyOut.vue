@@ -30,6 +30,8 @@
                             placeholder="请输入搜索内容"
                             @select="searchSelect"
                             @focus="searchSupplierFocus()"
+              @keyup.enter.native="search()"
+
 
           >
           </el-autocomplete>
@@ -43,6 +45,7 @@
                            placeholder="请输入搜索内容"
                            :trigger-on-focus="false"
                            @select="searchSelect"
+                           @keyup.enter.native="search()"
                            @focus="searchMmaterialFocus()"
 
           >
@@ -51,6 +54,7 @@
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
                     style="width: 300px"
+                    @keyup.enter.native="search()"
                     placeholder="请输入搜索内容"></el-input>
 
         </el-form-item>
@@ -627,6 +631,8 @@ export default {
         materialName: '',
         materialId: '',
         buyOutDate: '',
+        totalAmount:'',
+
         rowList: [{
           materialName:'',
           unit:'',
@@ -886,6 +892,8 @@ export default {
         materialName: '',
         materialId: '',
         buyOutDate: new Date().format("yyyy-MM-dd"),
+        totalAmount:'',
+
         rowList: [{
           materialName:'',
           unit:'',
@@ -1426,7 +1434,6 @@ export default {
       this.loadTableSearchMaterialDetailAll()
     },
     handleEvent(){
-      console.log("returnM print")
 
       if (event.keyCode === 80&& event.ctrlKey) {
         this.preViewPrint();

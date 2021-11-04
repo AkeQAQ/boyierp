@@ -28,6 +28,8 @@
                            :trigger-on-focus="false"
                            @focus="searchSupplierFocus()"
                            @select="searchSelect"
+                           @keyup.enter.native="search()"
+
           >
           </el-autocomplete>
 
@@ -41,6 +43,7 @@
                            :trigger-on-focus="false"
                            @select="searchSelect"
                            @focus="searchMmaterialFocus()"
+                           @keyup.enter.native="search()"
 
           >
           </el-autocomplete>
@@ -48,6 +51,7 @@
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
                     style="width: 300px"
+                    @keyup.enter.native="search()"
                     placeholder="请输入搜索内容"></el-input>
 
         </el-form-item>
@@ -471,6 +475,9 @@
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetailsAutoOrderSeq"
                    v-show="this.editForm.status===1">单号自增长添加
         </el-button>
+        <el-button type="primary" icon="el-icon-plus" size="mini" @click="insertOne"
+                   v-show="this.editForm.status===1">插入一条
+        </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
                    v-show="this.editForm.status===1">删除
         </el-button>
@@ -822,6 +829,36 @@ export default {
 
       this.editForm.rowList.push(obj);
       console.log("现有的数据:", this.editForm.rowList)
+    },
+    insertOne(){
+      if (this.checkedDetail.length == 0) {
+            this.$message({
+              message: '请选择往下插入的位置',
+              type: 'error'
+            });
+            return
+      }
+      else if(this.checkedDetail.length > 1){
+        this.$message({
+          message: '请选择一条！',
+          type: 'error'
+        });
+        return
+      }
+      else{
+        let obj = {};
+        obj.materialName = "";
+        obj.unit = "";
+        obj.materialId = '';
+        obj.price = '';
+        obj.num = ''
+        obj.specs = ''
+        obj.comment = ''
+        obj.orderSeq = ''
+        obj.status = 1;
+        this.editForm.rowList.splice(this.checkedDetail[0],0,obj)
+
+      }
     },
     // 采购订单详细信息-添加自增长订单号
     handleAddDetailsAutoOrderSeq() {

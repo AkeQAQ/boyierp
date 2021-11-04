@@ -28,6 +28,8 @@
 
                            @select="searchSelect"
                            @focus="searchDepartmentFocus()"
+                           @keyup.enter.native="search()"
+
           >
           </el-autocomplete>
 
@@ -42,6 +44,8 @@
 
                            @select="searchSelect"
                            @focus="searchMmaterialFocus()"
+                           @keyup.enter.native="search()"
+
 
           >
           </el-autocomplete>
@@ -49,6 +53,8 @@
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
                     style="width: 300px"
+                    @keyup.enter.native="search()"
+
                     placeholder="请输入搜索内容"></el-input>
 
         </el-form-item>
@@ -448,6 +454,15 @@
 
           </el-form-item>
 
+<!--          <el-form-item v-if="hasAuth('repository:buyIn:save')">
+            <el-popconfirm @confirm="toBuyIn()" title="确定跳转？">
+              <el-button size="mini" icon="el-icon-share"  type="danger"
+                         slot="reference">跳转采购入库
+              </el-button>
+            </el-popconfirm>
+
+          </el-form-item>-->
+
         </el-form>
         <el-divider content-position="left">明细信息</el-divider>
 
@@ -783,6 +798,8 @@ export default {
         pickUser:'',
         endDate: '',
         produceDocNum: '',
+        totalAmount:'',
+
         rowList: [{
           materialName:'',
           unit:'',
@@ -1226,6 +1243,8 @@ export default {
         pickDate: new Date().format("yyyy-MM-dd"),
         endDate: '',
         price: '',
+        totalAmount:'',
+
         rowList: [{
           materialName:'',
           unit:'',
@@ -1673,6 +1692,12 @@ export default {
       this.$refs.easyPrint.print()
     },
 
+    toBuyIn(){
+        this.closeMethod()
+        this.dialogVisible = false;
+        this.$router.push({name:'repository:pickMaterial:list'});
+    },
+
     // el-table 单元格样式修改
     cellStyle() {
       return 'padding:0 0'
@@ -1693,7 +1718,6 @@ export default {
       this.loadTableSearchMaterialDetailAll()
     },
     handleEvent(){
-      console.log("pick print")
       if (event.keyCode === 80&& event.ctrlKey) {
         this.preViewPrint();
         this.$nextTick(() => {
@@ -1713,12 +1737,10 @@ export default {
     this.loadTableSearchMaterialDetailAll()
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
-    console.log("mounted.........")
   }
   ,
   // 每次页面切换进入则激活
   activated() {
-    console.log("pick activated")
     document.addEventListener('keydown',this.handleEvent)
 
     let id = this.$route.params.id

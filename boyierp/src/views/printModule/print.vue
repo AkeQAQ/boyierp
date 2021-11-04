@@ -39,7 +39,7 @@
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.rowList.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
             <td style="text-align: left;padding-left: 8px">  {{row.materialId}}</td>
-            <td style="text-align: center">{{row.materialName.length >20 ? row.materialName.substring(0,20):row.materialName}}</td>
+            <td style="text-align: center">{{row.materialName.length >16 ? row.materialName.substring(0,16):row.materialName}}</td>
             <td style="text-align: center">{{row.specs}}</td>
             <td style="text-align: center">{{row.orderNum}}</td>
             <td style="text-align: center">{{row.num}}</td>
@@ -130,6 +130,7 @@ export default {
     },
     getChineseNumber: Function, // 求数字的中文写法，从easyPrint组件传入
     tableData: {
+      totalAmount: ''
     }
   },
   data: {
@@ -149,16 +150,24 @@ export default {
       return pages_ <= 0 ? 1 : pages_;
     },
     chineseTotal() {
+      console.log("监控到更新。。",this.tableData.totalAmount)
       // 计算中文合计，如果忘记传入
-      return this.getChineseNumber != null
-          ? this.getChineseNumber(this.tableData.totalAmount)
-          : "您还没有传入getChineseNumber";
-    }
+       return this.getChineseNumber != null
+           ? this.getChineseNumber(this.tableData.totalAmount)
+           : "您还没有传入getChineseNumber";
+    },
+
   },
+  /*watch :{
+    'tableData.totalAmount':{
+      handler(newVal,oldVal){
+        console.log("监听tableData.totalAmount.  old: , new :",oldVal,newVal)
+      },
+      deep:true
+    }
+  },*/
+
   created() {
-    let totalNum = 0
-    let totalAmount= 0
-    console.log("传入参数:",this.tableData)
   }
 };
 </script>

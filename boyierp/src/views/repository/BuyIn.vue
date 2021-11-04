@@ -27,6 +27,7 @@
                            placeholder="请输入搜索内容"
                            @select="searchSelect"
                            @focus="searchSupplierFocus()"
+                           @keyup.enter.native="search()"
           >
           </el-autocomplete>
 
@@ -40,6 +41,7 @@
                            placeholder="请输入搜索内容"
                            @select="searchSelect"
                            @focus="searchMmaterialFocus()"
+                           @keyup.enter.native="search()"
 
           >
           </el-autocomplete>
@@ -47,6 +49,7 @@
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
                     style="width: 250px"
+                    @keyup.enter.native="search()"
                     placeholder="请输入搜索内容"></el-input>
 
         </el-form-item>
@@ -94,7 +97,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search"  @click="search()" >搜索</el-button>
         </el-form-item>
 
 
@@ -804,6 +807,7 @@ export default {
         endDate: '',
         price: '',
         sourceType: 0,
+        totalAmount:'',
         rowList: [{
           obj:'',
           materialName:'',
@@ -1120,6 +1124,7 @@ export default {
         endDate: '',
         price: '',
         sourceType: 0,
+        totalAmount: 0,
         rowList: [{
           obj:'',
           materialName:'',
@@ -1553,6 +1558,7 @@ export default {
             console.log("this.editForm.totalNum:",this.editForm.totalNum)
           }else if(index === 9){
             this.editForm.totalAmount = sums[index];
+            console.log("this.editForm.totalAmount:",this.editForm.totalAmount)
           }
         }
 
@@ -1591,18 +1597,11 @@ export default {
       return sums;
     },
     preViewPrint() {
-      console.log("buyin print：")
       if (this.editForm) {
-        console.log("打印时的easyPrint：", this.$refs.easyPrint)
-        console.log("打印时的editForm：", this.editForm)
-        console.log("this.$refs.easyPrint",this.$refs.easyPrint)
         if (this.$refs.easyPrint) {
-          console.log("设置前打印内容", this.$refs.easyPrint.tableData)
+          console.log("totalAmount",this.editForm.totalAmount)
 
           this.$refs.easyPrint.tableData = this.editForm
-          this.$refs.easyPrint.tableData.totalNum = this.numSum;
-          this.$refs.easyPrint.tableData.totalAmount = this.amountSum;
-
         }
         this.dialogVisiblePrint = true
 
@@ -1653,7 +1652,6 @@ export default {
       this.loadTableSearchMaterialDetailAll()
     },
     handleEvent(){
-      console.log("buyIn print")
       if (event.keyCode === 80&& event.ctrlKey) {
         this.preViewPrint();
         this.$nextTick(() => {
@@ -1663,10 +1661,15 @@ export default {
         event.returnValue = false;
         return false;
       }
+    },
+    enterSearch(){
+      console.log("回车搜索")
     }
 
   },
   created() {
+    let a = "宏叶280g黑色水晶超柔复0.2海绵+里"
+    console.log(a.length)
     console.log("1激活created钩子函数");
     this.getBuyInDocumentList()
     this.loadSupplierAll()
@@ -1674,7 +1677,6 @@ export default {
     this.loadTableSearchMaterialDetailAll()
   },
   mounted() {
-    console.log("mounted........")
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
 
   },
