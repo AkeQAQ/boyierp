@@ -578,7 +578,8 @@
                                :trigger-on-focus="false"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
-                               @focus="searchMaterialAllFocus()"
+                               @focus="searchMaterialAllFocus();addNext(scope.row.seqNum)"
+
 
               >
               </el-autocomplete>
@@ -589,7 +590,8 @@
           <el-table-column label="物料名称" align="center" prop="materialName" width="210">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" style="width: 200px"
-                        v-model="editForm.rowList[scope.row.seqNum-1].materialName"></el-input>
+                        v-model="editForm.rowList[scope.row.seqNum-1].materialName"
+              ></el-input>
             </template>
           </el-table-column>
           <el-table-column label="规格型号" align="center" prop="specs" width="100">
@@ -617,6 +619,7 @@
                         :ref='"input_num_"+scope.row.seqNum'
                         @keyup.up.native="numUp(scope.row.seqNum)"
                         @keyup.down.native="numDown(scope.row.seqNum)"
+                        @focus="addNext(scope.row.seqNum)"
                         :disabled="editForm.status!=1 ||  editForm.sourceType === 1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
@@ -855,6 +858,11 @@ export default {
     printQuick(){
       console.log("快捷键")
     },
+    addNext(seq){
+      if(this.editForm.rowList.length === seq){
+        this.handleAddDetails();
+      }
+    },
     changeNum(seq,supplierId,materialId,buyIndate){
       console.log("supplierId materialid:,buyIndate",supplierId,materialId,buyIndate)
       // 获取该物料，该日期的单价信息
@@ -923,7 +931,6 @@ export default {
       obj.amount = ''
 
       this.editForm.rowList.push(obj);
-      console.log("现有的数据:", this.editForm.rowList)
       // 光标
 
     },

@@ -442,7 +442,8 @@
                                :trigger-on-focus="false"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
-                               @focus="searchMaterialAllFocus()"
+                               @focus="searchMaterialAllFocus();addNext(scope.row.seqNum)"
+
               >
               </el-autocomplete>
             </template>
@@ -474,6 +475,7 @@
                   @input="changeNum(scope.row.seqNum,editForm.supplierId,scope.row.materialId,editForm.buyOutDate)"
                   @keyup.up.native="numUp(scope.row.seqNum)"
                   @keyup.down.native="numDown(scope.row.seqNum)"
+                  @focus="addNext(scope.row.seqNum)"
                   :disabled="editForm.status!=1 " size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
@@ -670,6 +672,11 @@ export default {
       if(this.editForm.id != '' && this.editForm.id != undefined){
         console.log("打开编辑页面.锁住...",this.editForm.id);
         request.get('/repository/buyOut/lockById?id=' + this.editForm.id)
+      }
+    },
+    addNext(seq){
+      if(this.editForm.rowList.length === seq){
+        this.handleAddDetails();
       }
     },
 

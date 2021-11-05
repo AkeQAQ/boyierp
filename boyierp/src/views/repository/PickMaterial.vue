@@ -501,7 +501,8 @@
 
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
-                               @focus="searchMaterialAllFocus()"
+                               @focus="searchMaterialAllFocus();addNext(scope.row.seqNum)"
+
 
               >
               </el-autocomplete>
@@ -532,6 +533,8 @@
                          onkeyup="value=value.replace(/[^0-9.]/g,'')"
                          @keyup.up.native="numUp(scope.row.seqNum)"
                          @keyup.down.native="numDown(scope.row.seqNum)"
+                         @focus="addNext(scope.row.seqNum)"
+
                          :disabled="editForm.status!=1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
             </template>
           </el-table-column>
@@ -1229,6 +1232,11 @@ export default {
 
       this.$refs.easyPrint.tableShow = false;
       done();
+    },
+    addNext(seq){
+      if(this.editForm.rowList.length === seq){
+        this.handleAddDetails();
+      }
     },
     // 入库列表 点击添加按钮
     addPickMaterial() {

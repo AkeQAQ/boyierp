@@ -513,10 +513,11 @@
                                :fetch-suggestions="tableSearch"
                                placeholder="请输入内容"
                                :trigger-on-focus="false"
+                               @focus="searchMaterialAllFocus();addNext(scope.row.seqNum)"
 
-                               @focus="searchMaterialAllFocus()"
                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
                                @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1])"
+
               >
               </el-autocomplete>
             </template>
@@ -731,6 +732,11 @@ export default {
     }
   },
   methods: {
+    addNext(seq){
+      if(this.editForm.rowList.length === seq){
+        this.handleAddDetails();
+      }
+    },
     dialogOpend(){
       if(this.editForm.id != '' && this.editForm.id != undefined){
         console.log("打开编辑页面.锁住...",this.editForm.id);

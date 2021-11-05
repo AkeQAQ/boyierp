@@ -144,7 +144,9 @@
         <el-table-column
             prop="comment"
             label="备注"
-            show-overflow-tooltip>
+            show-overflow-tooltip
+            width="180px"
+        >
         </el-table-column>
 
         <el-table-column
@@ -238,6 +240,8 @@
                 :trigger-on-focus="false"
                 @select="handleSelect"
                 @change="moveMouse"
+                @focus="searchSupplierFocus()"
+
                 clearable
             >
             </el-autocomplete>
@@ -258,6 +262,7 @@
                 @select="handleSelect2"
                 @change="moveMaterialMouse"
                 clearable
+                @focus="searchMmaterialFocus"
             >
               <i
                   class="el-icon-edit el-input__icon"
@@ -383,6 +388,14 @@ export default {
     }
   },
   methods: {
+    searchMmaterialFocus(){
+      console.log("物料搜索框聚焦")
+      this.loadMaterialValideAll()
+    },
+    searchSupplierFocus(){
+      console.log("供应商搜索框聚焦")
+      this.loadSupplierValideAll()
+    },
     /*computed: {
       selectedName: {
         get() {
