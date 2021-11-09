@@ -1,7 +1,32 @@
 <template>
 
   <el-container>
-    <el-main class="elMain_my">
+    <el-header style="height: 30px;padding: 0 0;margin-top: -10px;margin-bottom: 10px">
+      <span style="font-size: 10px">快捷过滤   </span>
+      <span style="font-size: 10px;font-weight: bold">方案:</span>
+      <el-tag
+          :key="tag.tagName"
+          v-for="tag in dynamicTags"
+          closable
+          :disable-transitions="false"
+          @close="tagClose(tag)">
+        <el-link type="primary" @click="chooseTag(tag)"> {{tag.tagName}}</el-link>
+      </el-tag>
+      <el-input
+          class="input-new-tag"
+          v-if="inputVisible"
+          v-model="inputValue"
+          ref="saveTagInput"
+          size="small"
+          @keyup.enter.native="handleInputConfirm"
+      >
+      </el-input>
+      <el-button v-else class="button-new-tag" size="small" @click="showInput"> + 方案</el-button>
+
+
+
+    </el-header>
+    <el-main class="elMain_my" style="padding-top: 0">
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
@@ -20,6 +45,8 @@
           <!-- 列表界面-供应商搜索 -->
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'"
                            style="width: 300px"
+                           popper-class="my-autocomplete"
+
                            clearable
                            class="inline-input"
                            v-model="searchStr"
@@ -36,6 +63,8 @@
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
                            style="width: 300px"
+
+                           popper-class="my-autocomplete"
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
@@ -84,7 +113,7 @@
 
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
 
@@ -96,11 +125,25 @@
           </el-button>
         </el-form-item>
 
+
+
         <el-form-item v-if="hasAuth('order:buyOrder:push')">
           <el-button size="mini" icon="el-icon-plus" type="primary"
                      @click="pushPage(-1)"
                      >下推入库
           </el-button>
+        </el-form-item>
+
+        <el-form-item v-if="hasAuth('order:buyOrder:export')" style="margin-left: 0px">
+          <el-dropdown   @command="expChange">
+            <el-button  icon="el-icon-download" size="mini" >
+              导出<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="all">导出当前查询条件</el-dropdown-item>
+              <!--              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>-->
+            </el-dropdown-menu>
+          </el-dropdown>
         </el-form-item>
 
       </el-form>
@@ -179,6 +222,19 @@
           </template>
         </el-table-column>
 
+
+        <el-table-column
+            prop="orderSeq"
+            label="单号">
+        </el-table-column>
+
+        <el-table-column
+            prop="num"
+            label="数量"
+            width="80px"
+
+        >
+        </el-table-column>
         <el-table-column
             label="物料编码"
             prop="materialId"
@@ -207,14 +263,6 @@
                 </el-table-column>-->
 
         <el-table-column
-            prop="num"
-            label="数量"
-            width="70px"
-
-        >
-        </el-table-column>
-
-        <el-table-column
             prop="doneDate"
             label="交货日期"
             width="90px"
@@ -240,11 +288,6 @@
           </template>
         </el-table-column>
 
-
-        <el-table-column
-            prop="orderSeq"
-            label="单号">
-        </el-table-column>
 
         <el-table-column
             prop="action"
@@ -401,6 +444,8 @@
             <!-- 搜索框 -->
             <el-autocomplete
                 style="width: 250px"
+                popper-class="my-autocomplete"
+
                 :disabled="this.hasPushed"
                 class="inline-input"
                 v-model="editForm.supplierName"
@@ -446,12 +491,28 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item style="margin-left: 100px">
+<!--          <el-form-item style="margin-left: 100px">
             <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
               保存单据
             </el-button>
 
+          </el-form-item>-->
+          <el-form-item v-if="hasAuth('baseData:supplier:save')">
+            <el-dropdown   @command="action">
+              <el-button  icon="el-icon-edit-outline" size="mini" type="success">
+                操作<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="save" v-show="hasAuth('order:buyOrder:save') && this.editForm.status===1" >
+                  保存单据</el-dropdown-item>
+                <el-dropdown-item command="addNew" v-show="hasAuth('order:buyOrder:save') ">
+                  新增</el-dropdown-item>
+                <el-dropdown-item command="copy" v-show="hasAuth('order:buyOrder:save') ">
+                  复制</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </el-form-item>
+
           <el-form-item v-if="hasAuth('baseData:material:save')">
             <el-button size="mini" icon="el-icon-plus" type="primary"
                        @click="addMeterial"
@@ -507,6 +568,7 @@
           <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="260" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete size="mini" clearable style="width: 250px"
+                               popper-class="my-autocomplete"
                                class="inline-input"
                                :disabled="editForm.rowList[scope.row.seqNum-1].status === 0"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
@@ -640,6 +702,10 @@ export default {
   },
   data() {
     return {
+      dynamicTags: [],
+      inputVisible: false,
+      inputValue: '',
+
       tableLoad:false,
 
       // shift 多选
@@ -732,6 +798,127 @@ export default {
     }
   },
   methods: {
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
+    expChange(item) {
+      if (item === 'currentList') {
+        this.exportExcel()
+      } else if(item === 'all'){
+        this.exportList()
+      }
+    },
+    exportList() {
+
+      request2.post('/order/buyOrder/export?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchStr="+this.searchStr+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select
+
+          ,null,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'采购订单.xlsx')
+      }).catch()
+    },
+    action(item) {
+      if(this.editForm.id === null || this.editForm.id === ''){
+        this.addOrUpdate = 'save';
+      }else{
+        this.addOrUpdate = 'update';
+      }
+      if (item === 'save') {
+        this.submitForm('editForm',this.addOrUpdate)
+      }
+      else if(item === 'addNew'){
+        console.log("详情页新增")
+        this.closeBrowser();
+        this.addSupplierMaterial();
+      }
+      else if(item === 'copy'){
+        this.closeBrowser();
+
+        this.editForm.id = '';
+        this.editForm.status = 1;
+        this.addOrUpdate = 'save';
+      }
+    },
+
+    chooseTag(tag){
+      console.log("选中tag:",tag)
+      this.select = tag.searchField
+      this.searchStr = tag.searchStr;
+      this.searchStartDate = tag.searchStartDate;
+      this.searchEndDate = tag.searchEndDate;
+      /*let arr = tag.searchStatus.split(",");
+      let tmpArr = [];
+      for (let i = 0; i < arr.length; i++) {
+        tmpArr.push(parseInt(arr[i]));
+      }
+      this.checkedBox=tmpArr*/
+      this.getBuyOrderDocumentList();
+    },
+    async loadTags(){
+      await request.get('/tag/list?type='+5).then(res => {
+        this.dynamicTags = res.data.data;
+      })
+    },
+    showInput() {
+      this.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+
+    async handleInputConfirm() {
+
+      let inputValue = this.inputValue;
+      // if (inputValue) {
+      //   this.dynamicTags.push(inputValue);
+      // }
+      // 添加到数据库
+      // let checkStr = this.checkedBox.join(",");
+      await request.get('/tag/save?tagName='+inputValue+'&&type='+5+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select+
+          // "&&searchStatus="+checkStr+
+          '&&searchStr='+this.searchStr).then(res => {
+        this.$message({
+          message: res.data.data,
+          type: 'success'
+        });
+      })
+      this.inputVisible = false;
+      this.inputValue = '';
+      await this.loadTags()
+    },
+    async tagClose(tag) {
+      // 删除到数据库
+      await request.get('/tag/del?tagName='+tag.tagName+'&&type='+5).then(res => {
+        this.$message({
+          message: res.data.data,
+          type: 'success'
+        });
+      })
+      await this.loadTags()
+    },
+
     addNext(seq){
       if(this.editForm.rowList.length === seq){
         this.handleAddDetails();
@@ -1165,6 +1352,36 @@ export default {
 
         console.log("当前供应商id:", this.editForm.supplierId)
         if (valid) {
+
+          let validateFlag = true;
+          let validateMaterial = true;
+          let validateOrderSeq = true;
+
+          console.log(this.editForm.rowList)
+          let emptyArr = []; // 存放空内容 的 下标。
+          for (let i = 0; i < this.editForm.rowList.length; i++) {
+            let obj = this.editForm.rowList[i];
+
+            if((obj.num === undefined || obj.num === '') && (obj.materialId === '')){
+              emptyArr.push(i+1);
+              continue;
+            }
+            if (obj.num === undefined || obj.num === '') {
+              validateFlag = false
+            }
+            if (obj.materialId === '') {
+              validateMaterial = false
+            }
+            if (obj.orderSeq === '') {
+              validateOrderSeq= false;
+            }
+          }
+
+          // 移除空的数组内容
+          console.log("移除前的内容:",this.editForm.rowList)
+          let newArr = this.getNewArr(this.editForm.rowList,emptyArr);
+          this.editForm.rowList = newArr
+          console.log("移除后的内容:",this.editForm.rowList)
           if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
             this.$message({
               message: '请录入至少一个采购物料信息',
@@ -1173,31 +1390,28 @@ export default {
             return
           }
 
-          console.log(this.editForm.rowList)
-          this.editForm.rowList.forEach(obj => {
-            if (obj.num === undefined || obj.num === '') {
+          if (validateMaterial === false) {
+            this.$message({
+              message: '物料不能为空!',
+              type: 'error'
+            });
+            return
+          }
 
-                this.$message({
-                  message: '入库数量不能为空!',
-                  type: 'error'
-                });
-                throw new Error()
-            }
-            if (obj.materialId === '') {
-                this.$message({
-                  message: '物料不能为空!',
-                  type: 'error'
-                });
-                throw new Error()
-            }
-            if (obj.orderSeq === '') {
-              this.$message({
-                message: '单号不能为空!',
-                type: 'error'
-              });
-              throw new Error()
-            }
-          })
+          if (validateFlag === false) {
+            this.$message({
+              message: '入库数量不能为空!',
+              type: 'error'
+            });
+            return
+          }
+          if (validateOrderSeq === false) {
+            this.$message({
+              message: '单号不能为空!',
+              type: 'error'
+            });
+            return
+          }
           request.post('/order/buyOrder/' + methodName, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
@@ -1491,7 +1705,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 9  || index === 12) {
+        if (index === 7  || index === 13) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1568,6 +1782,7 @@ export default {
     this.loadSupplierAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+    this.loadTags()
   },
   mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
@@ -1612,7 +1827,27 @@ function dealfun(str) {
 }
 
 </script>
-
+<!--
+<style >
+.my-autocomplete{
+  width: auto !important;
+}
+.my-autocomplete li{
+  line-height: normal;
+  padding: 7px;
+}
+.my-autocomplete .name{
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.my-autocomplete .unit{
+  font-size: 12px;
+  color: #b4b4b4;
+}
+.my-autocomplete .highlighted .unit {
+  color: #ddd;
+}
+</style>-->
 
 
 <style scoped>
@@ -1625,6 +1860,22 @@ function dealfun(str) {
 
 .el-table--mini td {
   padding: 0 0;
+}
+
+.el-tag + .el-tag {
+  margin-left: 10px;
+}
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
 }
 
 </style>

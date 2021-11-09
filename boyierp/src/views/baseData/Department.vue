@@ -6,7 +6,7 @@
       </el-form-item>
 
       <el-form-item>
-        <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
+        <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
       </el-form-item>
 
       <el-form-item v-if="hasAuth('baseData:department:save')">

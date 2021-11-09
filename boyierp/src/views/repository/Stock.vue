@@ -20,6 +20,8 @@
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
                            style="width: 300px"
+                           popper-class="my-autocomplete"
+
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"
@@ -28,12 +30,16 @@
 
                            @select="searchSelect"
                            @focus="searchMmaterialFocus()"
+                           @keyup.enter.native="search()"
+
           >
           </el-autocomplete>
 
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialId'" clearable
                            style="width: 300px"
+                           popper-class="my-autocomplete"
+
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"
@@ -42,17 +48,19 @@
 
                            @select="searchSelect"
                            @focus="searchMmaterialFocus()"
+                           @keyup.enter.native="search()"
+
           >
           </el-autocomplete>
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
         <el-form-item v-if="hasAuth('repository:stock:export')">
           <el-dropdown   @command="expChange">
-            <el-button  icon="el-icon-download" size="mini" type="success">
+            <el-button  icon="el-icon-download" size="mini" >
               导出<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">

@@ -21,6 +21,8 @@
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
                            style="width: 300px"
+                           popper-class="my-autocomplete"
+
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
@@ -68,7 +70,7 @@
 
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
 
@@ -310,6 +312,8 @@
             <template slot-scope="scope">
               <el-autocomplete size="mini" clearable
                                :disabled="editForm.status===0"
+                               popper-class="my-autocomplete"
+
                                class="inline-input"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"

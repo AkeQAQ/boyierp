@@ -1,7 +1,32 @@
 <template>
 
   <el-container>
-    <el-main class="elMain_my">
+    <el-header style="height: 30px;padding: 0 0;margin-top: -10px;margin-bottom: 10px">
+      <span style="font-size: 10px">快捷过滤   </span>
+      <span style="font-size: 10px;font-weight: bold">方案:</span>
+      <el-tag
+          :key="tag.tagName"
+          v-for="tag in dynamicTags"
+          closable
+          :disable-transitions="false"
+          @close="tagClose(tag)">
+        <el-link type="primary" @click="chooseTag(tag)"> {{tag.tagName}}</el-link>
+      </el-tag>
+      <el-input
+          class="input-new-tag"
+          v-if="inputVisible"
+          v-model="inputValue"
+          ref="saveTagInput"
+          size="small"
+          @keyup.enter.native="handleInputConfirm"
+      >
+      </el-input>
+      <el-button v-else class="button-new-tag" size="small" @click="showInput"> + 方案</el-button>
+
+
+
+    </el-header>
+    <el-main class="elMain_my" style="padding-top: 0">
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
@@ -19,7 +44,7 @@
         <el-form-item>
           <!-- 列表界面-部门搜索 -->
           <el-autocomplete size="mini" v-if="selectedName==='departmentName'"
-                           style="width: 300px"
+                           style="width: 200px"
                            clearable
                            class="inline-input"
                            v-model="searchStr"
@@ -34,7 +59,9 @@
 
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
-                           style="width: 300px"
+                           style="width: 200px"
+                           popper-class="my-autocomplete"
+
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch2"
@@ -50,7 +77,7 @@
 
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
-                    style="width: 300px"
+                    style="width: 200px"
                     @keyup.enter.native="search()"
 
                     placeholder="请输入搜索内容"></el-input>
@@ -60,7 +87,7 @@
         <el-form-item>
 
           <!-- 列表界面-日期搜索 -->
-          <el-date-picker style="width: 130px"
+          <el-date-picker style="width: 125px"
                           size="mini"
                           value-format="yyyy-MM-dd"
                           v-model="searchStartDate"
@@ -72,7 +99,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-date-picker style="width: 130px"
+          <el-date-picker style="width: 125px"
                           size="mini"
                           value-format="yyyy-MM-dd"
                           v-model="searchEndDate"
@@ -101,7 +128,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
 
@@ -113,9 +140,17 @@
           </el-button>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('repository:returnMaterial:export')">
+        <el-form-item v-if="hasAuth('repository:returnMaterial:valid')">
+          <el-popconfirm @confirm="statusPassBatch()" title="确定审核吗？">
+            <el-button size="mini" icon="el-icon-success" :disabled="this.multipleSelection.length === 0 " type="danger"
+                       slot="reference">批量审核
+            </el-button>
+          </el-popconfirm>
+        </el-form-item>
+
+        <el-form-item v-if="hasAuth('repository:returnMaterial:export')" style="margin-left: 0px">
           <el-dropdown @command="expChange">
-            <el-button icon="el-icon-download" size="mini" type="success">
+            <el-button icon="el-icon-download" size="mini" >
               导出<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
@@ -186,7 +221,7 @@
             label="状态">
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.status === 0" type="success">已审核</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===1" type="danger">暂存</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===1" type="warning">暂存</el-tag>
             <el-tag size="small" v-else-if="scope.row.status===2" type="danger">审核中</el-tag>
             <el-tag size="small" v-else-if="scope.row.status===3" type="danger">重新审核</el-tag>
           </template>
@@ -440,6 +475,8 @@
             <template slot-scope="scope">
               <el-autocomplete
                                 style="width: 300px"
+                                popper-class="my-autocomplete"
+
                                 size="mini" clearable
                                :disabled="editForm.status!=1"
                                class="inline-input"
@@ -541,6 +578,10 @@ export default {
   },
   data() {
     return {
+      dynamicTags: [],
+      inputVisible: false,
+      inputValue: '',
+
       tableLoad:false,
       statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
       checkedBox:[1,2,3,0],
@@ -672,6 +713,76 @@ export default {
     }
   },
   methods: {
+    statusPassBatch(){
+      let ids = this.multipleSelection;
+      request.post('/repository/returnMaterial/statusPassBatch',ids).then(res => {
+        this.$message({
+          message: '审核通过!',
+          type: 'success'
+        });
+        this.getReturnDocumentList()
+      })
+    },
+    chooseTag(tag){
+      console.log("选中tag:",tag)
+      this.select = tag.searchField
+      this.searchStr = tag.searchStr;
+      this.searchStartDate = tag.searchStartDate;
+      this.searchEndDate = tag.searchEndDate;
+      let arr = tag.searchStatus.split(",");
+      let tmpArr = [];
+      for (let i = 0; i < arr.length; i++) {
+        tmpArr.push(parseInt(arr[i]));
+      }
+      this.checkedBox=tmpArr
+      this.getReturnDocumentList();
+    },
+    async loadTags(){
+      await request.get('/tag/list?type='+4).then(res => {
+        this.dynamicTags = res.data.data;
+      })
+    },
+    showInput() {
+      this.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+
+    async handleInputConfirm() {
+
+      let inputValue = this.inputValue;
+      // if (inputValue) {
+      //   this.dynamicTags.push(inputValue);
+      // }
+      // 添加到数据库
+      let checkStr = this.checkedBox.join(",");
+      await request.get('/tag/save?tagName='+inputValue+'&&type='+4+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select+
+          "&&searchStatus="+checkStr+
+          '&&searchStr='+this.searchStr).then(res => {
+        this.$message({
+          message: res.data.data,
+          type: 'success'
+        });
+      })
+      this.inputVisible = false;
+      this.inputValue = '';
+      await this.loadTags()
+    },
+    async tagClose(tag) {
+      // 删除到数据库
+      await request.get('/tag/del?tagName='+tag.tagName+'&&type='+4).then(res => {
+        this.$message({
+          message: res.data.data,
+          type: 'success'
+        });
+      })
+      await this.loadTags()
+    },
+
     addNext(seq){
       if(this.editForm.rowList.length === seq){
         this.handleAddDetails();
@@ -1433,6 +1544,8 @@ export default {
     this.loadDepartmentAll()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+    this.loadTags()
+
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
   },
@@ -1469,6 +1582,23 @@ export default {
 
 .el-table--mini td {
   padding: 0 0;
+}
+
+
+.el-tag + .el-tag {
+  margin-left: 10px;
+}
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
 }
 
 </style>

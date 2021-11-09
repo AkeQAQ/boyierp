@@ -19,6 +19,8 @@
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
                            style="width: 300px"
+                           popper-class="my-autocomplete"
+
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"
@@ -32,6 +34,8 @@
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialId'" clearable
                            style="width: 300px"
+                           popper-class="my-autocomplete"
+
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"
@@ -87,7 +91,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
       </el-form>

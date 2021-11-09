@@ -4,7 +4,7 @@
     <el-main style="margin-top: -30px;margin-left: -30px">
       <el-form :inline="true" class="demo-form-inline" style="margin-bottom: -20px">
         <el-form-item>
-          <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段" >
+          <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
                 v-for="item in options"
                 :key="item.value"
@@ -19,6 +19,8 @@
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'" clearable
                            style="width: 300px"
+                           popper-class="my-autocomplete"
+
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="querySupplierSearchValide"
@@ -32,6 +34,8 @@
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
                            style="width: 300px"
+                           popper-class="my-autocomplete"
+
                            class="inline-input"
                            v-model="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"
@@ -45,22 +49,30 @@
 
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="search()">搜索</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
 
         <el-form-item v-if="hasAuth('baseData:supplierMaterial:save')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('baseData:supplierMaterial:save')" @click="addSupplierMaterial()">新增
+          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('baseData:supplierMaterial:save')"
+                     @click="addSupplierMaterial()">新增
           </el-button>
         </el-form-item>
-<!--
-
-        <el-form-item v-if="hasAuth('baseData:supplierMaterial:del')">
-          <el-popconfirm @confirm="del(null)" title="确定删除吗？">
-            <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
+        <el-form-item v-if="hasAuth('baseData:supplierMaterial:valid')">
+          <el-popconfirm @confirm="statusPassBatch()" title="确定审核吗？">
+            <el-button size="mini" icon="el-icon-success" :disabled="this.multipleSelection.length === 0 " type="danger"
+                       slot="reference">批量审核
+            </el-button>
           </el-popconfirm>
         </el-form-item>
--->
+        <!--
+
+                <el-form-item v-if="hasAuth('baseData:supplierMaterial:del')">
+                  <el-popconfirm @confirm="del(null)" title="确定删除吗？">
+                    <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
+                  </el-popconfirm>
+                </el-form-item>
+        -->
 
       </el-form>
 
@@ -68,9 +80,9 @@
 
           ref="multipleTable"
           :data="tableData"
-          v-loading = "tableLoad"
-          element-loading-background = "rgba(255, 255, 255, .5)"
-          element-loading-text = "加载中，请稍后..."
+          v-loading="tableLoad"
+          element-loading-background="rgba(255, 255, 255, .5)"
+          element-loading-text="加载中，请稍后..."
           border
           stripe
           fit
@@ -85,6 +97,11 @@
             width="40">
         </el-table-column>
         <el-table-column
+            label="ID"
+            prop="id"
+        >
+        </el-table-column>
+        <el-table-column
             label="供应商"
             prop="supplierName"
             show-overflow-tooltip
@@ -94,7 +111,7 @@
         <el-table-column
             label="物料编码"
             prop="materialId"
-
+            width="100px"
         >
         </el-table-column>
 
@@ -109,6 +126,11 @@
         <el-table-column
             prop="unit"
             label="基本单位"
+            show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column
+            prop="specs"
+            label="规格"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -142,14 +164,6 @@
         </el-table-column>
 
         <el-table-column
-            prop="comment"
-            label="备注"
-            show-overflow-tooltip
-            width="180px"
-        >
-        </el-table-column>
-
-        <el-table-column
             prop="status"
             label="状态">
           <template slot-scope="scope">
@@ -158,6 +172,15 @@
 
           </template>
         </el-table-column>
+
+        <el-table-column
+            prop="comment"
+            label="备注"
+            show-overflow-tooltip
+            width="180px"
+        >
+        </el-table-column>
+
 
         <el-table-column
             prop="action"
@@ -170,9 +193,11 @@
                        v-if="hasAuth('baseData:supplierMaterial:update') && scope.row.status ===1  ">编辑
             </el-button>
 
-           <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:valid') && scope.row.status ===1   "></el-divider>
+            <el-divider direction="vertical"
+                        v-if="hasAuth('baseData:supplierMaterial:valid') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===1   ">
+            <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
                                title="确定设置审核通过吗？"
@@ -183,7 +208,8 @@
             </el-button>
 
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
+            <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"
@@ -193,9 +219,11 @@
               </template>
             </el-button>
 
-            <el-divider direction="vertical" v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1 "></el-divider>
+            <el-divider direction="vertical"
+                        v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1 "></el-divider>
 
-            <el-button style="padding: 0px" type="text" v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1  ">
+            <el-button style="padding: 0px" type="text"
+                       v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1  ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
                                title="确定删除吗？"
@@ -204,7 +232,6 @@
                 </el-popconfirm>
               </template>
             </el-button>
-
 
 
           </template>
@@ -234,6 +261,8 @@
             <!-- 搜索框 -->
             <el-autocomplete
                 class="inline-input"
+                popper-class="my-autocomplete"
+
                 v-model="editForm.supplierName"
                 :fetch-suggestions="querySupplierSearchValide"
                 placeholder="请输入内容"
@@ -266,7 +295,8 @@
             >
               <i
                   class="el-icon-edit el-input__icon"
-                  slot="suffix">
+                  slot="suffix"
+              >
               </i>
               <template slot-scope="{ item }">
                 <div class="name">{{ item.value }}</div>
@@ -274,10 +304,13 @@
               </template>
             </el-autocomplete>
           </el-form-item>
+          <!--                  style="line-height: normal;padding: 7px;"-->
 
+          <!--          style="font-size: 12px;height:10px;color:#b4b4b4"-->
 
           <el-form-item label="单价" prop="price">
-            <el-input v-model="editForm.price" style="width: 220px" oninput="value=value.replace(/[^0-9.]/g,'')"></el-input>
+            <el-input v-model="editForm.price" style="width: 220px"
+                      oninput="value=value.replace(/[^0-9.]/g,'')"></el-input>
           </el-form-item>
 
           <el-form-item label="备注" prop="comment">
@@ -335,7 +368,7 @@ export default {
 
   data() {
     return {
-      tableLoad:false,
+      tableLoad: false,
       // 搜索字段
       selectedName: 'supplierName',// 搜索默认值
       options: [
@@ -345,8 +378,8 @@ export default {
       select: 'supplierName', // 搜索默认值
       searchStr: '',
       searchField: '',
-      supplierSearchDatas:[], // 用于搜索的建议框
-      materialSearchDatas:[], // 用于搜索的建议框
+      supplierSearchDatas: [], // 用于搜索的建议框
+      materialSearchDatas: [], // 用于搜索的建议框
 
 
       // 分页字段
@@ -360,7 +393,7 @@ export default {
         status: 0, // 编辑表单初始默认值
         id: '',
         supplierId: '',
-        supplierName:'',
+        supplierName: '',
         materialName: '',
         materialId: '',
         startDate: '',
@@ -388,11 +421,11 @@ export default {
     }
   },
   methods: {
-    searchMmaterialFocus(){
+    searchMmaterialFocus() {
       console.log("物料搜索框聚焦")
       this.loadMaterialValideAll()
     },
-    searchSupplierFocus(){
+    searchSupplierFocus() {
       console.log("供应商搜索框聚焦")
       this.loadSupplierValideAll()
     },
@@ -432,17 +465,17 @@ export default {
         return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
     },
-    getSupplierNameById(id){
-      this.supplierSearchDatas.forEach(obj=>{
-        if(id === obj.id){
+    getSupplierNameById(id) {
+      this.supplierSearchDatas.forEach(obj => {
+        if (id === obj.id) {
           this.editForm.supplierName = obj.name
 
         }
       })
     },
-    getMaterialNameById(id){
-      this.materialSearchDatas.forEach(obj=>{
-        if(id === obj.id){
+    getMaterialNameById(id) {
+      this.materialSearchDatas.forEach(obj => {
+        if (id === obj.id) {
           this.editForm.materialName = obj.name
         }
       })
@@ -524,7 +557,7 @@ export default {
         }
       });
     },
-    search(){
+    search() {
       this.currentPage = 1;
       this.getSupplierMaterialList()
     },
@@ -567,7 +600,16 @@ export default {
 
       })
     },
-
+    statusPassBatch(){
+      let ids = this.multipleSelection;
+      request.post('/baseData/supplierMaterial/statusPassBatch',ids).then(res => {
+        this.$message({
+          message: '审核通过!',
+          type: 'success'
+        });
+        this.getSupplierMaterialList()
+      })
+    },
     // 删除
     del(id) {
       let ids = []
@@ -592,8 +634,8 @@ export default {
       })
     },
     // 状态待审核
-    statusPass(id){
-      request.get('/baseData/supplierMaterial/statusPass?id='+id).then(res => {
+    statusPass(id) {
+      request.get('/baseData/supplierMaterial/statusPass?id=' + id).then(res => {
         this.$message({
           message: '审核通过!',
           type: 'success'
@@ -602,8 +644,8 @@ export default {
       })
     },
     // 状态反审核
-    statusReturn(id){
-      request.get('/baseData/supplierMaterial/statusReturn?id='+id).then(res => {
+    statusReturn(id) {
+      request.get('/baseData/supplierMaterial/statusReturn?id=' + id).then(res => {
         this.$message({
           message: '反审核完成!',
           type: 'success'
@@ -630,43 +672,43 @@ export default {
 
       }
     },
-    moveMouse(text){
-      try{
+    moveMouse(text) {
+      try {
         // foreach 只能抛出异常结束
-        this.supplierSearchDatas.forEach(item =>{
+        this.supplierSearchDatas.forEach(item => {
           console.log("moveMouse")
-          if(text === item.name){
-            console.log("匹配到:",text,item.name,this.editForm.supplierId,item.id)
+          if (text === item.name) {
+            console.log("匹配到:", text, item.name, this.editForm.supplierId, item.id)
             this.editForm.supplierId = item.id
-            this.editForm.supplierName=item.name
+            this.editForm.supplierName = item.name
 
             throw new Error();
-          }else {
+          } else {
             this.editForm.supplierId = ''
             this.editForm.supplierName = ''
-            console.log("没有匹配到",text,item.name)
+            console.log("没有匹配到", text, item.name)
           }
         })
-      }catch (err){
+      } catch (err) {
       }
     },
-    moveMaterialMouse(text){
-      try{
+    moveMaterialMouse(text) {
+      try {
         // foreach 只能抛出异常结束
-        this.materialSearchDatas.forEach(item =>{
-          if(text === item.name){
-            console.log("匹配到:",text,item.name,this.editForm.materialId,item.id)
+        this.materialSearchDatas.forEach(item => {
+          if (text === item.name) {
+            console.log("匹配到:", text, item.name, this.editForm.materialId, item.id)
             this.editForm.materialId = item.id
-            this.editForm.materialName=item.name
+            this.editForm.materialName = item.name
             throw new Error();
-          }else {
+          } else {
             this.editForm.materialId = ''
             this.editForm.materialName = ''
 
-            console.log("没有匹配到",text,item.name)
+            console.log("没有匹配到", text, item.name)
           }
         })
-      }catch (err){
+      } catch (err) {
       }
     }
 
@@ -680,29 +722,33 @@ export default {
 
 }
 </script>
+<!--
+<style >
+.my-autocomplete{
+  width: auto !important;
+}
+.my-autocomplete li{
+  line-height: normal;
+  padding: 7px;
+}
+.my-autocomplete .name{
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.my-autocomplete .unit{
+  font-size: 12px;
+  color: #b4b4b4;
+}
+.my-autocomplete .highlighted .unit {
+  color: #ddd;
+}
+</style>-->
 
 <style scoped>
 .el-pagination {
   float: right;
 
 }
-.my-autocomplete {
-    li {
-      line-height: normal;
-      padding: 7px;
-    
-      .name {
-        text-overflow: ellipsis;
-        overflow: hidden;
-      }
-      .unit {
-        font-size: 12px;
-        color: #b4b4b4;
-      }
 
-      .highlighted .unit {
-        color: #ddd;
-      }
-    }
-}
+
 </style>

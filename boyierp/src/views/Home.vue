@@ -131,6 +131,28 @@ Date.prototype.format = function(fmt) {
 }
 </script>
 
+
+<style >
+.my-autocomplete{
+  width: auto !important;
+}
+.my-autocomplete li{
+  line-height: normal;
+  padding: 7px;
+}
+.my-autocomplete .name{
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.my-autocomplete .unit{
+  font-size: 12px;
+  color: #b4b4b4;
+}
+.my-autocomplete .highlighted .unit {
+  color: #ddd;
+}
+</style>
+
 <style scoped>
 
 .header_right {

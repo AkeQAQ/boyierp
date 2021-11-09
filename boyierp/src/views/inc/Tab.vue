@@ -7,6 +7,7 @@
         :name="item.name"
     >
     </el-tab-pane>
+
   </el-tabs>
 </template>
 
