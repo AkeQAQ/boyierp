@@ -22,8 +22,6 @@
       </el-input>
       <el-button v-else class="button-new-tag" size="small" @click="showInput"> + 方案</el-button>
 
-
-
     </el-header>
     <el-main class="elMain_my" style="padding-top: 0">
       <!-- 入库单列表 -->
@@ -52,7 +50,7 @@
                            :fetch-suggestions="querySearch"
                            :trigger-on-focus="false"
                            placeholder="请输入搜索内容"
-                           @select="searchOldSelect"
+                           @select="searchSelect"
                            @focus="searchSupplierFocus()"
                            @keyup.enter.native="search()"
           >
@@ -68,7 +66,7 @@
                            :fetch-suggestions="querySearch2"
                            :trigger-on-focus="false"
                            placeholder="请输入搜索内容"
-                           @select="searchOldSelect"
+                           @select="searchSelect"
                            @focus="searchMmaterialFocus()"
                            @keyup.enter.native="search()"
 
@@ -83,9 +81,9 @@
 
         </el-form-item>
 
-<!--        <el-popover
+        <el-popover
             placement="left"
-            width="400"
+            width="410"
             trigger="click">
           <ul v-for="(item,index) in manySearchArr">
             <li>
@@ -107,8 +105,8 @@
                                :fetch-suggestions="querySearch"
                                :trigger-on-focus="false"
                                placeholder="请输入搜索内容"
-                                @select="searchSelect($event,index)"
-                           @focus="searchMmaterialFocus()"
+                                @select="searchManySelect($event,index)"
+                           @focus="searchSupplierFocus()"
               >
               </el-autocomplete>
 
@@ -119,22 +117,28 @@
                                v-model="item.searchStr"
                                :fetch-suggestions="querySearch2"
                                :trigger-on-focus="false"
+                               @select="searchManySelect($event,index)"
+                               @focus="searchMmaterialFocus()"
+
                                placeholder="请输入搜索内容"
 
               >
               </el-autocomplete>
 
-              &lt;!&ndash; 列表界面-单据编号搜索 &ndash;&gt;
               <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'id'" clearable
                         style="width: 200px"
                         placeholder="请输入搜索内容"></el-input>
+              <el-button type="danger" size="mini" icon="el-icon-delete" circle
+                @click="delSearch(index)"
+              ></el-button>
+
             </li>
           </ul>
-          <el-button type="primary" @click="addSearchItem()">添加</el-button>
+          <el-button type="primary" style="margin-left: 40px" size="mini" @click="addSearchItem()">添加额外搜索条件</el-button>
 
           <el-button slot="reference" type="info" style="padding: 0 0 ;margin-top: 20px;margin-left: -10px" size="mini" icon="el-icon-arrow-down" circle></el-button>
 
-        </el-popover>-->
+        </el-popover>
 
 
         <el-form-item>
@@ -229,7 +233,8 @@
       </el-form>
 
       <el-table
-
+          :row-style="rowClass"
+          highlight-current-row
           ref="multipleTable"
           :data="tableData"
           v-loading = "tableLoad"
@@ -289,6 +294,19 @@
             <el-button type="text" size="small"
                        @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
             >{{ scope.row.supplierName }}
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column
+            label="供应商单号"
+            prop="supplierDocumentNum"
+            width="100px"
+            show-overflow-tooltip
+        >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{ scope.row.supplierDocumentNum }}
             </el-button>
           </template>
         </el-table-column>
@@ -362,7 +380,7 @@
         </el-table-column>
 
 
-        <el-table-column
+<!--        <el-table-column
             prop="priceDate"
             label="价目日期"
             width="90px"
@@ -373,7 +391,7 @@
             >{{ scope.row.priceDate }}
             </el-button>
           </template>
-        </el-table-column>
+        </el-table-column>-->
 
         <el-table-column
             prop="price"
@@ -965,9 +983,19 @@ export default {
     }
   },
   methods: {
+    rowClass({ row, rowIndex }) {
+      if (this.multipleSelection.includes(row.id)) {
+        return { "background-color": "rgba(255,235,205, 0.75)" };
+      }
+    },
+
+    delSearch(index){
+      this.manySearchArr.splice(index,1)
+    },
     addSearchItem(){
       let obj = {
         selectField:'supplierName',
+        searchStr:'',
       }
       this.manySearchArr.push(obj)
     },
@@ -976,19 +1004,29 @@ export default {
       console.log("选中tag:",tag)
       this.select = tag.searchField
       this.searchStr = tag.searchStr;
-      this.searchStartDate = tag.searchStartDate;
-      this.searchEndDate = tag.searchEndDate;
+        this.searchStartDate = tag.searchStartDate;
+        this.searchEndDate = tag.searchEndDate;
       let arr = tag.searchStatus.split(",");
       let tmpArr = [];
       for (let i = 0; i < arr.length; i++) {
         tmpArr.push(parseInt(arr[i]));
       }
       this.checkedBox=tmpArr
+
+      //
+      var obj = JSON.parse(tag.searchOther);
+      console.log("解析json:",obj)
+      if(obj === null){
+        this.manySearchArr = [];
+      }else{
+        this.manySearchArr = obj;
+      }
       this.getBuyInDocumentList();
     },
     async loadTags(){
       await request.get('/tag/list?type='+1).then(res => {
         this.dynamicTags = res.data.data;
+
       })
     },
     showInput() {
@@ -1006,12 +1044,13 @@ export default {
       // }
       // 添加到数据库
       let checkStr = this.checkedBox.join(",");
-      await request.get('/tag/save?tagName='+inputValue+'&&type='+1+
+      await request.post('/tag/save?tagName='+inputValue+'&&type='+1+
           "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select+
           "&&searchStatus="+checkStr+
-          '&&searchStr='+this.searchStr).then(res => {
+          '&&searchStr='+this.searchStr,
+          this.manySearchArr,null).then(res => {
         this.$message({
           message: res.data.data,
           type: 'success'
@@ -1198,13 +1237,13 @@ export default {
       this.editForm.materialName = item.name
       console.log("选中：", item);
     },
-    searchOldSelect(item) {
-      this.searchStr = item.name
-
-    },
-    searchSelect(item,index) {
+    searchManySelect(item,index) {
       let theObj = this.manySearchArr[index];
       theObj.searchStr = item.name;
+      console.log("manySearchArr:",this.manySearchArr)
+    },
+    searchSelect(item) {
+      this.searchStr = item.name
 
     },
     moveMouse(text) {
@@ -1267,13 +1306,13 @@ export default {
       request2.post('/repository/buyIn/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
-          "&&searchStr="+this.searchStr+
           "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select+
           "&&searchStatus="+checkStr
 
-          ,null,{responseType:'arraybuffer'}).then(res=>{
+          ,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr}
+          ,{responseType:'arraybuffer'}).then(res=>{
         // 这里使用blob做一个转换
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
@@ -1454,18 +1493,15 @@ export default {
       let checkStr = this.checkedBox.join(",");
       console.log("多选框：",checkStr )
       console.log("搜索字段:", this.select)
-      await request.get('/repository/buyIn/list', {
-        params: {
-             currentPage: this.currentPage
-            , pageSize: this.pageSize
-            , total: this.total
-            , searchStr: this.searchStr
-            , searchStartDate: this.searchStartDate
-            , searchEndDate: this.searchEndDate
-            , searchField: this.select
-            , searchStatus:checkStr
-      }
-      }).then(res => {
+      await request.post('/repository/buyIn/list?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select+
+          "&&searchStatus="+checkStr,
+          {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
+          null).then(res => {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
@@ -1911,9 +1947,10 @@ export default {
 
 </script>
 
-
 <style scoped>
-
+::v-deep .el-table tbody tr:hover > td {
+  background-color: transparent;
+}
 .el-tag + .el-tag {
   margin-left: 10px;
 }

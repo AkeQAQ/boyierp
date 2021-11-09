@@ -85,6 +85,65 @@
 
         </el-form-item>
 
+        <el-popover
+            placement="left"
+            width="410"
+            trigger="click">
+          <ul v-for="(item,index) in manySearchArr">
+            <li>
+              <el-select style="width: 130px" size="mini" v-model="item.selectField" filterable  placeholder="请选择搜索字段">
+                <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                >
+                </el-option>
+              </el-select>
+              <el-autocomplete size="mini" v-if="item.selectField==='supplierName'"
+                               style="width: 200px"
+                               popper-class="my-autocomplete"
+                               clearable
+                               class="inline-input"
+                               v-model="item.searchStr"
+                               :fetch-suggestions="querySearch"
+                               :trigger-on-focus="false"
+                               placeholder="请输入搜索内容"
+                               @select="searchManySelect($event,index)"
+                               @focus="searchSupplierFocus()"
+              >
+              </el-autocomplete>
+
+              <el-autocomplete size="mini" v-if="item.selectField === 'materialName'" clearable
+                               style="width: 200px"
+                               popper-class="my-autocomplete"
+                               class="inline-input"
+                               v-model="item.searchStr"
+                               :fetch-suggestions="querySearch2"
+                               :trigger-on-focus="false"
+                               @select="searchManySelect($event,index)"
+                               @focus="searchMmaterialFocus()"
+
+                               placeholder="请输入搜索内容"
+
+              >
+              </el-autocomplete>
+
+              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'id'" clearable
+                        style="width: 200px"
+                        placeholder="请输入搜索内容"></el-input>
+              <el-button type="danger" size="mini" icon="el-icon-delete" circle
+                         @click="delSearch(index)"
+              ></el-button>
+
+            </li>
+          </ul>
+          <el-button type="primary" style="margin-left: 40px" size="mini" @click="addSearchItem()">添加额外搜索条件</el-button>
+
+          <el-button slot="reference" type="info" style="padding: 0 0 ;margin-top: 20px;margin-left: -10px" size="mini" icon="el-icon-arrow-down" circle></el-button>
+
+        </el-popover>
+
         <el-form-item>
 
           <!-- 列表界面-日期搜索 -->
@@ -149,6 +208,7 @@
       </el-form>
 
       <el-table
+          :row-style="rowClass"
 
           ref="multipleTable"
           :data="tableData"
@@ -702,6 +762,12 @@ export default {
   },
   data() {
     return {
+      // 多个搜索输入框
+      manySearchArr:[{
+        selectField:'supplierName',
+        searchStr:'',
+      }],
+
       dynamicTags: [],
       inputVisible: false,
       inputValue: '',
@@ -798,6 +864,89 @@ export default {
     }
   },
   methods: {
+    rowClass({ row, rowIndex }) {
+      if (this.multipleSelection.includes(row.detailId)) {
+        return { "background-color": "rgba(255,235,205, 0.75)" };
+      }
+    },
+    searchManySelect(item,index) {
+      let theObj = this.manySearchArr[index];
+      theObj.searchStr = item.name;
+      console.log("manySearchArr:",this.manySearchArr)
+    },
+    delSearch(index){
+      this.manySearchArr.splice(index,1)
+    },
+    addSearchItem(){
+      let obj = {
+        selectField:'supplierName',
+        searchStr:'',
+      }
+      this.manySearchArr.push(obj)
+    },
+
+    chooseTag(tag){
+      console.log("选中tag:",tag)
+      this.select = tag.searchField
+      this.searchStr = tag.searchStr;
+      this.searchStartDate = tag.searchStartDate;
+      this.searchEndDate = tag.searchEndDate;
+
+      //
+      var obj = JSON.parse(tag.searchOther);
+      console.log("解析json:",obj)
+      if(obj === null){
+        this.manySearchArr = [];
+      }else{
+        this.manySearchArr = obj;
+      }
+      this.getBuyOrderDocumentList();
+    },
+    async loadTags(){
+      await request.get('/tag/list?type='+5).then(res => {
+        this.dynamicTags = res.data.data;
+
+      })
+    },
+    showInput() {
+      this.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+
+    async handleInputConfirm() {
+
+      let inputValue = this.inputValue;
+      // if (inputValue) {
+      //   this.dynamicTags.push(inputValue);
+      // }
+      // 添加到数据库
+      await request.post('/tag/save?tagName='+inputValue+'&&type='+5+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select+
+          '&&searchStr='+this.searchStr,
+          this.manySearchArr,null).then(res => {
+        this.$message({
+          message: res.data.data,
+          type: 'success'
+        });
+      })
+      this.inputVisible = false;
+      this.inputValue = '';
+      await this.loadTags()
+    },
+    async tagClose(tag) {
+      // 删除到数据库
+      await request.get('/tag/del?tagName='+tag.tagName+'&&type='+5).then(res => {
+        this.$message({
+          message: res.data.data,
+          type: 'success'
+        });
+      })
+      await this.loadTags()
+    },
     // POI- 服务端写出字节流到浏览器，进行保存
     saveFile(data,name){
       try {
@@ -824,12 +973,11 @@ export default {
       request2.post('/order/buyOrder/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
-          "&&searchStr="+this.searchStr+
           "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select
 
-          ,null,{responseType:'arraybuffer'}).then(res=>{
+          ,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},{responseType:'arraybuffer'}).then(res=>{
         // 这里使用blob做一个转换
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
@@ -859,65 +1007,7 @@ export default {
       }
     },
 
-    chooseTag(tag){
-      console.log("选中tag:",tag)
-      this.select = tag.searchField
-      this.searchStr = tag.searchStr;
-      this.searchStartDate = tag.searchStartDate;
-      this.searchEndDate = tag.searchEndDate;
-      /*let arr = tag.searchStatus.split(",");
-      let tmpArr = [];
-      for (let i = 0; i < arr.length; i++) {
-        tmpArr.push(parseInt(arr[i]));
-      }
-      this.checkedBox=tmpArr*/
-      this.getBuyOrderDocumentList();
-    },
-    async loadTags(){
-      await request.get('/tag/list?type='+5).then(res => {
-        this.dynamicTags = res.data.data;
-      })
-    },
-    showInput() {
-      this.inputVisible = true;
-      this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus();
-      });
-    },
 
-    async handleInputConfirm() {
-
-      let inputValue = this.inputValue;
-      // if (inputValue) {
-      //   this.dynamicTags.push(inputValue);
-      // }
-      // 添加到数据库
-      // let checkStr = this.checkedBox.join(",");
-      await request.get('/tag/save?tagName='+inputValue+'&&type='+5+
-          "&&searchStartDate="+this.searchStartDate+
-          "&&searchEndDate="+this.searchEndDate+
-          "&&searchField="+this.select+
-          // "&&searchStatus="+checkStr+
-          '&&searchStr='+this.searchStr).then(res => {
-        this.$message({
-          message: res.data.data,
-          type: 'success'
-        });
-      })
-      this.inputVisible = false;
-      this.inputValue = '';
-      await this.loadTags()
-    },
-    async tagClose(tag) {
-      // 删除到数据库
-      await request.get('/tag/del?tagName='+tag.tagName+'&&type='+5).then(res => {
-        this.$message({
-          message: res.data.data,
-          type: 'success'
-        });
-      })
-      await this.loadTags()
-    },
 
     addNext(seq){
       if(this.editForm.rowList.length === seq){
@@ -1440,17 +1530,14 @@ export default {
       this.tableLoad = true;
 
       console.log("搜索字段:", this.select)
-      request.get('/order/buyOrder/list', {
-        params: {
-        currentPage: this.currentPage
-            , pageSize: this.pageSize
-            , total: this.total
-            , searchStr: this.searchStr
-            , searchStartDate: this.searchStartDate
-            , searchEndDate: this.searchEndDate
-            , searchField: this.select
-      }
-      }).then(res => {
+       request.post('/order/buyOrder/list?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select,
+           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
+          null).then(res => {
 
         this.tableData = res.data.data.records
         this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
@@ -1851,7 +1938,9 @@ function dealfun(str) {
 
 
 <style scoped>
-
+::v-deep .el-table tbody tr:hover > td {
+  background-color: transparent;
+}
 
 .el-pagination {
   float: right;

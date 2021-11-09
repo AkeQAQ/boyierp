@@ -84,6 +84,67 @@
 
         </el-form-item>
 
+        <el-popover
+            placement="left"
+            width="410"
+            trigger="click">
+          <ul v-for="(item,index) in manySearchArr">
+            <li>
+              <el-select style="width: 130px" size="mini" v-model="item.selectField" filterable  placeholder="请选择搜索字段">
+                <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                >
+                </el-option>
+              </el-select>
+              <el-autocomplete size="mini" v-if="item.selectField==='departmentName'"
+                               style="width: 200px"
+                               popper-class="my-autocomplete"
+                               clearable
+                               class="inline-input"
+                               v-model="item.searchStr"
+                               :fetch-suggestions="querySearch"
+                               placeholder="请输入搜索内容"
+
+                               @select="searchManySelect($event,index)"
+                               @focus="searchDepartmentFocus()"
+                               @keyup.enter.native="search()"
+
+              >
+              </el-autocomplete>
+
+              <el-autocomplete size="mini" v-if="item.selectField === 'materialName'" clearable
+                               style="width: 200px"
+                               popper-class="my-autocomplete"
+                               class="inline-input"
+                               v-model="item.searchStr"
+                               :fetch-suggestions="querySearch2"
+                               :trigger-on-focus="false"
+                               @select="searchManySelect($event,index)"
+                               @focus="searchMmaterialFocus()"
+
+                               placeholder="请输入搜索内容"
+
+              >
+              </el-autocomplete>
+
+              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'id'" clearable
+                        style="width: 200px"
+                        placeholder="请输入搜索内容"></el-input>
+              <el-button type="danger" size="mini" icon="el-icon-delete" circle
+                         @click="delSearch(index)"
+              ></el-button>
+
+            </li>
+          </ul>
+          <el-button type="primary" style="margin-left: 40px" size="mini" @click="addSearchItem()">添加额外搜索条件</el-button>
+
+          <el-button slot="reference" type="info" style="padding: 0 0 ;margin-top: 20px;margin-left: -10px" size="mini" icon="el-icon-arrow-down" circle></el-button>
+
+        </el-popover>
+
         <el-form-item>
 
           <!-- 列表界面-日期搜索 -->
@@ -163,6 +224,7 @@
       </el-form>
 
       <el-table
+          :row-style="rowClass"
 
           ref="multipleTable"
           :data="tableData"
@@ -578,6 +640,13 @@ export default {
   },
   data() {
     return {
+      // 多个搜索输入框
+      manySearchArr:[{
+        selectField:'departmentName',
+        searchStr:'',
+      }],
+
+
       dynamicTags: [],
       inputVisible: false,
       inputValue: '',
@@ -713,6 +782,11 @@ export default {
     }
   },
   methods: {
+    rowClass({ row, rowIndex }) {
+      if (this.multipleSelection.includes(row.id)) {
+        return { "background-color": "rgba(255,235,205, 0.75)" };
+      }
+    },
     statusPassBatch(){
       let ids = this.multipleSelection;
       request.post('/repository/returnMaterial/statusPassBatch',ids).then(res => {
@@ -723,8 +797,23 @@ export default {
         this.getReturnDocumentList()
       })
     },
+    searchManySelect(item,index) {
+      let theObj = this.manySearchArr[index];
+      theObj.searchStr = item.name;
+      console.log("manySearchArr:",this.manySearchArr)
+    },
+    delSearch(index){
+      this.manySearchArr.splice(index,1)
+    },
+    addSearchItem(){
+      let obj = {
+        selectField:'departmentName',
+        searchStr:'',
+      }
+      this.manySearchArr.push(obj)
+    },
+
     chooseTag(tag){
-      console.log("选中tag:",tag)
       this.select = tag.searchField
       this.searchStr = tag.searchStr;
       this.searchStartDate = tag.searchStartDate;
@@ -735,11 +824,21 @@ export default {
         tmpArr.push(parseInt(arr[i]));
       }
       this.checkedBox=tmpArr
+
+      //
+      var obj = JSON.parse(tag.searchOther);
+      console.log("解析json:",obj)
+      if(obj === null){
+        this.manySearchArr = [];
+      }else{
+        this.manySearchArr = obj;
+      }
       this.getReturnDocumentList();
     },
     async loadTags(){
       await request.get('/tag/list?type='+4).then(res => {
         this.dynamicTags = res.data.data;
+
       })
     },
     showInput() {
@@ -752,17 +851,15 @@ export default {
     async handleInputConfirm() {
 
       let inputValue = this.inputValue;
-      // if (inputValue) {
-      //   this.dynamicTags.push(inputValue);
-      // }
       // 添加到数据库
       let checkStr = this.checkedBox.join(",");
-      await request.get('/tag/save?tagName='+inputValue+'&&type='+4+
+      await request.post('/tag/save?tagName='+inputValue+'&&type='+4+
           "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select+
           "&&searchStatus="+checkStr+
-          '&&searchStr='+this.searchStr).then(res => {
+          '&&searchStr='+this.searchStr,
+          this.manySearchArr,null).then(res => {
         this.$message({
           message: res.data.data,
           type: 'success'
@@ -782,6 +879,7 @@ export default {
       })
       await this.loadTags()
     },
+
 
     addNext(seq){
       if(this.editForm.rowList.length === seq){
@@ -853,11 +951,10 @@ export default {
       request2.post('/repository/returnMaterial/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
-          "&&searchStr="+this.searchStr+
           "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select
-          ,null,{responseType:'arraybuffer'}).then(res=>{
+          ,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},{responseType:'arraybuffer'}).then(res=>{
         // 这里使用blob做一个转换
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
@@ -1204,24 +1301,22 @@ export default {
     getReturnDocumentList() {
       this.tableLoad = true;
       let checkStr = this.checkedBox.join(",");
-      console.log("搜索字段:", this.select)
-      request.get('/repository/returnMaterial/list', {
-        params: {
-        currentPage: this.currentPage
-            , pageSize: this.pageSize
-            , total: this.total
-            , searchStr: this.searchStr
-            , searchStartDate: this.searchStartDate
-            , searchEndDate: this.searchEndDate
-            , searchField: this.select
-          , searchStatus:checkStr
-        }
-      }).then(res => {
-        this.tableData = res.data.data.records
-        this.total = res.data.data.total
-        this.getSpanArr(this.tableData)
-        this.tableLoad = false;
-        this.$nextTick(() => {
+      let url = '/repository/returnMaterial/list?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select+
+          "&&searchStatus="+checkStr;
+      console.log("url:",url)
+      request.post(url,
+          {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
+          null).then(res => {
+          this.tableData = res.data.data.records
+          this.total = res.data.data.total
+          this.getSpanArr(this.tableData)
+          this.tableLoad = false;
+          this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
       }).catch(error=>{
@@ -1571,9 +1666,10 @@ export default {
 
 </script>
 
-
 <style scoped>
-
+::v-deep .el-table tbody tr:hover > td {
+  background-color: transparent;
+}
 
 .el-pagination {
   float: right;

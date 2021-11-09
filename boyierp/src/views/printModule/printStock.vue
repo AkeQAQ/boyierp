@@ -60,7 +60,7 @@ export default {
     // 每页多少行
     onePageRow: {
       type: Number,
-      default: 45
+      default: 40
     },
     // 是否插入空白行
     blankLines: {
