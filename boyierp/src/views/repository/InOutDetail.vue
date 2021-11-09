@@ -4,7 +4,7 @@
     <el-main class="elMain_my">
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
-          <el-select size="mini" style="width: 130px" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段" >
+          <el-select size="mini" style="width: 120px" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段" >
             <el-option
                 v-for="item in options"
                 :key="item.value"
