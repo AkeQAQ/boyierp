@@ -64,8 +64,8 @@
               导出<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="all">导出全部</el-dropdown-item>
-              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>
+              <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
+              <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
@@ -280,22 +280,34 @@ export default {
     expChange(item) {
       console.log("导出:",item)
       if (item === 'currentList') {
-        this.exportExcel()
+        this.exportCurrent()
       } else if(item === 'all'){
-        this.exportList()
+        this.exportAll()
       }
     },
     // 导出按钮
     exportExcel () {
       this.$refs.myChild.exportExcel();
     },
-    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
-    exportList() {
+    exportCurrent() {
 
       request2.post('/repository/stock/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
           "&&searchStr="+this.searchStr+
+          "&&searchField="+this.select
+          ,null,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'库存当前页.xlsx')
+      }).catch()
+    },
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportAll() {
+
+      request2.post('/repository/stock/export?'+
+          "searchStr="+this.searchStr+
           "&&searchField="+this.select
           ,null,{responseType:'arraybuffer'}).then(res=>{
         // 这里使用blob做一个转换

@@ -216,8 +216,8 @@
               导出<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="all">导出当前查询条件</el-dropdown-item>
-<!--              <el-dropdown-item command="currentList">导出当前列表</el-dropdown-item>-->
+              <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
+              <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
@@ -1298,15 +1298,31 @@ export default {
       console.log("rowList：", this.editForm.rowList);
 
     },
-
-    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
-    exportList() {
+    exportCurrentList() {
 
       let checkStr = this.checkedBox.join(",");
       request2.post('/repository/buyIn/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
           "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select+
+          "&&searchStatus="+checkStr
+
+          ,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr}
+          ,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'采购入库当前页.xlsx')
+      }).catch()
+    },
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportAll() {
+
+      let checkStr = this.checkedBox.join(",");
+      request2.post('/repository/buyIn/export?'+
+          "searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select+
           "&&searchStatus="+checkStr
@@ -1686,9 +1702,9 @@ export default {
     expChange(item) {
       console.log("导出:",item)
       if (item === 'currentList') {
-        this.exportExcel()
+        this.exportCurrentList()
       } else if(item === 'all'){
-        this.exportList()
+        this.exportAll()
       }
     },
 
@@ -1806,7 +1822,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 8 || index === 11) {
+        if (index === 9 || index === 11) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
