@@ -35,7 +35,7 @@
           </template>
 
         </table>
-        <el-row :gutter="20" style="padding-top: 0px;margin-bottom: 10px">
+        <el-row :gutter="0" style="padding-top: 0px;margin-bottom: 10px">
           <el-col :span="6" style="text-align: right"><div class="grid-content bg-purple">
             <span>打印日期：{{new Date().toLocaleDateString()}}  </span>
           </div>

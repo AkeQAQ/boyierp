@@ -6,7 +6,7 @@
       <div  class='tab_company_out'>
         <h3 style="font-size: 20px;margin-bottom: 5px">采  购  订  单</h3>
 
-        <el-row :gutter="20" style="padding-bottom: 0px;margin-bottom: -10px;text-align: center">
+        <el-row :gutter="0" style="padding-bottom: 0px;margin-bottom: -10px;text-align: center">
           <el-col :span="6"><div class="grid-content bg-purple"></div>
             <time>日期：{{tableData.buyInDate}}</time>
           </el-col>
@@ -74,7 +74,7 @@
           </tr>
 
         </table>
-        <el-row :gutter="20" style="padding-top: 0px;margin-bottom: 1px">
+        <el-row :gutter="0" style="padding-top: 0px;margin-bottom: 1px">
           <el-col :span="6"><div class="grid-content bg-purple"></div>
             <time>制单人：{{$store.state.user_info.userName}}</time>
           </el-col>
@@ -93,7 +93,7 @@
         </el-row>
         <hr style="height: 2px;background-color: black"/>
 
-        <el-row :gutter="20" style="padding-top: 0px;margin-bottom: 10px">
+        <el-row :gutter="0" style="padding-top: 0px;margin-bottom: 10px">
           <el-col :span="13" style="text-align: left"><div class="grid-content bg-purple"></div>
             <span>注：一式两联：第一联财务（白），第二联供应商（红）</span>
           </el-col>
