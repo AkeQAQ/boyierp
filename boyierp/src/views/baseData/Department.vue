@@ -61,7 +61,7 @@
           <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('baseData:department:update')  ">编辑</el-button>
           <el-divider direction="vertical" v-if="hasAuth('baseData:department:del')  "></el-divider>
 
-          <el-button type="text" style="padding: 0px" v-if="hasAuth('baseData:department:del')  ">
+          <el-button type="text" style="padding: 0" v-if="hasAuth('baseData:department:del')  ">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"

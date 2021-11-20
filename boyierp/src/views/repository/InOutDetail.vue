@@ -79,7 +79,7 @@
               v-model="checkedBox"
               multiple
               collapse-tags
-              style="margin-left: 0px;"
+              style="margin-left: 0;"
               placeholder="请选择状态">
             <el-option
                 v-for="item in statusArr"

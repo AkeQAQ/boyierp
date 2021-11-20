@@ -2,7 +2,7 @@
 
   <el-container>
     <el-main>
-      <el-form style="width: 100%;height: 100%;align-items: center;margin-top: 0px"
+      <el-form style="width: 100%;height: 100%;align-items: center;margin-top: 0"
                size="mini"
                label-width="100px"
                inline

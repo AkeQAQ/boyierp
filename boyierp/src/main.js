@@ -8,6 +8,8 @@ import axios from 'axios'
 // 引入element 组件
 import Element from 'element-ui'
 import "element-ui/lib/theme-chalk/index.css"
+import globalFun from "./globalFun.js"
+Vue.prototype.$globalFun = globalFun
 Vue.use(Element)
 
 // 引入echat (npm install echarts --save)
@@ -22,8 +24,6 @@ Vue.prototype.$axios = request
 // // 引入mock，对请求进行拦截
 // require("./mock.js")
 
-
-import global from './globalFun'
 
 // 引入了有双击事件的tree ：
 // 1. 前提：npm install dbltree -S

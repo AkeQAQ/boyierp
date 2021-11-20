@@ -156,7 +156,7 @@
             </el-button>
 
 <!--
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('order:productPricePre:down')    ">
               <template>
                 <el-popconfirm @confirm="down(scope.row.id,scope.row.uploadName)"
@@ -168,7 +168,7 @@
             </el-button>
 -->
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('order:productPricePre:valid')   && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="valid(scope.row.id)"
@@ -179,7 +179,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('order:productPricePre:returnValid')   && scope.row.status ===2   ">
               <template>
                 <el-popconfirm @confirm="returnValid(scope.row.id)"
@@ -190,7 +190,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('order:productPricePre:realValid')   && scope.row.status ===2   ">
               <template>
                 <el-popconfirm @confirm="realValid(scope.row.id)"
@@ -201,7 +201,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('order:productPricePre:returnRealValid')   && scope.row.status ===0   ">
               <template>
                 <el-popconfirm @confirm="returnRealValid(scope.row.id)"
@@ -212,7 +212,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('order:productPricePre:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"

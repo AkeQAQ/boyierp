@@ -197,7 +197,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:check:update') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:check:valid')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
@@ -208,7 +208,7 @@
               </template>
             </el-button>
 <!--
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:check:returnValid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
@@ -222,7 +222,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:check:del')  && scope.row.status ===1  "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:check:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
@@ -254,7 +254,7 @@
                  :model="editForm" :rules="rules" ref="editForm"
                  class="demo-editForm">
 
-          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0px">
+          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0">
             <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
             </el-input>
           </el-form-item>
@@ -471,7 +471,7 @@ export default {
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
-        this.editForm.rowList = new Array();
+        this.editForm.rowList = [];
       }
       let obj = {};
       obj.materialName = "";

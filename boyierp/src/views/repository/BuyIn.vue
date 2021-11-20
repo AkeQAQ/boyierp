@@ -172,7 +172,7 @@
               v-model="checkedBox"
               multiple
               collapse-tags
-              style="margin-left: 0px;width: 150px"
+              style="margin-left: 0;width: 150px"
               placeholder="请选择状态">
             <el-option
                 v-for="item in statusArr"
@@ -210,7 +210,7 @@
           </el-popconfirm>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('repository:buyIn:export')" style="margin-left: 0px">
+        <el-form-item v-if="hasAuth('repository:buyIn:export')" style="margin-left: 0">
           <el-dropdown   @command="expChange">
             <el-button  icon="el-icon-download" size="mini" >
               导出<i class="el-icon-arrow-down el-icon--right"></i>
@@ -249,7 +249,8 @@
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
-          :cell-style="{padding:'0'}"
+          :cell-style="{padding:'0',borderColor:'black'}"
+          :header-cell-style="{borderColor:'black'}"
           :default-sort="{prop:'id',order:'descending'}"
           @selection-change="handleSelectionChange">
         <el-table-column
@@ -397,6 +398,8 @@
             prop="price"
             label="单价"
             width="60px"
+            :filters=priceFileterArr
+            :filter-method="filterHandler"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -448,14 +451,14 @@
             fixed="right"
         >
           <template slot-scope="scope">
-            <el-button class="elInput_action_my" type="text" size="small" @click="edit(scope.row.id)"  style="padding: 0px"
+            <el-button class="elInput_action_my" type="text" size="small" @click="edit(scope.row.id)"  style="padding: 0"
                        v-if="hasAuth('repository:buyIn:update') || (hasAuth('repository:buyIn:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
             </el-button>
 
 <!--            <el-divider direction="vertical"
                         v-if="hasAuth('repository:buyIn:save') && scope.row.status === 1   "></el-divider>
 
-            <el-button class="elInput_action_my" type="text" style="padding: 0px"
+            <el-button class="elInput_action_my" type="text" style="padding: 0"
                        v-if="hasAuth('repository:buyIn:save')  && scope.row.status === 1   ">
               <template>
                 <el-popconfirm @confirm="statusSubmit(scope.row.id)"
@@ -469,7 +472,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:buyIn:save') && (scope.row.status === 2 || scope.row.status === 3 )   "></el-divider>
 
-            <el-button class="elInput_action_my" type="text" style="padding: 0px"
+            <el-button class="elInput_action_my" type="text" style="padding: 0"
                        v-if="hasAuth('repository:buyIn:save')  && (scope.row.status === 2 || scope.row.status === 3)   ">
               <template>
                 <el-popconfirm @confirm="statusSubReturn(scope.row.id)"
@@ -483,7 +486,7 @@
 <!--            <el-divider direction="vertical"
                         v-if="hasAuth('repository:buyIn:valid') && (scope.row.status === 2 || scope.row.status === 3)  "></el-divider>-->
 
-            <el-button class="elInput_action_my" type="text" style="padding: 0px"
+            <el-button class="elInput_action_my" type="text" style="padding: 0"
                        v-if="hasAuth('repository:buyIn:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
@@ -497,7 +500,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:buyIn:valid')  && scope.row.status === 0  "></el-divider>
 
-            <el-button class="elInput_action_my" type="text"  style="padding: 0px"
+            <el-button class="elInput_action_my" type="text"  style="padding: 0"
                        v-if="hasAuth('repository:buyIn:valid')  && scope.row.status === 0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
@@ -511,7 +514,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:buyIn:del')  && scope.row.status ===1  "></el-divider>
 
-            <el-button class="elInput_action_my" type="text"  style="padding: 0px"
+            <el-button class="elInput_action_my" type="text"  style="padding: 0"
                        v-if="hasAuth('repository:buyIn:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
@@ -573,7 +576,7 @@
             </el-input>
           </el-form-item>
           <!--
-                    <el-form-item label="状态" prop="status" style="margin-bottom: 0px">
+                    <el-form-item label="状态" prop="status" style="margin-bottom: 0">
                       <el-input style="width: 220px" :disabled=true v-model="editForm.status" >
                       </el-input>
                     </el-form-item>-->
@@ -635,7 +638,7 @@
             </el-dropdown>
           </el-form-item>
 
-          <el-form-item style="margin-left: 0px">
+          <el-form-item style="margin-left: 0">
 <!--            <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
               提交单据
             </el-button>-->
@@ -807,6 +810,7 @@ export default {
   },
   data() {
     return {
+      priceFileterArr:[],
       // 多个搜索输入框
       manySearchArr:[{
         selectField:'supplierName',
@@ -983,6 +987,13 @@ export default {
     }
   },
   methods: {
+    filterHandler(value, row, column) {
+      const property = column['property'];
+      return row[property] === value;
+    },
+    filterPrice(value, row) {
+      return row.price === value;
+    },
     rowClass({ row, rowIndex }) {
       if (this.multipleSelection.includes(row.id)) {
         return { "background-color": "rgba(255,235,205, 0.75)" };
@@ -1129,7 +1140,7 @@ export default {
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
-        this.editForm.rowList = new Array();
+        this.editForm.rowList = [];
       }
       let obj = {};
       obj.materialName = "";
@@ -1519,6 +1530,20 @@ export default {
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
         this.tableData = res.data.data.records
+        console.time("str")  //开始
+
+        let set = new Set();
+        res.data.data.records.forEach(row => {
+          set.add(row.price);
+        });
+        console.log("price set集合:",set)
+        let tmpSortArr = Array.from(set).sort(this.$globalFun.numSeq);
+        this.priceFileterArr = [];
+        tmpSortArr.forEach(row =>{
+          this.priceFileterArr.push({'text':row,'value':row})
+        })
+        console.timeEnd("str") //结束
+
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
         this.tableLoad = false;
@@ -1529,6 +1554,8 @@ export default {
         this.tableLoad = false;
         console.log("error:",error)
       })
+
+
     },
     // 编辑页面
     edit(id) {
@@ -1964,6 +1991,10 @@ export default {
 </script>
 
 <style scoped>
+.el-table{
+  border: 1px solid black;
+}
+
 ::v-deep .el-table tbody tr:hover > td {
   background-color: transparent;
 }

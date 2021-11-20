@@ -133,6 +133,7 @@ Date.prototype.format = function(fmt) {
 
 
 <style >
+
 .my-autocomplete{
   width: auto !important;
 }
@@ -154,6 +155,7 @@ Date.prototype.format = function(fmt) {
 </style>
 
 <style scoped>
+
 
 .header_right {
   float: right;

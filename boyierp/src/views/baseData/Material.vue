@@ -77,7 +77,7 @@
             <el-form :inline="true" class="demo-form-inline">
 
               <el-form-item>
-                <div style="margin-top: 6px;margin-bottom: 0px">
+                <div style="margin-top: 6px;margin-bottom: 0">
                   <el-input size="mini" placeholder="请输入搜索关键字" v-model="searchStr" clearable class="input-with-select">
                     <el-select v-model="select" style="width: 120px"  slot="prepend" placeholder="搜索字段">
                       <el-option label="唯一编码" value="id"></el-option>
@@ -173,7 +173,7 @@
                   <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('baseData:material:update')   ">编辑</el-button>
                   <el-divider direction="vertical" v-if="hasAuth('baseData:material:del')   "></el-divider>
 
-                  <el-button style="padding: 0px" type="text"v-if="hasAuth('baseData:material:del')   ">
+                  <el-button style="padding: 0" type="text"v-if="hasAuth('baseData:material:del')   ">
                     <template>
                       <el-popconfirm  @confirm="del(scope.row.id)"
                                      title="确定删除吗？"
@@ -233,7 +233,7 @@
 
 <!--                <el-form-item >
                   <el-upload
-                      style="margin-left: 0px"
+                      style="margin-left: 0"
                       class="upload-demo"
                       drag
                       :headers="headers"

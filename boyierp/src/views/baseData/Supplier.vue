@@ -175,6 +175,13 @@
               </el-table-column>
 
               <el-table-column
+                  prop="tax"
+                  label="含税"
+
+                  show-overflow-tooltip>
+              </el-table-column>
+
+              <el-table-column
                   prop="action"
                   label="操作"
                   width="100px"
@@ -184,7 +191,7 @@
                   <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('baseData:supplier:update')   ">编辑</el-button>
                   <el-divider direction="vertical" v-if="hasAuth('baseData:supplier:del')   "></el-divider>
 
-                  <el-button style="padding: 0px" type="text"v-if="hasAuth('baseData:supplier:del')   ">
+                  <el-button style="padding: 0" type="text"v-if="hasAuth('baseData:supplier:del')   ">
                     <template>
                       <el-popconfirm  @confirm="del(scope.row.id)"
                                      title="确定删除吗？"
@@ -230,6 +237,10 @@
 
                 <el-form-item label="地址" prop="address">
                   <el-input v-model="editForm.address"></el-input>
+                </el-form-item>
+
+                <el-form-item label="含税" prop="tax">
+                  <el-input v-model="editForm.tax"></el-input>
                 </el-form-item>
 
                 <el-form-item>
@@ -280,7 +291,8 @@ export default {
         groupName:'',
         name:'',
         address:'',
-        mobile:''
+        mobile:'',
+        tax:''
       },
       rules: {
 

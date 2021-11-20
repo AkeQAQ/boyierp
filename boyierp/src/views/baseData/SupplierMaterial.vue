@@ -196,7 +196,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('baseData:supplierMaterial:valid') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
@@ -208,7 +208,7 @@
             </el-button>
 
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('baseData:supplierMaterial:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
@@ -219,10 +219,14 @@
               </template>
             </el-button>
 
+            <el-button type="text" size="small" @click="edit(scope.row.id)"
+                       v-if="hasAuth('baseData:supplierMaterial:valid') && scope.row.status ===0  ">修改失效日期
+            </el-button>
+
             <el-divider direction="vertical"
                         v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1 "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('baseData:supplierMaterial:del') && scope.row.status ===1  ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
@@ -261,6 +265,7 @@
             <!-- 搜索框 -->
             <el-autocomplete
                 class="inline-input"
+                :disabled="editForm.status === 0 && editForm.id !=''"
                 popper-class="my-autocomplete"
 
                 v-model="editForm.supplierName"
@@ -284,6 +289,8 @@
             <!-- 搜索框 -->
             <el-autocomplete
                 popper-class="my-autocomplete"
+                :disabled="editForm.status === 0 && editForm.id !=''"
+
                 v-model="editForm.materialName"
                 :fetch-suggestions="queryMaterialSearchValide"
                 placeholder="请输入内容"
@@ -310,16 +317,23 @@
 
           <el-form-item label="单价" prop="price">
             <el-input v-model="editForm.price" style="width: 220px"
+                      :disabled="editForm.status === 0 && editForm.id !=''"
+
                       oninput="value=value.replace(/[^0-9.]/g,'')"></el-input>
+
           </el-form-item>
 
           <el-form-item label="备注" prop="comment">
-            <el-input v-model="editForm.comment" style="width: 220px">
+            <el-input v-model="editForm.comment"
+                      :disabled="editForm.status === 0 && editForm.id !=''"
+                      style="width: 220px">
             </el-input>
           </el-form-item>
 
           <el-form-item label="生效日期" prop="startDate">
             <el-date-picker
+                :disabled="editForm.status === 0 && editForm.id !=''"
+
                 value-format="yyyy-MM-dd"
                 v-model="editForm.startDate"
                 type="date"
@@ -497,8 +511,19 @@ export default {
 
     // 价目列表 点击添加按钮
     addSupplierMaterial() {
-      this.dialogVisible = true
       this.addOrUpdate = 'save'
+      this.editForm = {
+        status: 0, // 编辑表单初始默认值
+        id: '',
+        supplierId: '',
+        supplierName: '',
+        materialName: '',
+        materialId: '',
+        startDate: '',
+        endDate: '',
+        price: ''
+      }
+      this.dialogVisible = true
     },
 
     // 分页方法

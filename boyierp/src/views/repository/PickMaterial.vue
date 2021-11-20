@@ -183,7 +183,7 @@
               v-model="checkedBox"
               multiple
               collapse-tags
-              style="margin-left: 0px;width: 150px"
+              style="margin-left: 0;width: 150px"
               placeholder="请选择状态">
             <el-option
                 v-for="item in statusArr"
@@ -214,7 +214,7 @@
           </el-popconfirm>
         </el-form-item>
 
-        <el-form-item  v-if="hasAuth('repository:pickMaterial:export')" style="margin-left: 0px">
+        <el-form-item  v-if="hasAuth('repository:pickMaterial:export')" style="margin-left: 0">
           <el-dropdown   @command="expChange">
             <el-button  icon="el-icon-download" size="mini">
               导出<i class="el-icon-arrow-down el-icon--right"></i>
@@ -275,7 +275,8 @@
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
-          :cell-style="{padding:'0'}"
+          :cell-style="{padding:'0',borderColor:'black'}"
+          :header-cell-style="{borderColor:'black'}"
           :default-sort="{prop:'id',order:'descending'}"
           @selection-change="handleSelectionChange">
         <el-table-column
@@ -377,7 +378,7 @@
 <!--            <el-divider direction="vertical"
                         v-if="hasAuth('repository:pickMaterial:save') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:pickMaterial:save')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusSubmit(scope.row.id)"
@@ -391,7 +392,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:pickMaterial:save') && (scope.row.status === 2 || scope.row.status === 3 )   "></el-divider>
 
-            <el-button class="elInput_action_my" type="text" style="padding: 0px"
+            <el-button class="elInput_action_my" type="text" style="padding: 0"
                        v-if="hasAuth('repository:pickMaterial:save')  && (scope.row.status === 2 || scope.row.status === 3)   ">
               <template>
                 <el-popconfirm @confirm="statusSubReturn(scope.row.id)"
@@ -402,7 +403,7 @@
               </template>
             </el-button>-->
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
               v-if="hasAuth('repository:pickMaterial:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
 
               <template>
@@ -414,7 +415,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:pickMaterial:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
@@ -428,7 +429,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:pickMaterial:del')  && scope.row.status ===1  "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:pickMaterial:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
@@ -450,7 +451,7 @@
           title=""
           :visible.sync="dialogVisiblePrint"
           width="55%"
-          style="padding-top: 0px"
+          style="padding-top: 0"
           :before-close="printClose"
       >
         <el-button v-if="dialogVisiblePrint"
@@ -482,13 +483,13 @@
                  :model="editForm" :rules="rules" ref="editForm"
                  class="demo-editForm">
 
-          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0px">
+          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0">
             <el-input class="elInput_my" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
             </el-input>
           </el-form-item>
 
 
-          <el-form-item v-if="false" prop="departmentId" style="margin-bottom: 0px">
+          <el-form-item v-if="false" prop="departmentId" style="margin-bottom: 0">
             <el-input v-model="editForm.departmentId"></el-input>
           </el-form-item>
           <el-form-item label="领料部门" prop="departmentName" style="margin-bottom: 10px">
@@ -668,7 +669,7 @@
             <el-input v-model="editImportForm.departmentId"></el-input>
           </el-form-item>
 
-          <el-form-item  label="领料人" prop="pickUser" style="padding: 0px 0 ;margin-bottom: 20px;margin-left: -30px">
+          <el-form-item  label="领料人" prop="pickUser" style="padding: 0 0 ;margin-bottom: 20px;margin-left: -30px">
             <el-input   size="mini" clearable style="width: 100px" v-model="editImportForm.pickUser">
             </el-input>
           </el-form-item>
@@ -1263,7 +1264,7 @@ export default {
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
-        this.editForm.rowList = new Array();
+        this.editForm.rowList = [];
       }
       let obj = {};
       obj.materialName = "";
@@ -2004,6 +2005,10 @@ export default {
 </script>
 
 <style scoped>
+
+.el-table{
+  border: 1px solid black;
+}
 ::v-deep .el-table tbody tr:hover > td {
   background-color: transparent;
 }

@@ -177,7 +177,7 @@
               v-model="checkedBox"
               multiple
               collapse-tags
-              style="margin-left: 0px;width: 150px"
+              style="margin-left: 0;width: 150px"
               placeholder="请选择状态">
             <el-option
                 v-for="item in statusArr"
@@ -209,7 +209,7 @@
           </el-popconfirm>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('repository:returnMaterial:export')" style="margin-left: 0px">
+        <el-form-item v-if="hasAuth('repository:returnMaterial:export')" style="margin-left: 0">
           <el-dropdown @command="expChange">
             <el-button icon="el-icon-download" size="mini" >
               导出<i class="el-icon-arrow-down el-icon--right"></i>
@@ -241,7 +241,8 @@
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
-          :cell-style="{padding:'0'}"
+          :cell-style="{padding:'0',borderColor:'black'}"
+          :header-cell-style="{borderColor:'black'}"
           :default-sort="{prop:'id',order:'descending'}"
           @selection-change="handleSelectionChange">
         <el-table-column
@@ -338,7 +339,7 @@
 <!--            <el-divider direction="vertical"
                         v-if="hasAuth('repository:returnMaterial:save') && scope.row.status ===1   "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:returnMaterial:save')  && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="statusSubmit(scope.row.id)"
@@ -352,7 +353,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:returnMaterial:save') && (scope.row.status === 2 || scope.row.status === 3 )   "></el-divider>
 
-            <el-button class="elInput_action_my" type="text" style="padding: 0px"
+            <el-button class="elInput_action_my" type="text" style="padding: 0"
                        v-if="hasAuth('repository:returnMaterial:save')  && (scope.row.status === 2 || scope.row.status === 3)   ">
               <template>
                 <el-popconfirm @confirm="statusSubReturn(scope.row.id)"
@@ -363,7 +364,7 @@
               </template>
             </el-button>-->
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:returnMaterial:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
 
               <template>
@@ -375,7 +376,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:returnMaterial:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
@@ -389,7 +390,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:returnMaterial:del')  && scope.row.status ===1  "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:returnMaterial:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
@@ -411,7 +412,7 @@
           title=""
           :visible.sync="dialogVisiblePrint"
           width="55%"
-          style="padding-top: 0px"
+          style="padding-top: 0"
           :before-close="printClose"
       >
         <el-button v-if="dialogVisiblePrint"
@@ -442,13 +443,13 @@
                  :model="editForm" :rules="rules" ref="editForm"
                  class="demo-editForm">
 
-          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0px">
+          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0">
             <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
             </el-input>
           </el-form-item>
 
 
-          <el-form-item v-if="false" prop="departmentId" style="margin-bottom: 0px">
+          <el-form-item v-if="false" prop="departmentId" style="margin-bottom: 0">
             <el-input v-model="editForm.departmentId"></el-input>
           </el-form-item>
           <el-form-item label="退料部门" prop="departmentName" style="margin-bottom: 10px">
@@ -826,7 +827,7 @@ export default {
       this.checkedBox=tmpArr
 
       //
-      var obj = JSON.parse(tag.searchOther);
+      let obj = JSON.parse(tag.searchOther);
       console.log("解析json:",obj)
       if(obj === null){
         this.manySearchArr = [];
@@ -1006,7 +1007,7 @@ export default {
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
-        this.editForm.rowList = new Array();
+        this.editForm.rowList = [];
       }
       let obj = {};
       obj.materialName = "";
@@ -1031,8 +1032,7 @@ export default {
           this.editForm.rowList.splice(this.editForm.rowList.length-1,1)
         }
       }else {
-        let newArr = this.getNewArr(this.editForm.rowList,this.checkedDetail);
-        this.editForm.rowList = newArr
+        this.editForm.rowList = this.getNewArr(this.editForm.rowList,this.checkedDetail);
       }
       this.checkedDetail=[]
     },
@@ -1066,22 +1066,22 @@ export default {
     },
     // 查询搜索框列表数据
     tableSearch(queryString, cb) {
-      var restaurants = this.restaurants3;
-      var results = queryString ? restaurants.filter(this.createFilter2(queryString)) : restaurants;
+      let restaurants = this.restaurants3;
+      let results = queryString ? restaurants.filter(this.createFilter2(queryString)) : restaurants;
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
     // 查询搜索框列表数据
     querySearch2(queryString, cb) {
-      var restaurants = this.restaurants2;
-      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      let restaurants = this.restaurants2;
+      let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
 
     querySearch(queryString, cb) {
-      var restaurants = this.restaurants;
-      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      let restaurants = this.restaurants;
+      let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
@@ -1257,8 +1257,7 @@ export default {
           }
           // 移除空的数组内容
           console.log("移除前的内容:",this.editForm.rowList)
-          let newArr = this.getNewArr(this.editForm.rowList,emptyArr);
-          this.editForm.rowList = newArr
+          this.editForm.rowList = this.getNewArr(this.editForm.rowList,emptyArr);
           console.log("移除后的内容:",this.editForm.rowList)
 
           if (validateMaterial === false) {
@@ -1679,6 +1678,10 @@ export default {
 </script>
 
 <style scoped>
+
+.el-table{
+  border: 1px solid black;
+}
 ::v-deep .el-table tbody tr:hover > td {
   background-color: transparent;
 }

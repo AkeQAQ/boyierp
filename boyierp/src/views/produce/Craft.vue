@@ -146,7 +146,7 @@
                        v-if="hasAuth('produce:craft:real') && scope.row.status === 2  ">确认编辑
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('produce:craft:valid')   && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="valid(scope.row.id)"
@@ -157,7 +157,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('produce:craft:returnValid')   && scope.row.status ===2   ">
               <template>
                 <el-popconfirm @confirm="returnValid(scope.row.id)"
@@ -168,7 +168,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('produce:craft:realValid')   && scope.row.status ===2   ">
               <template>
                 <el-popconfirm @confirm="realValid(scope.row.id)"
@@ -179,7 +179,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('produce:craft:returnRealValid')   && scope.row.status ===0   ">
               <template>
                 <el-popconfirm @confirm="returnRealValid(scope.row.id)"
@@ -190,7 +190,7 @@
               </template>
             </el-button>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('produce:craft:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"

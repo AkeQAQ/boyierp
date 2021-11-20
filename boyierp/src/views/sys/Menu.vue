@@ -79,7 +79,7 @@
           <el-button type="text" v-if="hasAuth('sysManage:menu:update')" size="small" @click="edit(scope.row.id)">编辑
           </el-button>
           <el-divider direction="vertical"></el-divider>
-          <el-button style="padding: 0px"  type="text" v-if="hasAuth('sysManage:menu:del')">
+          <el-button style="padding: 0"  type="text" v-if="hasAuth('sysManage:menu:del')">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"

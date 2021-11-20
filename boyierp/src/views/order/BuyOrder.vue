@@ -193,7 +193,7 @@
           </el-button>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('order:buyOrder:export')" style="margin-left: 0px">
+        <el-form-item v-if="hasAuth('order:buyOrder:export')" style="margin-left: 0">
           <el-dropdown   @command="expChange">
             <el-button  icon="el-icon-download" size="mini" >
               导出<i class="el-icon-arrow-down el-icon--right"></i>
@@ -224,7 +224,8 @@
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
-          :cell-style="{padding:'0'}"
+          :cell-style="{padding:'0',borderColor:'black'}"
+          :header-cell-style="{borderColor:'black'}"
           :default-sort="{prop:'id',order:'descending'}"
           @selection-change="handleSelectionChange"
           @row-click="rowClick"
@@ -333,6 +334,8 @@
             prop="price"
             label="单价"
             width="60px"
+            :filters=priceFileterArr
+            :filter-method="filterHandler"
         >
         </el-table-column>
 
@@ -363,7 +366,7 @@
             <el-divider direction="vertical"
                         v-if="hasAuth('order:buyOrder:del')  && scope.row.status ===1  "></el-divider>
 
-            <el-button style="padding: 0px" type="text"
+            <el-button style="padding: 0" type="text"
                        v-if="hasAuth('order:buyOrder:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
@@ -375,7 +378,7 @@
             </el-button>
 
 
-            <el-button style="padding: 0px" type="text"  size="mini"
+            <el-button style="padding: 0" type="text"  size="mini"
                        v-if="hasAuth('order:buyOrder:push') " @click.stop="pushPage(scope.row.id)"> 单据下推
             </el-button>
 
@@ -423,7 +426,7 @@
             <el-input v-model="pushForm.orderDetailIds"></el-input>
           </el-form-item>
 
-          <el-form-item label="供应商单号" prop="supplierDocumentNum" style="margin-bottom: 0px">
+          <el-form-item label="供应商单号" prop="supplierDocumentNum" style="margin-bottom: 0">
             <el-input v-model="pushForm.supplierDocumentNum"></el-input>
           </el-form-item>
 
@@ -452,7 +455,7 @@
           title=""
           :visible.sync="dialogVisiblePrint"
           width="55%"
-          style="padding-top: 0px"
+          style="padding-top: 0"
           :before-close="printClose"
       >
         <el-button v-if="dialogVisiblePrint"
@@ -485,18 +488,18 @@
                  :model="editForm" :rules="rules" ref="editForm"
                  class="demo-editForm">
 
-          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0px">
+          <el-form-item label="单据编号" prop="id" style="margin-bottom: 0">
             <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
 
             </el-input>
           </el-form-item>
           <!--
-                    <el-form-item label="状态" prop="status" style="margin-bottom: 0px">
+                    <el-form-item label="状态" prop="status" style="margin-bottom: 0">
                       <el-input style="width: 220px" :disabled=true v-model="editForm.status" >
                       </el-input>
                     </el-form-item>-->
 
-          <el-form-item v-if="false" prop="supplierId" style="margin-bottom: 0px">
+          <el-form-item v-if="false" prop="supplierId" style="margin-bottom: 0">
             <el-input v-model="editForm.supplierId"></el-input>
           </el-form-item>
 
@@ -648,7 +651,7 @@
 
           <el-table-column label="物料名称" align="center" prop="materialName" width="210">
             <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" style="200px"
+              <el-input size="mini" :disabled="true"
                         v-model="editForm.rowList[scope.row.seqNum-1].materialName"></el-input>
             </template>
           </el-table-column>
@@ -750,6 +753,7 @@ import {request2} from "@/axios";
 import material from "@/views/baseData/Material"
 import supplier from "@/views/baseData/Supplier"
 
+
 export default {
   name: 'BuyOrder',
   // 引入打印模块基础组件和该打印模块的模板页面
@@ -762,6 +766,7 @@ export default {
   },
   data() {
     return {
+      priceFileterArr:[],
       // 多个搜索输入框
       manySearchArr:[{
         selectField:'supplierName',
@@ -864,6 +869,10 @@ export default {
     }
   },
   methods: {
+    filterHandler(value, row, column) {
+      const property = column['property'];
+      return row[property] === value;
+    },
     rowClass({ row, rowIndex }) {
       if (this.multipleSelection.includes(row.detailId)) {
         return { "background-color": "rgba(255,235,205, 0.75)" };
@@ -1111,7 +1120,7 @@ export default {
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
-        this.editForm.rowList = new Array();
+        this.editForm.rowList = [];
       }
       let obj = {};
       obj.materialName = "";
@@ -1553,10 +1562,22 @@ export default {
            {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
 
-        this.tableData = res.data.data.records
-        this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
+         this.tableData = res.data.data.records
+         console.time("str")  //开始
+
+         let set = new Set();
+         this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
           item.index = index;
-        })
+          set.add(item.price);
+         })
+         console.log("price set集合:",set)
+         let tmpSortArr = Array.from(set).sort(this.$globalFun.numSeq);
+         this.priceFileterArr = [];
+         tmpSortArr.forEach(row =>{
+           this.priceFileterArr.push({'text':row,'value':row})
+         })
+         console.timeEnd("str") //结束
+
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
         this.tableLoad = false;
@@ -1952,6 +1973,9 @@ function dealfun(str) {
 
 
 <style scoped>
+.el-table{
+  border: 1px solid black;
+}
 ::v-deep .el-table tbody tr:hover > td {
   background-color: transparent;
 }
