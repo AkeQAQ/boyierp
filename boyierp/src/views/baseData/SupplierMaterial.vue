@@ -4,7 +4,7 @@
     <el-main style="margin-top: -30px;margin-left: -30px">
       <el-form :inline="true" class="demo-form-inline" style="margin-bottom: -20px">
         <el-form-item>
-          <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
+          <el-select size="mini" style="width: 120px" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
                 v-for="item in options"
                 :key="item.value"
@@ -18,11 +18,11 @@
         <el-form-item>
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'" clearable
-                           style="width: 300px"
+                           style="width: 200px"
                            popper-class="my-autocomplete"
 
                            class="inline-input"
-                           v-model="searchStr"
+                           v-model.lazy="searchStr"
                            :fetch-suggestions="querySupplierSearchValide"
                            placeholder="请输入内容"
                            :trigger-on-focus="false"
@@ -33,11 +33,11 @@
 
           <!-- 字段搜索框 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
-                           style="width: 300px"
+                           style="width: 200px"
                            popper-class="my-autocomplete"
 
                            class="inline-input"
-                           v-model="searchStr"
+                           v-model.lazy="searchStr"
                            :fetch-suggestions="queryMaterialSearchValide"
                            placeholder="请输入内容"
                            :trigger-on-focus="false"
@@ -45,6 +45,78 @@
                            @select="searchSelect"
           >
           </el-autocomplete>
+        </el-form-item>
+
+        <el-popover
+            placement="left"
+            width="410"
+            trigger="click">
+          <ul v-for="(item,index) in manySearchArr">
+            <li>
+              <el-select style="width: 130px" size="mini" v-model="item.selectField" filterable  placeholder="请选择搜索字段">
+                <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                >
+                </el-option>
+              </el-select>
+              <el-autocomplete size="mini" v-if="item.selectField==='supplierName'" clearable
+                               style="width: 200px"
+                               popper-class="my-autocomplete"
+                               clearable
+                               class="inline-input"
+                               v-model.lazy="item.searchStr"
+                               :fetch-suggestions="querySupplierSearchValide"
+                               placeholder="请输入内容"
+                               :trigger-on-focus="false"
+                               @select="searchManySelect($event,index)"
+
+              >
+              </el-autocomplete>
+
+              <el-autocomplete size="mini" v-if="item.selectField === 'materialName'" clearable
+                               style="width: 200px"
+                               popper-class="my-autocomplete"
+                               clearable
+                               class="inline-input"
+                               v-model.lazy="item.searchStr"
+                               :fetch-suggestions="queryMaterialSearchValide"
+                               placeholder="请输入内容"
+                               :trigger-on-focus="false"
+
+                               @select="searchManySelect($event,index)"
+              >
+              </el-autocomplete>
+
+              <el-button type="danger" size="mini" icon="el-icon-delete" circle
+                         @click="delSearch(index)"
+              ></el-button>
+
+            </li>
+          </ul>
+          <el-button type="primary" style="margin-left: 40px" size="mini" @click="addSearchItem()">添加额外搜索条件</el-button>
+
+          <el-button slot="reference" type="info" style="padding: 0 0 ;margin-top: 20px;margin-left: -10px" size="mini" icon="el-icon-arrow-down" circle></el-button>
+
+        </el-popover>
+
+        <el-form-item >
+          <el-select
+              size ="mini"
+              v-model="checkedBox"
+              multiple
+              collapse-tags
+              style="margin-left: 0;width: 150px"
+              placeholder="请选择状态">
+            <el-option
+                v-for="item in statusArr"
+                :key="item.val"
+                :label="item.name"
+                :value="item.val">
+            </el-option>
+          </el-select>
         </el-form-item>
 
 
@@ -363,7 +435,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[100, 200, 300, 400]"
+          :page-sizes="[100, 200, 300, 10000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
@@ -382,6 +454,13 @@ export default {
 
   data() {
     return {
+      manySearchArr:[{
+        selectField:'supplierName',
+        searchStr:'',
+      }],
+      checkedBox:[1,0],
+      statusArr : [{'name':'待审核','val':1},{'name':'已审核','val':0}],
+
       tableLoad: false,
       // 搜索字段
       selectedName: 'supplierName',// 搜索默认值
@@ -435,6 +514,17 @@ export default {
     }
   },
   methods: {
+    delSearch(index){
+      this.manySearchArr.splice(index,1)
+    },
+    addSearchItem(){
+      let obj = {
+        selectField:'supplierName',
+        searchStr:'',
+      }
+      this.manySearchArr.push(obj)
+    },
+
     searchMmaterialFocus() {
       console.log("物料搜索框聚焦")
       this.loadMaterialValideAll()
@@ -507,6 +597,11 @@ export default {
     searchSelect(item) {
       this.searchStr = item.name
       console.log("选中：", item);
+    },
+    searchManySelect(item,index) {
+      let theObj = this.manySearchArr[index];
+      theObj.searchStr = item.name;
+      console.log("manySearchArr:",this.manySearchArr)
     },
 
     // 价目列表 点击添加按钮
@@ -587,25 +682,25 @@ export default {
       this.getSupplierMaterialList()
     },
     // 查询价目表单列表数据
-    getSupplierMaterialList() {
+    async getSupplierMaterialList() {
       this.tableLoad = true;
+      let checkStr = this.checkedBox.join(",");
+      console.log("多选框：",checkStr )
       console.log("搜索字段:", this.select)
-      request.get('/baseData/supplierMaterial/list', {
-        params: {
-          currentPage: this.currentPage
-          , pageSize: this.pageSize
-          , total: this.total
-          , searchStr: this.searchStr
-          , searchField: this.select
-        }
-      }).then(res => {
+      await request.post('/baseData/supplierMaterial/list?currentPage='+this.currentPage+
+                "&&pageSize="+this.pageSize+
+                "&&total="+this.total+
+                "&&searchField="+this.select+
+                "&&searchStatus="+checkStr,
+                {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
+                null).then(res => {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         console.log("获取用户表单数据", res.data.data.records)
         this.tableLoad = false;
-        this.$nextTick(() => {
+        /*this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
-        })
+        })*/
       })
     },
     // 编辑页面

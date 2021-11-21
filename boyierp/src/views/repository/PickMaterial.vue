@@ -26,7 +26,7 @@
 
 
     </el-header>
-    <el-main class="elMain_my" style="padding-top: 0">
+    <el-main class="elMain_my" style="padding-top: 0;padding-right: 0px">
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
@@ -755,7 +755,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[100, 200, 300, 400]"
+          :page-sizes="[100, 200, 300, 10000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">

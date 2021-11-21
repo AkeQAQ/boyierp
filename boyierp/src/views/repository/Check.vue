@@ -373,7 +373,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[100, 200, 300, 400]"
+          :page-sizes="[100, 200, 300, 10000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
@@ -852,14 +852,7 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 4) {
-        const _row = this.spanArr[rowIndex];
-        const _col = _row > 0 ? 1 : 0;
-        return {
-          rowspan: _row,
-          colspan: _col
-        }
-      } else if (columnIndex === 10) {
+      }  else if (columnIndex === 11) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {

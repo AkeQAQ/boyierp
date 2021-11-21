@@ -128,7 +128,7 @@
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.status === 0" type="success">已最终确认</el-tag>
             <el-tag size="small" v-else-if="scope.row.status===1" type="danger">未报价完成</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===2" type="danger">报价完成</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===2" type="warning">报价完成</el-tag>
 
           </template>
         </el-table-column>
@@ -422,7 +422,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[100, 200, 300, 400]"
+          :page-sizes="[100, 200, 300, 10000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">

@@ -25,7 +25,7 @@
 
 
     </el-header>
-    <el-main class="elMain_my" style="padding-top: 0">
+    <el-main class="elMain_my" style="padding-top: 0;padding-right: 0px">
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
@@ -248,8 +248,8 @@
         </el-table-column>
         <el-table-column
             label="单据编号"
-
-            prop="id" width="90px"
+            sortable
+            prop="id" width="100px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -298,7 +298,9 @@
         <el-table-column
             prop="materialName"
             label="物料名称"
-            show-overflow-tooltip>
+            width="200px"
+            show-overflow-tooltip
+        >
         </el-table-column>
 
         <el-table-column
@@ -318,6 +320,22 @@
             label="数量"
             width="100px"
 
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="price"
+            label="单价"
+            width="70px"
+            :filters=priceFileterArr
+            :filter-method="filterHandler"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="amount"
+            label="金额"
+            width="100px"
         >
         </el-table-column>
 
@@ -600,7 +618,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[100, 200, 300, 400]"
+          :page-sizes="[100, 200, 300, 10000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
@@ -640,6 +658,7 @@ export default {
   },
   data() {
     return {
+      priceFileterArr:[],
       // 多个搜索输入框
       manySearchArr:[{
         selectField:'supplierName',
@@ -777,6 +796,10 @@ export default {
     }
   },
   methods: {
+    filterHandler(value, row, column) {
+      const property = column['property'];
+      return row[property] === value;
+    },
     rowClass({ row, rowIndex }) {
       if (this.multipleSelection.includes(row.id)) {
         return { "background-color": "rgba(255,235,205, 0.75)" };
@@ -1255,6 +1278,18 @@ export default {
           "&&searchStatus="+checkStr,
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
+        let set = new Set();
+        res.data.data.records.forEach(row => {
+          set.add(row.price);
+        });
+        console.log("price set集合:",set)
+        let tmpSortArr = Array.from(set).sort(this.$globalFun.numSeq);
+        this.priceFileterArr = [];
+        tmpSortArr.forEach(row =>{
+          this.priceFileterArr.push({'text':row,'value':row})
+        })
+        console.timeEnd("str") //结束
+
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
