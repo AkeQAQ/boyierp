@@ -222,6 +222,14 @@
           </el-dropdown>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('repository:buyIn:save')">
+          <el-button size="mini" icon="el-icon-share" type="primary" v-if="hasAuth('repository:buyIn:save')"
+                     @click="orderBatchPick()"
+
+          >订单一键领料
+          </el-button>
+        </el-form-item>
+
         <!--        <el-form-item v-if="hasAuth('repository:buyIn:del')">
                   <el-popconfirm @confirm="del(null)" title="确定删除吗？">
                     <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger"
@@ -555,7 +563,6 @@
       </el-dialog>
 
       <!-- 采购入库弹窗 -->
-
       <el-dialog
           title="采购入库信息"
           :visible.sync="dialogVisible"
@@ -762,6 +769,76 @@
         </el-table>
 
       </el-dialog>
+      <!-- 采购订单一键领料  -->
+      <el-dialog
+          title="采购订单一键领料信息"
+          :visible.sync="dialogPickVisible"
+          :before-close="handleBatchPick"
+      >
+        <el-form
+            size="mini" :inline="true"
+            label-width="100px"
+            :model="editBatchPickForm" :rules="batchPickRules" ref="editBatchPickForm"
+            class="demo-editForm elDialogForm_my">
+
+          <el-form-item label="起始日期" prop="startDate">
+            <el-date-picker
+                            value-format="yyyy-MM-dd"
+                            v-model="editBatchPickForm.startDate"
+                            type="date"
+                            clearable
+                            placeholder="筛选起始日期">
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item label="结束日期" prop="endDate">
+            <el-date-picker
+                value-format="yyyy-MM-dd"
+                v-model="editBatchPickForm.endDate"
+                type="date"
+                clearable
+                placeholder="筛选结束日期">
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item label="领料日期" prop="pickDate">
+            <el-date-picker
+                value-format="yyyy-MM-dd"
+                v-model="editBatchPickForm.pickDate"
+                type="date"
+                clearable
+                placeholder="领料日期">
+            </el-date-picker>
+          </el-form-item>
+
+          <el-form-item style="margin-left: 0">
+            <el-popconfirm @confirm="batchPickDone()" title="确定领料？">
+              <el-button size="mini" icon="el-icon-share"  type="danger"
+                         slot="reference">一键领料出库
+              </el-button>
+            </el-popconfirm>
+          </el-form-item>
+
+        </el-form>
+
+        <el-table
+            ref="multipleTable2"
+            :data="tableData2"
+            v-if="tableData2.length>0"
+            border
+            stripe
+            size="mini"
+            :cell-style="{padding:'0'}"
+            height="300px"
+            tooltip-effect="dark"
+            style="width: 100%;color:black">
+          <el-table-column
+              label="提示信息"
+              prop="content">
+          </el-table-column>
+
+        </el-table>
+
+
+      </el-dialog>
 
       <!--价目列表 分页组件 -->
       <el-pagination
@@ -810,6 +887,8 @@ export default {
   },
   data() {
     return {
+      tableData2: [],
+
       priceFileterArr:[],
       // 多个搜索输入框
       manySearchArr:[{
@@ -969,8 +1048,26 @@ export default {
         ]
       }
       ,
+      editBatchPickForm:{
+        startDate:new Date().format("yyyy-MM-dd"),
+        endDate:new Date().format("yyyy-MM-dd"),
+        pickDate:new Date().format("yyyy-MM-dd"),
+      },
+      batchPickRules: {
+        startDate: [
+          {required: true, message: '请输入筛选起始日期', change: 'blur'}
+        ],
+        endDate: [
+          {required: true, message: '请输入筛选结束日期', trigger: 'blur'}
+        ],
+        pickDate: [
+          {required: true, message: '请输入领料出库日期', trigger: 'blur'}
+        ]
+      }
+      ,
       dialogVisible: false,
       dialogVisiblePrint: false,
+      dialogPickVisible: false,
       tableData: [],
       spanArr: [],
       pos: '',
@@ -987,6 +1084,26 @@ export default {
     }
   },
   methods: {
+    batchPickDone(){
+       request.get('/repository/buyIn/batchPick?startDateStr='+this.editBatchPickForm.startDate
+           +'&&endDateStr='+this.editBatchPickForm.endDate
+           +'&&pickDateStr='+this.editBatchPickForm.pickDate
+       ).then(res => {
+         let theData = res.data.data;
+         console.log("theRes data:",theData)
+         if(theData instanceof Array && theData.length > 0){
+           this.tableData2 = theData
+         }else {
+           this.$message.success("领料成功")
+           this.tableData2 = []
+           this.getList();
+         }
+      })
+    },
+    orderBatchPick(){
+      this.dialogPickVisible = true;
+    },
+
     filterHandler(value, row, column) {
       const property = column['property'];
       return row[property] === value;
@@ -1647,6 +1764,12 @@ export default {
         });
         this.getBuyInDocumentList()
       })
+    },
+    handleBatchPick(done) {
+      this.$refs['editBatchPickForm'].resetFields();
+      this.dialogPickVisible = false;
+      this.tableData2=[]
+      done()
     },
     // 关闭弹窗处理动作
     handleClose(done) {

@@ -1,6 +1,6 @@
 <template>
-  <!-- 打印入库单据24cm的适配宽度 -->
-  <div style="width: 850px;margin-left: 50px;margin-top: 20px">
+  <!-- 打印入库单据21cm的适配宽度 -->
+  <div style="width: 682px;margin-left: 50px;margin-top: 20px">
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
       <div  class='tab_company_out'>
@@ -40,7 +40,7 @@
             <span>打印日期：{{new Date().toLocaleDateString()}}  </span>
           </div>
           </el-col>
-          <el-col :span="3" style="text-align: right"><div class="grid-content bg-purple">
+          <el-col :span="18" style="text-align: right"><div class="grid-content bg-purple">
             <span>第{{page}}页，共{{pages}}页</span>
           </div>
           </el-col>
@@ -60,7 +60,7 @@ export default {
     // 每页多少行
     onePageRow: {
       type: Number,
-      default: 40
+      default: 30
     },
     // 是否插入空白行
     blankLines: {
@@ -100,7 +100,7 @@ export default {
   margin: 0;
   list-style-type: none;
   font-family: "微软雅黑";
-  font-size: 12px;
+  font-size: 15px;
 }
 .tab_company_out {
   text-align: center;
@@ -142,8 +142,8 @@ table tr td {
   border: 1px solid #000;
   border-bottom: none;
   border-right: none;
-  height: 28px;
-  line-height: 28px;
+  height: 32px;
+  line-height: 32px;
 }
 table tr td:last-of-type,
 table tr th:last-of-type {
