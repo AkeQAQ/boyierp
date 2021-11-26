@@ -111,8 +111,8 @@
         <el-table-column
             prop="num"
             label="库存数量"
-
         >
+
         </el-table-column>
 
         <el-table-column

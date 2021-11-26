@@ -19,7 +19,7 @@
           <tr v-for="(row,index) in tableData.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
             <td style="text-align: left;padding-left: 8px">{{row.materialId}}</td>
             <td style="text-align: center">{{row.materialName}}</td>
-            <td style="text-align: center">{{row.num}}</td>
+            <td style="text-align: center">{{row.num.toFixed(3) }}</td>
             <td style="text-align: center">{{row.unit}}</td>
             <td style="text-align: center">{{row.specs}}</td>
           </tr>

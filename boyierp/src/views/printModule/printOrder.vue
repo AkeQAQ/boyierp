@@ -40,7 +40,7 @@
           <tr v-for="(row,index) in tableData.rowList.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
             <td style="text-align: left;padding-left: 8px">{{row.materialId}}</td>
             <td style="text-align: center">{{row.materialName.length >16 ? row.materialName.substring(0,16):row.materialName}}</td>
-            <td style="text-align: center">{{row.specs}}</td>
+            <td style="text-align: center">{{row.specs.length >8 ? row.specs.substring(0,8):row.specs}}</td>
             <td style="text-align: center">{{row.orderNum}}</td>
             <td style="text-align: center">{{row.num}}</td>
             <td style="text-align: center">{{row.unit}}</td>

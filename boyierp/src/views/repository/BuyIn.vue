@@ -564,6 +564,7 @@
 
       <!-- 采购入库弹窗 -->
       <el-dialog
+
           title="采购入库信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"

@@ -1494,7 +1494,7 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 9) {
+      } else if (columnIndex === 11) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
