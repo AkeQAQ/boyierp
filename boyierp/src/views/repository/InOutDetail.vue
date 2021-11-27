@@ -98,6 +98,9 @@
 
       <el-table
           show-summary
+          v-loading = "tableLoad"
+          element-loading-background = "rgba(255, 255, 255, .5)"
+          element-loading-text = "加载中，请稍后..."
           height="520px"
           :summary-method="getSummaries"
           ref="multipleTable"
@@ -185,6 +188,9 @@
             prop="afterNum"
             label="结存数量"
         >
+          <template slot-scope="scope">
+            {{ scope.row.afterNum ==null? null :scope.row.afterNum.toFixed(2) }}
+          </template>
         </el-table-column>
 
       </el-table>
@@ -234,6 +240,7 @@ export default {
       , total: 0 // 总共多少数据
       ,
       tableData: [],
+      tableLoad:false,
       multipleSelection: [] // 多选框数组
     }
   },
@@ -302,6 +309,8 @@ export default {
         });
         return;
       }
+      this.tableLoad = true;
+
       let checkStr = this.checkedBox.join(",");
       console.log("多选框：",checkStr )
       request.get('/repository/inOutDetail/list', {
@@ -316,11 +325,16 @@ export default {
           , searchStatus:checkStr
         }
       }).then(res => {
+        this.tableLoad = false;
+
         this.tableData = res.data.data.records
         this.total = res.data.data.total
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
+      }).catch(error=>{
+        this.tableLoad = false;
+        console.log("error:",error)
       })
     },
     searchFieldChange(item) {
