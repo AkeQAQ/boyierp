@@ -2,7 +2,91 @@
   <div>
     <el-form :inline="true" class="demo-form-inline">
       <el-form-item>
-        <el-input size="mini" v-model="searchUserName" placeholder="客户名称" clearable></el-input>
+        <el-select style="width: 120px" size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
+          <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item>
+        <el-input size="mini" v-model="searchStr" clearable></el-input>
+      </el-form-item>
+
+      <el-popover
+          placement="left"
+          width="410"
+          trigger="click">
+        <ul v-for="(item,index) in manySearchArr">
+          <li>
+            <el-select style="width: 130px" size="mini" v-model="item.selectField" filterable  placeholder="请选择搜索字段">
+              <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+              >
+              </el-option>
+            </el-select>
+            <el-input size="mini" v-model="item.searchStr" style="width: 150px" clearable></el-input>
+
+            <el-button type="danger" size="mini" icon="el-icon-delete" circle
+                       @click="delSearch(index)"
+            ></el-button>
+
+          </li>
+        </ul>
+        <el-button type="primary" style="margin-left: 40px" size="mini" @click="addSearchItem()">添加额外搜索条件</el-button>
+
+        <el-button slot="reference" type="info" style="padding: 0 0 ;margin-top: 20px;margin-left: -10px" size="mini" icon="el-icon-arrow-down" circle></el-button>
+
+      </el-popover>
+
+
+      <el-form-item>
+
+        <!-- 列表界面-日期搜索 -->
+        <el-date-picker style="width: 125px;"
+                        size="mini"
+                        value-format="yyyy-MM-dd"
+                        v-model="searchStartDate"
+                        type="date"
+                        clearable
+                        placeholder="开始日期">
+        </el-date-picker>
+      </el-form-item>
+
+      <el-form-item>
+        <el-date-picker style="width: 125px;"
+                        size="mini"
+                        value-format="yyyy-MM-dd"
+                        v-model="searchEndDate"
+                        type="date"
+                        clearable
+                        placeholder="结束日期">
+        </el-date-picker>
+
+      </el-form-item>
+
+      <el-form-item >
+        <el-select
+            size ="mini"
+            v-model="checkedBox"
+            multiple
+            collapse-tags
+            style="margin-left: 0;width: 140px"
+            placeholder="请选择类型">
+          <el-option
+              v-for="item in statusArr"
+              :key="item.val"
+              :label="item.name"
+              :value="item.val">
+          </el-option>
+        </el-select>
       </el-form-item>
 
       <el-form-item>
@@ -12,6 +96,19 @@
       <el-form-item v-if="hasAuth('produce:returnShoes:save')">
 
         <el-button type="primary" size="mini" icon="el-icon-plus" v-if="hasAuth('produce:returnShoes:save')"  @click="dialogVisible = true">新增</el-button>
+      </el-form-item>
+
+
+      <el-form-item style="margin-left: 0">
+        <el-dropdown   @command="expChange">
+          <el-button  icon="el-icon-download" size="mini" >
+            导出<i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
+            <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </el-form-item>
 
 
@@ -68,17 +165,24 @@
 
       >
       </el-table-column>
-      <el-table-column
-        prop="userRequest"
-        label="客户要求"
-        width="150"
 
-        show-overflow-tooltip>
-    </el-table-column>
+      <el-table-column
+          prop="userRequest"
+          label="客户要求"
+          width="150px"
+      >
+
+      </el-table-column>
+
       <el-table-column
           prop="dealSituation"
           label="处理情况"
-          show-overflow-tooltip>
+          width="87px"
+          >
+        <template slot-scope="scope">
+          <el-tag size="small" v-if="scope.row.dealSituation === '退鞋'" type="warning">退鞋</el-tag>
+          <el-tag size="small" v-else-if="scope.row.dealSituation==='返修'" type="success">返修</el-tag>
+        </template>
       </el-table-column>
       <el-table-column
           prop="backPackage"
@@ -118,7 +222,7 @@
 
     <!-- 弹窗 -->
     <el-dialog
-        title="退惨鞋信息"
+        title="退残鞋信息"
         :visible.sync="dialogVisible"
         width="30%"
         :before-close="handleClose"
@@ -162,7 +266,8 @@
           <el-input v-model="editForm.userRequest"></el-input>
         </el-form-item>
         <el-form-item label="处理情况" prop="dealSituation">
-          <el-input v-model="editForm.dealSituation"></el-input>
+          <el-radio v-model="editForm.dealSituation" label="退鞋">退鞋</el-radio>
+          <el-radio v-model="editForm.dealSituation" label="返修">返修</el-radio>
         </el-form-item>
         <el-form-item label="回寄快递单号" prop="backPackage">
           <el-input v-model="editForm.backPackage"></el-input>
@@ -170,6 +275,7 @@
 
         <el-form-item>
           <el-button type="primary" @click="submitForm('editForm')">完成</el-button>
+          <el-button type="primary" :disabled="copyFlag" @click="copy()">复制</el-button>
           <el-button @click="resetForm('editForm')">重置</el-button>
 
         </el-form-item>
@@ -191,16 +297,34 @@
 </template>
 
 <script>
-import {request} from "@/axios";
+import {request, request2} from "@/axios";
 
 export default {
   name: "User",
   data() {
     return {
+      checkedBox:['退鞋','返修'],
+      statusArr : [{'name':'退鞋','val':'退鞋'},{'name':'返修','val':'返修'}],
+
+      copyFlag:false,
+      searchStartDate: '',
+      searchEndDate: '',
+      manySearchArr:[{
+        selectField:'userName',
+        searchStr:'',
+      }],
+      select: 'userName', // 搜索默认值
+      selectedName: 'userName',// 搜索默认值
+      searchStr: '',
+      options: [
+        {value: 'userName', label: '客户名称'},
+        {value: 'packageNo', label: '快递号'},
+        {value: 'userArtNo', label: '货号'}
+      ],
+
       currentPage: 1 // 当前页
       , pageSize: 100 // 一页多少条
-      , total: 0 // 总共多少数据
-      ,searchUserName:'',
+      , total: 0, // 总共多少数据
       // batchDelDisable: true,
       // 输入框的内容要写全，不然会发生，莫名其妙不能输入的问题
       editForm: {
@@ -227,6 +351,9 @@ export default {
         ],
         userArtNo: [
           {required: true, message: '请输入货号', trigger: 'blur'}
+        ],
+        dealSituation: [
+          {required: true, message: '请选择类别', trigger: 'blur'}
         ]
       }
       ,
@@ -236,6 +363,84 @@ export default {
     }
   },
   methods: {
+    copy(){
+      this.editForm.id = ''
+      this.copyFlag=true;
+      this.$message.success("已复制")
+    },
+    exportCurrentList() {
+      let checkStr = this.checkedBox.join(",");
+
+      request2.post('/produce/returnShoes/export?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select+
+          "&&searchType="+checkStr
+          ,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr}
+          ,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'退残鞋当前页.xlsx')
+      }).catch()
+    },
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportAll() {
+      let checkStr = this.checkedBox.join(",");
+
+      request2.post('/produce/returnShoes/export?'+
+          "searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select
+          +
+          "&&searchType="+checkStr
+          ,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr}
+          ,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'退残鞋全部列表.xlsx')
+      }).catch()
+    },
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
+    expChange(item) {
+      console.log("导出:",item)
+      if (item === 'currentList') {
+        this.exportCurrentList()
+      } else if(item === 'all'){
+        this.exportAll()
+      }
+    },
+
+    delSearch(index){
+      this.manySearchArr.splice(index,1)
+    },
+    addSearchItem(){
+      let obj = {
+        selectField:'userName',
+        searchStr:'',
+      }
+      this.manySearchArr.push(obj)
+    },
+
+    searchFieldChange(item) {
+      this.selectedName = item
+    },
     // 分页方法
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
@@ -285,17 +490,22 @@ export default {
           return false;
         }
       });
+      this.copyFlag=false;
     },
 
     // 查询角色表单列表数据
     getList() {
-      request.get('/produce/returnShoes/list', {
-        params:{
-          currentPage: this.currentPage
-          , pageSize: this.pageSize
-          , total: this.total
-          ,searchUserName: this.searchUserName
-        }}).then(res => {
+      let checkStr = this.checkedBox.join(",");
+
+       request.post('/produce/returnShoes/list?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select+
+          "&&searchType="+checkStr,
+          {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
+          null).then(res => {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
       })
@@ -341,6 +551,7 @@ export default {
     handleClose(done) {
       this.$refs['editForm'].resetFields();
       console.log("关闭窗口")
+      this.copyFlag=false;
       done();
     },
     // 重置表单

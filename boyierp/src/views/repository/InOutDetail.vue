@@ -170,6 +170,9 @@
             prop="startNum"
             label="期初数量"
         >
+          <template slot-scope="scope">
+            {{ scope.row.startNum ==null? null :scope.row.startNum.toFixed(2) }}
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -200,7 +203,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[100, 200, 300, 10000]"
+          :page-sizes="[1000,10000,100000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
@@ -236,7 +239,7 @@ export default {
       materialSearchDatas:[], // 用于搜索的建议框
       // 分页字段
       currentPage: 1 // 当前页
-      , pageSize: 100 // 一页多少条
+      , pageSize: 1000 // 一页多少条
       , total: 0 // 总共多少数据
       ,
       tableData: [],
