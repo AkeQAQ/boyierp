@@ -364,13 +364,25 @@
 
         <el-table-column
             prop="unit"
-            label="基本单位"
+            label="库存单位"
             width="80px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
                        @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
-            >{{ scope.row.unit }}
+            >{{scope.row.unit }}
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column
+            prop="unit"
+            label="入库大单位"
+            width="90px"
+        >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+                       @click="hasAuth('repository:buyIn:update') && edit(scope.row.id)"
+            >{{scope.row.bigUnit }}
             </el-button>
           </template>
         </el-table-column>
@@ -729,9 +741,14 @@
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].specs"></el-input>
             </template>
           </el-table-column>
-          <el-table-column label="物料单位" align="center" prop="unit" width="100">
+          <el-table-column label="库存单位" align="center" prop="unit" width="100">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].unit"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="入库大单位" align="center" prop="bigUnit" width="100">
+            <template slot-scope="scope">
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].bigUnit"></el-input>
             </template>
           </el-table-column>
 
@@ -1027,6 +1044,8 @@ export default {
           obj:'',
           materialName:'',
           unit:'',
+          bigUnit:'',
+          unitRadio:'',
           materialId:'',
           price:'',
           num:'',
@@ -1263,6 +1282,9 @@ export default {
       let obj = {};
       obj.materialName = "";
       obj.unit = "";
+      obj.bigUnit = "";
+      obj.unitRadio = "";
+
       obj.materialId = '';
       obj.price = '';
       obj.num = ''
@@ -1422,7 +1444,9 @@ export default {
       console.log("每个表格项选中：", selectItem, param);
       param.materialId = selectItem.id;
       param.materialName = selectItem.obj.name
-      param.unit = selectItem.obj.unit
+      param.unit =  selectItem.obj.unit
+      param.bigUnit =  selectItem.obj.bigUnit
+      param.unitRadio =  selectItem.obj.unitRadio
       param.specs = selectItem.obj.specs
       console.log("rowList：", this.editForm.rowList);
 
@@ -1499,6 +1523,8 @@ export default {
           obj:'',
           materialName:'',
           unit:'',
+          bigUnit:'',
+          unitRadio: '',
           materialId:'',
           price:'',
           num:'',
@@ -1917,7 +1943,7 @@ export default {
           colspan: _col
         }
       }
-      else if (columnIndex === 14) {
+      else if (columnIndex === 15) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1936,7 +1962,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 8 || index === 9) {
+        if (index === 9 || index === 10) {
           const values = data.map(item => Number(item[column.property]));
           console.log("index:values:",index,values)
           if (!values.every(value => isNaN(value))) {
@@ -1973,7 +1999,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 9 || index === 11) {
+        if (index === 10 || index === 12) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {

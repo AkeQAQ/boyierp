@@ -2,9 +2,9 @@ import axios from "axios";
 import router from "@/router";
 import Element from "element-ui"
 
-axios.defaults.baseURL = "http://192.168.8.252:8081" // 定义请求的前缀
+// axios.defaults.baseURL = "http://192.168.8.252:8081" // 定义请求的前缀
 //  axios.defaults.baseURL = "http://192.168.8.16:8081" // 定义请求的前缀
-// axios.defaults.baseURL = "http://localhost:8081" // 定义请求的前缀
+axios.defaults.baseURL = "http://localhost:8081" // 定义请求的前缀
 //  axios.defaults.baseURL = "http://100.64.0.207:8081" // 定义请求的前缀
 
 const request2 =axios.create({

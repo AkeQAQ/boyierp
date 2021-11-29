@@ -379,7 +379,7 @@
               </i>
               <template slot-scope="{ item }">
                 <div class="name">{{ item.value }}</div>
-                <span class="unit">{{ item.unit }}</span>
+                <span class="unit">{{ item.bigUnit }}</span>
               </template>
             </el-autocomplete>
           </el-form-item>

@@ -158,8 +158,20 @@
 
               <el-table-column
                   prop="unit"
-                  label="基本单位"
+                  label="库存单位"
 
+                  show-overflow-tooltip>
+              </el-table-column>
+
+              <el-table-column
+                  prop="bigUnit"
+                  label="入库单位"
+                  show-overflow-tooltip>
+              </el-table-column>
+
+              <el-table-column
+                  prop="unitRadio"
+                  label="换算系数"
                   show-overflow-tooltip>
               </el-table-column>
 
@@ -216,7 +228,7 @@
                   <el-input v-model="editForm.specs"></el-input>
                 </el-form-item>
 
-                <el-form-item label="基本单位" prop="unit">
+                <el-form-item label="库存单位" prop="unit">
 
                   <!-- 搜索框 -->
                   <el-autocomplete
@@ -224,11 +236,29 @@
                       v-model="editForm.unit"
                       :fetch-suggestions="querySearch"
                       placeholder="请输入内容"
-                      @select="handleSelect"
                   >
 
                   </el-autocomplete>
 
+                </el-form-item>
+
+                <el-form-item label="入库单位" prop="bigUnit">
+
+                  <!-- 搜索框 -->
+                  <el-autocomplete
+                      class="inline-input"
+                      v-model="editForm.bigUnit"
+                      :fetch-suggestions="querySearch"
+                      placeholder="请输入内容"
+                  >
+
+                  </el-autocomplete>
+
+                </el-form-item>
+
+                <el-form-item label="换算系数" prop="unitRadio">
+
+                  1入库单位=<el-input v-model="editForm.unitRadio" style="width: 100px"></el-input>库存单位
                 </el-form-item>
 
 <!--                <el-form-item >
@@ -295,7 +325,9 @@ export default {
         subId:'',
         name:'',
         unit:'',
-        specs:''
+        specs:'',
+        bigUnit:'',
+        unitRadio:''
       },
       rules: {
         name: [
@@ -303,6 +335,12 @@ export default {
         ],
         unit: [
           {required: true, message: '请输入单位', change: 'blur'}
+        ],
+        bigUnit: [
+          {required: true, message: '请输入单位', change: 'blur'}
+        ],
+        unitRadio: [
+          {required: true, message: '请输入系数', change: 'blur'}
         ]
       }
       ,
@@ -406,9 +444,6 @@ export default {
       return (restaurant) => {
         return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
       };
-    },
-    handleSelect(item) {
-      console.log(item);
     },
 
     // 物料列表 点击添加按钮
@@ -518,6 +553,11 @@ export default {
     },
     // 表单提交
     submitForm(formName,methodName) {
+
+      if(this.editForm.bigUnit != '' && this.editForm.unitRadio===''){
+        this.$message.error("存在换算单位，但是换算系数为空")
+        return ;
+      }
       this.$refs[formName].validate((valid) => {
         console.log("当前物料id:",this.editForm.id)
         if (valid) {

@@ -300,7 +300,7 @@
 import {request, request2} from "@/axios";
 
 export default {
-  name: "User",
+  name: "ReturnShoes",
   data() {
     return {
       checkedBox:['退鞋','返修'],
