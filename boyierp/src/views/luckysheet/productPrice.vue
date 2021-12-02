@@ -14,12 +14,17 @@
         </el-form-item>
 
         <el-form-item label="本厂货号" prop="companyNum">
-          <el-input size="mini" clearable style="width: 200px" v-model="editForm2.companyNum">
+          <el-input size="mini" clearable style="width: 150px" v-model="editForm2.companyNum">
           </el-input>
         </el-form-item>
 
         <el-form-item label="客户公司" prop="customer">
-          <el-input size="mini" clearable style="width: 200px" v-model="editForm2.customer">
+          <el-input size="mini" clearable style="width: 150px" v-model="editForm2.customer">
+          </el-input>
+        </el-form-item>
+
+        <el-form-item label="报价价格" prop="dealPrice" v-if="hasAuth('order:productPricePre:showDealPrice')">
+          <el-input size="mini" clearable style="width: 150px" v-model="editForm2.dealPrice">
           </el-input>
         </el-form-item>
 <!--
@@ -81,6 +86,7 @@ export default {
         companyNum: '',
         customer: '',
         price:'',
+        dealPrice:'',
         excelJson:[]
       },
       rules: {
@@ -177,6 +183,7 @@ export default {
       this.isCopy = true
       this.editForm2.companyNum = ''
       this.editForm2.customer = ''
+      this.editForm2.dealPrice = ''
       this.editForm2.id= ''
     },
     // 表单提交

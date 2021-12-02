@@ -81,8 +81,17 @@
 
         <el-table-column
             prop="price"
-            label="报价价格"
+            label="报价成本价格"
+            width="100px"
             >
+        </el-table-column>
+
+        <el-table-column
+            v-if="hasAuth('order:productPricePre:showDealPrice')"
+
+            prop="dealPrice"
+            label="报价价格"
+        >
         </el-table-column>
 
 
