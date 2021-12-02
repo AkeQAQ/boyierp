@@ -334,13 +334,13 @@ export default {
           {required: true, message: '请输入名称', trigger: 'blur'}
         ],
         unit: [
-          {required: true, message: '请输入单位', change: 'blur'}
+          {required: true, message: '请输入单位', trigger: 'blur'}
         ],
         bigUnit: [
-          {required: true, message: '请输入单位', change: 'blur'}
+          {required: true, message: '请输入单位', trigger: 'blur'}
         ],
         unitRadio: [
-          {required: true, message: '请输入系数', change: 'blur'}
+          {required: true, message: '请输入系数', trigger: 'blur'}
         ]
       }
       ,

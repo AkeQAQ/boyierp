@@ -37,7 +37,7 @@
             <td style="text-align: center">{{row.materialName.length >16 ? row.materialName.substring(0,16):row.materialName}}</td>
             <td style="text-align: center">{{row.specs.length >8 ? row.specs.substring(0,8):row.specs}}</td>
             <td style="text-align: center">{{row.num}}</td>
-            <td style="text-align: center">{{row.unit}}</td>
+            <td style="text-align: center">{{row.bigUnit}}</td>
             <td style="text-align: center">{{row.price}}</td>
             <td style="text-align: center">{{(row.price * row.num).toFixed(2)}}</td>
             <td style="text-align: center">{{row.comment}}</td>

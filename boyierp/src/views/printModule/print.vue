@@ -44,7 +44,7 @@
 
             <td style="text-align: center">{{row.orderSeq}}</td>
             <td style="text-align: center">{{row.num}}</td>
-            <td style="text-align: center">{{row.unit}}</td>
+            <td style="text-align: center">{{row.bigUnit}}</td>
             <td style="text-align: center">{{row.price}}</td>
             <td style="text-align: center">{{(row.price * row.num).toFixed(2)}}</td>
             <td style="text-align: center">{{row.comment}}</td>

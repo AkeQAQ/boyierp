@@ -313,6 +313,14 @@
         </el-table-column>
 
         <el-table-column
+            label="备注"
+            prop="comment"
+            width="110px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+
+        <el-table-column
             prop="status"
             width="110px"
             label="状态">
@@ -511,12 +519,6 @@
             >
             </el-autocomplete>
           </el-form-item>
-
-          <el-form-item  label="领料人" prop="pickUser" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status!=1"  size="mini" clearable style="width: 100px" v-model="editForm.pickUser">
-            </el-input>
-          </el-form-item>
-
           <el-form-item label="领料日期" prop="pickDate">
             <el-date-picker :disabled="this.editForm.status!=1" style="width: 150px"
                             value-format="yyyy-MM-dd"
@@ -526,6 +528,18 @@
                             placeholder="选择日期">
             </el-date-picker>
           </el-form-item>
+
+          <el-form-item  label="领料人" prop="pickUser" style="padding: -20px 0 ;margin-bottom: -20px">
+            <el-input :disabled="this.editForm.status!=1"  size="mini" clearable style="width: 100px" v-model="editForm.pickUser">
+            </el-input>
+          </el-form-item>
+
+          <el-form-item  label="备注" prop="comment" style="padding: -20px 0 ;margin-bottom: -20px">
+            <el-input :disabled="this.editForm.status!=1"  size="mini" clearable style="width: 100px" v-model="editForm.comment">
+            </el-input>
+          </el-form-item>
+
+
 <!--          <el-form-item  label="生产单号" prop="produceDocNum" style="padding: -20px 0 ;margin-bottom: -20px">
             <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 100px" v-model="editForm.produceDocNum">
             </el-input>
@@ -915,6 +929,8 @@ export default {
         pickUser:'',
         endDate: '',
         produceDocNum: '',
+        comment: '',
+
         totalAmount:'',
 
         rowList: [{
@@ -1476,6 +1492,7 @@ export default {
         endDate: '',
         price: '',
         totalAmount:'',
+        comment: '',
 
         rowList: [{
           materialName:'',
@@ -1826,7 +1843,15 @@ export default {
           colspan: _col
         }
       }
-      else if (columnIndex === 10) {
+      else if (columnIndex === 5) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      else if (columnIndex === 11) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1876,7 +1901,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 9 ) {
+        if (index === 10 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {

@@ -376,7 +376,7 @@
         </el-table-column>
         <el-table-column
             prop="unit"
-            label="入库大单位"
+            label="入库单位"
             width="90px"
         >
           <template slot-scope="scope">
@@ -746,7 +746,7 @@
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].unit"></el-input>
             </template>
           </el-table-column>
-          <el-table-column label="入库大单位" align="center" prop="bigUnit" width="100">
+          <el-table-column label="入库单位" align="center" prop="bigUnit" width="100">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].bigUnit"></el-input>
             </template>
@@ -1978,10 +1978,10 @@ export default {
           } else {
             sums[index] = 'N/A';
           }
-          if(index === 8){
+          if(index === 9){
             this.editForm.totalNum = sums[index];
             console.log("this.editForm.totalNum:",this.editForm.totalNum)
-          }else if(index === 9){
+          }else if(index === 10){
             this.editForm.totalAmount = sums[index];
             console.log("this.editForm.totalAmount:",this.editForm.totalAmount)
           }
