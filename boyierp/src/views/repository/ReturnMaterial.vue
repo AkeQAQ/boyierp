@@ -1582,6 +1582,11 @@ export default {
       return sums;
     },
     preViewPrint() {
+      if(this.editForm.id ==='' || this.editForm.id === undefined){
+        this.$message.error("请先保存再打印.")
+        return null;
+      }
+
       if (this.editForm) {
         console.log("打印时的easyPrint：", this.$refs.easyPrint)
         console.log("打印时的editForm：", this.editForm)
@@ -1634,7 +1639,12 @@ export default {
     handleEvent(){
 
       if (event.keyCode === 80&& event.ctrlKey) {
-        this.preViewPrint();
+        let viewReturn = this.preViewPrint();
+        if(viewReturn === null){
+          event.preventDefault();
+          event.returnValue = false;
+          return false;
+        }
         this.$nextTick(() => {
           this.printDemo()
         })

@@ -86,6 +86,20 @@
 
                     placeholder="请输入搜索内容"></el-input>
 
+          <!-- 列表界面-领料人搜索 -->
+          <el-input size="mini" v-model="searchStr" v-if="selectedName === 'pickUser'" clearable
+                    style="width: 200px"
+                    @keyup.enter.native="search()"
+
+                    placeholder="请输入搜索内容"></el-input>
+
+          <!-- 列表界面-单据编号搜索 -->
+          <el-input size="mini" v-model="searchStr" v-if="selectedName === 'comment'" clearable
+                    style="width: 200px"
+                    @keyup.enter.native="search()"
+
+                    placeholder="请输入搜索内容"></el-input>
+
         </el-form-item>
 
         <el-popover
@@ -137,6 +151,15 @@
               <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'id'" clearable
                         style="width: 200px"
                         placeholder="请输入搜索内容"></el-input>
+
+              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'pickUser'" clearable
+                        style="width: 200px"
+                        placeholder="请输入搜索内容"></el-input>
+
+              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'comment'" clearable
+                        style="width: 200px"
+                        placeholder="请输入搜索内容"></el-input>
+
               <el-button type="danger" size="mini" icon="el-icon-delete" circle
                          @click="delSearch(index)"
               ></el-button>
@@ -313,12 +336,22 @@
         </el-table-column>
 
         <el-table-column
+            label="领料人"
+            prop="pickUser"
+            width="80px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+
+        <el-table-column
             label="备注"
             prop="comment"
             width="110px"
             show-overflow-tooltip
         >
         </el-table-column>
+
+
 
         <el-table-column
             prop="status"
@@ -899,7 +932,10 @@ export default {
       options: [
         {value: 'departmentName', label: '部门名称'},
         {value: 'materialName', label: '物料名称'},
-        {value: 'id', label: '单据编号'}
+        {value: 'id', label: '单据编号'},
+        {value: 'comment', label: '备注'},
+        {value: 'pickUser', label: '领料人'}
+
       ],
       select: 'departmentName', // 搜索默认值
       searchStr: '',
@@ -1851,7 +1887,15 @@ export default {
           colspan: _col
         }
       }
-      else if (columnIndex === 11) {
+      else if (columnIndex === 6) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      else if (columnIndex === 12) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1901,7 +1945,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 10 ) {
+        if (index === 11 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1923,7 +1967,10 @@ export default {
       return sums;
     },
     preViewPrint() {
-      console.log("pick print：")
+      if(this.editForm.id ==='' || this.editForm.id === undefined){
+        this.$message.error("请先保存再打印.")
+        return null;
+      }
 
       if (this.editForm) {
         console.log("打印时的easyPrint：", this.$refs.easyPrint)
@@ -1975,10 +2022,17 @@ export default {
     },
     handleEvent(){
       if (event.keyCode === 80&& event.ctrlKey) {
-        this.preViewPrint();
+        let viewReturn = this.preViewPrint();
+        if(viewReturn === null){
+          event.preventDefault();
+          event.returnValue = false;
+          return false;
+        }
+
         this.$nextTick(() => {
           this.printDemo()
         })
+
         event.preventDefault();
         event.returnValue = false;
         return false;

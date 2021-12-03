@@ -2022,6 +2022,10 @@ export default {
       return sums;
     },
     preViewPrint() {
+      if(this.editForm.id ==='' || this.editForm.id === undefined){
+        this.$message.error("请先保存再打印.")
+        return null;
+      }
       if (this.editForm) {
         if (this.$refs.easyPrint) {
           console.log("totalAmount",this.editForm.totalAmount)
@@ -2078,7 +2082,13 @@ export default {
     },
     handleEvent(){
       if (event.keyCode === 80&& event.ctrlKey) {
-        this.preViewPrint();
+
+        let viewReturn = this.preViewPrint();
+        if(viewReturn === null){
+          event.preventDefault();
+          event.returnValue = false;
+          return false;
+        }
         this.$nextTick(() => {
           this.printDemo()
         })
