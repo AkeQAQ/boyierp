@@ -186,7 +186,7 @@
         <el-table-column
             prop="action"
             label="操作"
-            width="120px"
+            width="180px"
             fixed="right"
         >
           <template slot-scope="scope">
@@ -207,7 +207,7 @@
                 </el-popconfirm>
               </template>
             </el-button>
-<!--
+
             <el-button style="padding: 0" type="text"
                        v-if="hasAuth('repository:check:returnValid')  && scope.row.status ===0  ">
               <template>
@@ -217,7 +217,7 @@
                   <el-button type="text" size="small" slot="reference">反审核</el-button>
                 </el-popconfirm>
               </template>
-            </el-button>-->
+            </el-button>
 
             <el-divider direction="vertical"
                         v-if="hasAuth('repository:check:del')  && scope.row.status ===1  "></el-divider>
@@ -940,7 +940,8 @@ export default {
       }
     },
     checkNum(row){
-      row.changeNum = row.checkNum - row.stockNum
+      row.changeNum = (row.checkNum - row.stockNum).toFixed(3)
+
     },
 
 

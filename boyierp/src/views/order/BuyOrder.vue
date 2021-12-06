@@ -1206,6 +1206,7 @@ export default {
         let obj = {};
         obj.materialName = last.materialName;
         obj.unit = last.unit;
+        obj.bigUnit = last.bigUnit
         obj.materialId = last.materialId;
         obj.price = last.price;
         obj.num = last.num
@@ -1474,6 +1475,10 @@ export default {
             // 关闭弹窗并且重置内容
             this.pushDialogVisible = false;
             this.resetForm("pushForm")
+            // this.multipleSelection = []
+            // this.$refs.multipleTable.clearSelection();
+            this.getBuyOrderDocumentList();
+
             this.$router.push({name:'repository:buyIn:list',params:{refresh:'true'}});
           })
         } else {

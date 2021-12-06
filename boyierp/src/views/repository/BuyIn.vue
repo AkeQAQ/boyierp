@@ -79,6 +79,12 @@
                     @keyup.enter.native="search()"
                     placeholder="请输入搜索内容"></el-input>
 
+          <!-- 列表界面-单据编号搜索 -->
+          <el-input size="mini" v-model="searchStr" v-if="selectedName === 'supplierDocNum'" clearable
+                    style="width: 200px"
+                    @keyup.enter.native="search()"
+                    placeholder="请输入搜索内容"></el-input>
+
         </el-form-item>
 
         <el-popover
@@ -128,6 +134,11 @@
               <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'id'" clearable
                         style="width: 200px"
                         placeholder="请输入搜索内容"></el-input>
+
+              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'supplierDocNum'" clearable
+                        style="width: 200px"
+                        placeholder="请输入搜索内容"></el-input>
+
               <el-button type="danger" size="mini" icon="el-icon-delete" circle
                 @click="delSearch(index)"
               ></el-button>
@@ -1010,7 +1021,8 @@ export default {
       options: [
         {value: 'supplierName', label: '供应商名称'},
         {value: 'materialName', label: '物料名称'},
-        {value: 'id', label: '单据编号'}
+        {value: 'id', label: '单据编号'},
+        {value: 'supplierDocNum', label: '供应商单号'}
       ],
       select: 'supplierName', // 搜索默认值
       searchStr: '',
