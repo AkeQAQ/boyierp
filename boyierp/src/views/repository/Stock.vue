@@ -34,24 +34,6 @@
 
           >
           </el-autocomplete>
-
-          <!-- 字段搜索框 -->
-          <el-autocomplete size="mini" v-if="selectedName === 'materialId'" clearable
-                           style="width: 300px"
-                           popper-class="my-autocomplete"
-
-                           class="inline-input"
-                           v-model="searchStr"
-                           :fetch-suggestions="queryMaterialSearchValide"
-                           placeholder="请输入内容"
-                           :trigger-on-focus="false"
-
-                           @select="searchSelect"
-                           @focus="searchMmaterialFocus()"
-                           @keyup.enter.native="search()"
-
-          >
-          </el-autocomplete>
         </el-form-item>
 
         <el-form-item>
@@ -231,8 +213,7 @@ export default {
       // 搜索字段
       selectedName: 'materialName',// 搜索默认值
       options: [
-        {value: 'materialName', label: '物料名称'},
-        {value: 'materialId', label: '物料编码'}
+        {value: 'materialName', label: '物料名称'}
       ],
       select: 'materialName', // 搜索默认值
       searchStr: '',

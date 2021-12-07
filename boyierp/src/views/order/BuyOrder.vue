@@ -30,7 +30,7 @@
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
-          <el-select size="mini" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
+          <el-select size="mini" v-model="select" style="width: 120px" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
                 v-for="item in options"
                 :key="item.value"
@@ -44,7 +44,7 @@
         <el-form-item>
           <!-- 列表界面-供应商搜索 -->
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'"
-                           style="width: 300px"
+                           style="width: 200px"
                            popper-class="my-autocomplete"
 
                            clearable
@@ -62,7 +62,7 @@
 
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
-                           style="width: 300px"
+                           style="width: 200px"
 
                            popper-class="my-autocomplete"
                            class="inline-input"
@@ -79,9 +79,10 @@
 
           <!-- 列表界面-单据编号搜索 -->
           <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
-                    style="width: 300px"
+                    style="width: 200px"
                     @keyup.enter.native="search()"
                     placeholder="请输入搜索内容"></el-input>
+
 
         </el-form-item>
 
@@ -143,6 +144,14 @@
           <el-button slot="reference" type="info" style="padding: 0 0 ;margin-top: 20px;margin-left: -10px" size="mini" icon="el-icon-arrow-down" circle></el-button>
 
         </el-popover>
+
+        <el-form-item>
+
+          <el-input size="mini" v-model="searchDocNum" clearable
+                    style="width: 200px"
+                    @keyup.enter.native="search()"
+                    placeholder="请输入搜索单号(,分割)"></el-input>
+        </el-form-item>
 
         <el-form-item>
 
@@ -208,8 +217,8 @@
       </el-form>
 
       <el-table
+          @filter-change="filterChange"
           :row-style="rowClass"
-
           ref="multipleTable"
           :data="tableData"
           v-loading = "tableLoad"
@@ -310,6 +319,10 @@
             prop="materialName"
             label="物料名称"
             width="120px"
+            column-key="materialNameKey"
+
+            :filters=materialNameFileterArr
+            :filter-method="filterHandler"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -331,17 +344,12 @@
                     label="规格型号">
                 </el-table-column>-->
 
-        <el-table-column
-            prop="doneDate"
-            label="交货日期"
-            width="90px"
-        >
-        </el-table-column>
 
         <el-table-column
             prop="price"
             label="单价"
             width="60px"
+            column-key="priceKey"
             :filters=priceFileterArr
             :filter-method="filterHandler"
         >
@@ -358,6 +366,15 @@
             </el-button>
           </template>
         </el-table-column>
+
+        <el-table-column
+            prop="doneDate"
+            label="交货日期"
+            width="90px"
+        >
+        </el-table-column>
+
+
 
 
         <el-table-column
@@ -781,6 +798,13 @@ export default {
   },
   data() {
     return {
+      materialNameFilterSet:new Set(),
+      materialNameFileterArr:[],
+      materialNameFileterArrReset:[],
+
+      priceFilterSet:new Set(),
+      priceFileterArrReset:[],
+
       priceFileterArr:[],
       // 多个搜索输入框
       manySearchArr:[{
@@ -809,6 +833,7 @@ export default {
         {value: 'id', label: '单据编号'}
       ],
       select: 'supplierName', // 搜索默认值
+      searchDocNum:'',
       searchStr: '',
       searchStartDate: '',
       searchEndDate: '',
@@ -886,8 +911,43 @@ export default {
     }
   },
   methods: {
+    filterChange(filters){
+      console.log("搜索条件变动",filters.priceKey)
+      if(filters.priceKey != undefined){
+        this.materialNameFileterArr =[]
+        this.materialNameFilterSet.forEach(obj=>{
+          console.log("变动后 的，物料名称set内容",obj)
+          this.materialNameFileterArr.push({'text':obj,'value':obj})
+        })
+        if(filters.priceKey.length === 0){
+          this.materialNameFileterArr = this.materialNameFileterArrReset
+        }
+      }
+
+      if(filters.materialNameKey != undefined){
+        this.priceFileterArr =[]
+        this.priceFilterSet.forEach(obj=>{
+          this.priceFileterArr.push({'text':obj,'value':obj})
+        })
+        if(filters.materialNameKey.length === 0){
+          this.priceFileterArr = this.priceFileterArrReset
+        }
+      }
+
+      console.log(filters)
+      this.materialNameFilterSet.clear()
+      this.priceFilterSet.clear()
+
+    },
     filterHandler(value, row, column) {
       const property = column['property'];
+      console.log("filter过滤",property)
+      if(property==='price' && row[property] === value){
+        this.materialNameFilterSet.add(row['materialName']);
+      }
+      if(property==='materialName' && row[property] === value){
+        this.priceFilterSet.add(row['price']);
+      }
       return row[property] === value;
     },
     rowClass({ row, rowIndex }) {
@@ -997,6 +1057,7 @@ export default {
     exportAll() {
 
       request2.post('/order/buyOrder/export?'+
+          "&&searchDocNum="+this.searchDocNum+
           "searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select
@@ -1584,7 +1645,8 @@ export default {
        request.post('/order/buyOrder/list?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
-          "&&searchStartDate="+this.searchStartDate+
+           "&&searchDocNum="+this.searchDocNum+
+           "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select,
            {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
@@ -1594,16 +1656,28 @@ export default {
          console.time("str")  //开始
 
          let set = new Set();
+         let materialSet = new Set();
+
          this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
           item.index = index;
           set.add(item.price);
+           materialSet.add(item.materialName);
          })
          console.log("price set集合:",set)
          let tmpSortArr = Array.from(set).sort(this.$globalFun.numSeq);
          this.priceFileterArr = [];
          tmpSortArr.forEach(row =>{
            this.priceFileterArr.push({'text':row,'value':row})
+           this.priceFileterArrReset.push({'text':row,'value':row})
+
          })
+         this.materialNameFileterArr = [];
+         materialSet.forEach(row =>{
+           this.materialNameFileterArr.push({'text':row,'value':row})
+           this.materialNameFileterArrReset.push({'text':row,'value':row})
+         })
+
+
          console.timeEnd("str") //结束
 
         this.total = res.data.data.total
@@ -1855,7 +1929,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 7  || index === 14) {
+        if (index === 7  || index === 13) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
