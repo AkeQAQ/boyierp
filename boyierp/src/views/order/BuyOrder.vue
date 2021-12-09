@@ -1058,7 +1058,7 @@ export default {
 
       request2.post('/order/buyOrder/export?'+
           "&&searchDocNum="+this.searchDocNum+
-          "searchStartDate="+this.searchStartDate+
+          "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select
 

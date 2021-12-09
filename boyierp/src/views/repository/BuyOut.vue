@@ -602,7 +602,7 @@
               <el-input
                   onkeyup="value=value.replace(/[^0-9.]/g,'')"
                   :ref='"input_num_"+scope.row.seqNum'
-                  @input="changeNum(scope.row.seqNum,editForm.supplierId,scope.row.materialId,editForm.buyOutDate)"
+                  @input="changeNum(scope.row.seqNum,editForm.supplierId,scope.row.materialId,scope.row.priceDate===undefined ? editForm.buyOutDate :scope.row.priceDate)"
                   @keyup.up.native="numUp(scope.row.seqNum)"
                   @keyup.down.native="numDown(scope.row.seqNum)"
                   @focus="addNext(scope.row.seqNum)"
@@ -774,6 +774,7 @@ export default {
         materialName: '',
         materialId: '',
         buyOutDate: '',
+        priceDate:'',
 
         rowList: [{
           materialName:'',

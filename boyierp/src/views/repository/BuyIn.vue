@@ -713,7 +713,7 @@
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column label="单号" align="center" prop="orderSeq" width="100">
+          <el-table-column label="单号" align="center" prop="orderSeq" width="120">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].orderSeq"></el-input>
             </template>
@@ -773,7 +773,7 @@
             <template slot-scope="scope">
               <el-input @keyup.enter.native="handleAddDetails"
                         onkeyup="value=value.replace(/[^0-9.]/g,'')"
-                        @input="changeNum(scope.row.seqNum,editForm.supplierId,scope.row.materialId,editForm.buyInDate)"
+                        @input="changeNum(scope.row.seqNum,editForm.supplierId,scope.row.materialId,scope.row.priceDate===undefined ? editForm.buyInDate :scope.row.priceDate)"
                         :ref='"input_num_"+scope.row.seqNum'
                         @keyup.up.native="numUp(scope.row.seqNum)"
                         @keyup.down.native="numDown(scope.row.seqNum)"
@@ -1048,6 +1048,7 @@ export default {
         materialName: '',
         materialId: '',
         buyInDate: new Date().format("yyyy-MM-dd") ,
+        priceDate:'',
         endDate: '',
         price: '',
         sourceType: 0,
