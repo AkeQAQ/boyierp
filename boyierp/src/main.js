@@ -16,10 +16,13 @@ Vue.use(Element)
 import * as echarts from 'echarts';
 Vue.prototype.$echarts = echarts;
 
-// 引入 umy-ui
-/*import UmyUi from 'umy-ui'
-import 'umy-ui/lib/theme-chalk/index.css';// 引入样式
-Vue.use(UmyUi);*/
+
+
+import 'xe-utils'
+import VXETable from 'vxe-table'
+import 'vxe-table/lib/style.css'
+
+Vue.use(VXETable)
 
 //  引入axios 拦截器
 import request from "./axios"

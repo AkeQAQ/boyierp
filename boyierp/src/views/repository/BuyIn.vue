@@ -85,6 +85,12 @@
                     @keyup.enter.native="search()"
                     placeholder="请输入搜索内容"></el-input>
 
+          <!-- 列表界面-单据编号搜索 -->
+          <el-input size="mini" v-model="searchStr" v-if="selectedName === 'price'" clearable
+                    style="width: 200px"
+                    @keyup.enter.native="search()"
+                    placeholder="请输入搜索内容"></el-input>
+
         </el-form-item>
 
         <el-popover
@@ -136,6 +142,10 @@
                         placeholder="请输入搜索内容"></el-input>
 
               <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'supplierDocNum'" clearable
+                        style="width: 200px"
+                        placeholder="请输入搜索内容"></el-input>
+
+              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'price'" clearable
                         style="width: 200px"
                         placeholder="请输入搜索内容"></el-input>
 
@@ -875,7 +885,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[100, 200, 300, 10000]"
+          :page-sizes="[200, 500, 700, 1000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
@@ -1022,7 +1032,9 @@ export default {
         {value: 'supplierName', label: '供应商名称'},
         {value: 'materialName', label: '物料名称'},
         {value: 'id', label: '单据编号'},
-        {value: 'supplierDocNum', label: '供应商单号'}
+        {value: 'supplierDocNum', label: '供应商单号'},
+        {value: 'price', label: '单价'}
+
       ],
       select: 'supplierName', // 搜索默认值
       searchStr: '',
@@ -1035,7 +1047,7 @@ export default {
 
       // 分页字段
       currentPage: 1 // 当前页
-      , pageSize: 100 // 一页多少条
+      , pageSize: 200 // 一页多少条
       , total: 0 // 总共多少数据
       ,
       // 表单字段

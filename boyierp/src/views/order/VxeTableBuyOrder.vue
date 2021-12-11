@@ -83,11 +83,6 @@
                     @keyup.enter.native="search()"
                     placeholder="请输入搜索内容"></el-input>
 
-          <el-input size="mini" v-model="searchStr" v-if="selectedName === 'price'" clearable
-                    style="width: 200px"
-                    @keyup.enter.native="search()"
-                    placeholder="请输入搜索内容"></el-input>
-
 
         </el-form-item>
 
@@ -138,10 +133,6 @@
               <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'id'" clearable
                         style="width: 200px"
                         placeholder="请输入搜索内容"></el-input>
-              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'price'" clearable
-                        style="width: 200px"
-                        placeholder="请输入搜索内容"></el-input>
-
               <el-button type="danger" size="mini" icon="el-icon-delete" circle
                          @click="delSearch(index)"
               ></el-button>
@@ -225,39 +216,40 @@
 
       </el-form>
 
-      <el-table
-          @filter-change="filterChange"
-          :row-style="rowClass"
+      <vxe-table
+          resizable
+          :merge-cells="mergeCells"
+          show-overflow
+          :scroll-y="{gt: 100}"
+          @filter-change="filterChangeEvent"
+          :row-config="{isCurrent: true, isHover: true}"
+          @current-change="rowClick"
+          :checkbox-config="{ trigger: 'row'}"
+
           ref="multipleTable"
           :data="tableData"
           v-loading = "tableLoad"
           element-loading-background = "rgba(255, 255, 255, .5)"
           element-loading-text = "加载中，请稍后..."
-          :span-method="objectSpanMethod"
           border
-          fit
           height="520px"
-          :summary-method="getSummaries"
           show-summary
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
           :cell-style="{padding:'0',borderColor:'black'}"
           :header-cell-style="{borderColor:'black'}"
-          :default-sort="{prop:'id',order:'descending'}"
-          @selection-change="handleSelectionChange"
           @row-click="rowClick"
-          @select="pinSelect"
 
       >
-        <el-table-column
-            type="selection"
+        <vxe-column
+            type="checkbox"
             width="50">
-        </el-table-column>
-        <el-table-column
-            label="单据编号"
+        </vxe-column>
+        <vxe-column
+            title="单据编号"
 
-            prop="id" width="90px"
+            field="id" width="90px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -265,108 +257,113 @@
             >{{ scope.row.id }}
             </el-button>
           </template>
-        </el-table-column>
+        </vxe-column>
 
-        <el-table-column
-            prop="orderDate"
-            label="采购日期"
+        <vxe-column
+            field="orderDate"
+            title="采购日期"
             width="90px"
         >
-        </el-table-column>
+        </vxe-column>
 
 
-        <el-table-column
-            label="供应商"
-            prop="supplierName"
+        <vxe-column
+            title="供应商"
+            field="supplierName"
             width="110px"
             show-overflow-tooltip
         >
-        </el-table-column>
+        </vxe-column>
 
-        <el-table-column
-            prop="status"
-            label="单据状态">
+        <vxe-column
+            field="status"
+            title="单据状态"
+            width="90px"
+        >
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.status === 0" type="success">已完成</el-tag>
             <el-tag size="small" v-else-if="scope.row.status===1" type="danger">未完成</el-tag>
           </template>
-        </el-table-column>
+        </vxe-column>
 
-        <el-table-column
-            prop="detaiStatus"
-            label="详情状态">
+        <vxe-column
+            field="detaiStatus"
+            title="详情状态"
+            width="90px"
+
+        >
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.detailStatus === 0" type="success">已下推</el-tag>
             <el-tag size="small" v-else-if="scope.row.detailStatus===1" type="danger">未下推</el-tag>
           </template>
-        </el-table-column>
+        </vxe-column>
 
 
-        <el-table-column
-            prop="orderSeq"
-            label="单号"
+        <vxe-column
+            field="orderSeq"
+            title="单号"
             width="90px"
         >
-        </el-table-column>
+        </vxe-column>
 
-        <el-table-column
-            prop="num"
-            label="数量"
+        <vxe-column
+            field="num"
+            title="数量"
             width="80px"
 
         >
-        </el-table-column>
-        <el-table-column
-            label="物料编码"
-            prop="materialId"
+        </vxe-column>
+        <vxe-column
+            title="物料编码"
+            field="materialId"
             width="90px"
             show-overflow-tooltip
         >
-        </el-table-column>
+        </vxe-column>
 
-        <el-table-column
-            prop="materialName"
-            label="物料名称"
+        <vxe-column
+            field="materialName"
+            title="物料名称"
             width="120px"
             column-key="materialNameKey"
 
-            :filters=materialNameFileterArr
-            :filter-method="filterHandler"
+            :filters="[]"
+            :filter-method="filterNameMethod"
             show-overflow-tooltip>
-        </el-table-column>
+        </vxe-column>
 
-        <el-table-column
-            prop="unit"
-            label="库存单位"
+        <vxe-column
+            field="unit"
+            title="库存单位"
             width="80px"
         >
-        </el-table-column>
-        <el-table-column
-            prop="bigUnit"
-            label="入库单位"
+        </vxe-column>
+        <vxe-column
+            field="bigUnit"
+            title="入库单位"
             width="80px"
         >
-        </el-table-column>
+        </vxe-column>
 
-        <!--        <el-table-column
-                    prop="specs"
-                    label="规格型号">
-                </el-table-column>-->
+        <!--        <vxe-column
+                    field="specs"
+                    title="规格型号">
+                </vxe-column>-->
 
 
-        <el-table-column
-            prop="price"
-            label="单价"
-            width="60px"
+        <vxe-column
+            field="price"
+            title="单价"
+            width="90px"
             column-key="priceKey"
-            :filters=priceFileterArr
-            :filter-method="filterHandler"
+            :filters="[]"
+            :filter-method="filterNameMethod"
         >
-        </el-table-column>
+        </vxe-column>
 
-        <el-table-column
-            prop="amount"
-            label="金额"
+        <vxe-column
+            field="amount"
+            title="金额"
             width="100px"
         >
           <template slot-scope="scope">
@@ -374,21 +371,21 @@
             >{{ scope.row.amount ==null? null :scope.row.amount.toFixed(2) }}
             </el-button>
           </template>
-        </el-table-column>
+        </vxe-column>
 
-        <el-table-column
-            prop="doneDate"
-            label="交货日期"
+        <vxe-column
+            field="doneDate"
+            title="交货日期"
             width="90px"
         >
-        </el-table-column>
+        </vxe-column>
 
 
 
 
-        <el-table-column
-            prop="action"
-            label="操作"
+        <vxe-column
+            field="action"
+            title="操作"
             width="170px"
             fixed="right"
         >
@@ -417,9 +414,9 @@
             </el-button>
 
           </template>
-        </el-table-column>
+        </vxe-column>
 
-      </el-table>
+      </vxe-table>
 
       <el-dialog
           title="物料"
@@ -764,7 +761,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[200, 500, 700, 1000]"
+          :page-sizes="[10000, 200, 300, 10000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
@@ -796,7 +793,7 @@ import supplier from "@/views/baseData/Supplier"
 
 
 export default {
-  name: 'BuyOrder',
+  name: 'VxeTableBuyOrder',
   // 引入打印模块基础组件和该打印模块的模板页面
   components: {
     vueEasyPrint,
@@ -807,14 +804,17 @@ export default {
   },
   data() {
     return {
+      mergeCells: [
+
+          ]
+      ,
+
       materialNameFilterSet:new Set(),
-      materialNameFileterArr:[],
       materialNameFileterArrReset:[],
 
       priceFilterSet:new Set(),
       priceFileterArrReset:[],
 
-      priceFileterArr:[],
       // 多个搜索输入框
       manySearchArr:[{
         selectField:'supplierName',
@@ -839,8 +839,7 @@ export default {
       options: [
         {value: 'supplierName', label: '供应商名称'},
         {value: 'materialName', label: '物料名称'},
-        {value: 'id', label: '单据编号'},
-        {value: 'price', label: '单价'}
+        {value: 'id', label: '单据编号'}
       ],
       select: 'supplierName', // 搜索默认值
       searchDocNum:'',
@@ -855,7 +854,7 @@ export default {
 
       // 分页字段
       currentPage: 1 // 当前页
-      , pageSize: 200 // 一页多少条
+      , pageSize: 10000 // 一页多少条
       , total: 0 // 总共多少数据
       ,
       // 表单字段
@@ -921,7 +920,37 @@ export default {
     }
   },
   methods: {
-    filterChange(filters){
+    filterChangeEvent ({ column }) {
+      console.log(`${column.property} 筛选了数据`)
+      if(column.property ==='price'){
+        let materialNameFileterArr = []
+        this.materialNameFilterSet.forEach(obj=>{
+          console.log("变动后 的，物料名称set内容",obj)
+          materialNameFileterArr.push({'label':obj,'value':obj})
+        })
+        const c = this.$refs.multipleTable.getColumnByField('materialName')
+        if (materialNameFileterArr.length >0) {
+          this.$refs.multipleTable.setFilter(c, materialNameFileterArr)
+        }else{
+          this.$refs.multipleTable.setFilter(c, this.materialNameFileterArrReset)
+        }
+      }else if(column.property ==='materialName'){
+        let fileterArr = []
+        this.priceFilterSet.forEach(obj=>{
+          fileterArr.push({'label':obj,'value':obj})
+        })
+        const c = this.$refs.multipleTable.getColumnByField('price')
+        if (fileterArr.length >0) {
+          this.$refs.multipleTable.setFilter(c, fileterArr)
+        }else{
+          this.$refs.multipleTable.setFilter(c, this.priceFileterArrReset)
+        }
+      }
+
+      this.materialNameFilterSet.clear()
+      this.priceFilterSet.clear()
+    },
+    /*filterChange(filters){
       console.log("搜索条件变动",filters.priceKey)
       if(filters.priceKey != undefined){
         this.materialNameFileterArr =[]
@@ -959,10 +988,17 @@ export default {
         this.priceFilterSet.add(row['price']);
       }
       return row[property] === value;
-    },
-    rowClass({ row, rowIndex }) {
-      if (this.multipleSelection.includes(row.detailId)) {
-        return { "background-color": "rgba(255,235,205, 0.75)" };
+    }*/
+    filterNameMethod ({ value, row, column }) {
+      const property = column['property'];
+      console.log("filter过滤",property)
+      if(property==='price' && row[property] === value){
+        this.materialNameFilterSet.add(row['materialName']);
+        return row.price == value
+      }
+      if(property==='materialName' && row[property] === value){
+        this.priceFilterSet.add(row['price']);
+        return row.materialName == value
       }
     },
     searchManySelect(item,index) {
@@ -1181,9 +1217,8 @@ export default {
       }
     },
     // 行点击事件
-    rowClick(row,column,event){
-      console.log("某行单击,",row,column,event)
-      this.$refs.multipleTable.toggleRowSelection(row);
+    rowClick({row}){
+      this.$refs.multipleTable.setCheckboxRow([row], true)
     },
 
     // 打印按钮事件
@@ -1285,7 +1320,6 @@ export default {
         obj.comment = last.comment
         obj.doneDate = last.doneDate
         obj.amount = last.amount
-        obj.unitRadio = last.unitRadio
         obj.status = 1;
         let nextStr = dealfun(last.orderSeq)
         console.log("自增:",obj)
@@ -1523,14 +1557,11 @@ export default {
         this.$refs.multipleTable.clearSelection();
       }
     },
-    handleSelectionChange(val) {
-      console.log("多选框 val ", val)
-      this.multipleSelection = []
+    handleSelectionChange({ checked, records }) {
+      if(checked){
+        this.multipleSelection.push(records.detailId)
+      }
 
-      val.forEach(theId => {
-        this.multipleSelection.push(theId.detailId)
-      })
-      console.log("多选框 选中的 ", this.multipleSelection)
     },
     // 下推入库提交
     submitPushForm(formName) {
@@ -1663,42 +1694,55 @@ export default {
            {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
 
-         this.tableData = res.data.data.records
+         this.tableData = res.data.data.pageData.records
+         this.mergeCells =[]
+         res.data.data.mergeCell.forEach(obj=>{
+           this.mergeCells.push({row: obj.row, col: obj.col, rowspan: obj.rowspan, colspan: obj.colspan})
+         })
+         console.log("megercel:",this.mergeCells)
+         // this.mergeCells = [ { row: 4, col: 2, rowspan: 2, colspan: 5 },
+         //   { row: 30, col: 3, rowspan: 10, colspan: 1 },
+         //   { row: 80, col: 4, rowspan: 30, colspan: 3 }]
          console.time("str")  //开始
 
          let set = new Set();
          let materialSet = new Set();
 
          this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
-          item.index = index;
-          set.add(item.price);
-           materialSet.add(item.materialName);
+            item.index = index;
+            set.add(item.price);
+            materialSet.add(item.materialName);
          })
          console.log("price set集合:",set)
          let tmpSortArr = Array.from(set).sort(this.$globalFun.numSeq);
-         this.priceFileterArr = [];
+         let priceFileterArr = [];
          tmpSortArr.forEach(row =>{
-           this.priceFileterArr.push({'text':row,'value':row})
-           this.priceFileterArrReset.push({'text':row,'value':row})
-
+           priceFileterArr.push({'label':row,'value':row})
+           this.priceFileterArrReset.push({'label':row,'value':row})
          })
-         this.materialNameFileterArr = [];
+
+         const priceColumn = this.$refs.multipleTable.getColumnByField('price')
+         if (priceColumn) {
+           this.$refs.multipleTable.setFilter(priceColumn, priceFileterArr)
+         }
+
+         let materialNameFileterArr = [];
          materialSet.forEach(row =>{
-           this.materialNameFileterArr.push({'text':row,'value':row})
-           this.materialNameFileterArrReset.push({'text':row,'value':row})
+           materialNameFileterArr.push({'label':row,'value':row})
+           this.materialNameFileterArrReset.push({'label':row,'value':row})
          })
 
+         const mtColumn = this.$refs.multipleTable.getColumnByField('materialName')
+         if (mtColumn) {
+           this.$refs.multipleTable.setFilter(mtColumn, materialNameFileterArr)
+         }
 
          console.timeEnd("str") //结束
 
-        this.total = res.data.data.total
+        this.total = res.data.data.pageData.total
         this.getSpanArr(this.tableData)
         this.tableLoad = false;
 
-        console.log("获取用户表单数据", res.data.data.records)
-        this.$nextTick(() => {
-          this.$refs['multipleTable'].doLayout();
-        })
       }).catch(error=>{
         this.tableLoad = false;
         console.log("error:",error)
@@ -1731,8 +1775,10 @@ export default {
       this.pushForm.orderId = id
     },*/
     pushPage(id){
-      console.log(id)
-      if((this.multipleSelection===[] || this.multipleSelection.length ===0)  && (id ===-1) ){
+      let checkboxRecords = this.$refs.multipleTable.getCheckboxRecords();
+      console.log("多选的数组",checkboxRecords)
+
+      if((checkboxRecords===[] || checkboxRecords.length ===0)  && (id ===-1) ){
         this.$message({
           message: '请选择下推的选项!',
           type: 'error'
@@ -1740,9 +1786,14 @@ export default {
         return
       }
 
+      let checkedArr = []
+      checkboxRecords.forEach(obj=>{
+        checkedArr.push(obj.detailId);
+      })
+      console.log("选中的detailId：",checkedArr)
 
       this.pushDialogVisible = true
-      this.pushForm.orderDetailIds = this.multipleSelection // 部分下推有值
+      this.pushForm.orderDetailIds = checkedArr // 部分下推有值
       this.pushForm.id = id // 单据下推有值
     },
 
