@@ -344,6 +344,11 @@
             label="金额"
             width="100px"
         >
+          <template slot-scope="scope">
+            <el-button type="text" size="small"
+            >{{ scope.row.amount ==null? null :scope.row.amount.toFixed(2) }}
+            </el-button>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -612,6 +617,7 @@
           <el-table-column label="金额" align="center" width="115" prop="amount">
             <template slot-scope="scope">
               <el-input size="mini" :disabled=true v-model="editForm.rowList[scope.row.seqNum-1].amount"/>
+
             </template>
           </el-table-column>
 
