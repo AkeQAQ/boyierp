@@ -1105,9 +1105,21 @@ export default {
         this.submitForm('editForm',this.addOrUpdate)
       }
       else if(item === 'addNew'){
-        console.log("详情页新增")
-        this.closeBrowser();
-        this.addSupplierMaterial();
+        if(this.editForm.id===''){
+          this.$confirm('确认关闭？')
+              .then(_ => {
+                this.closeBrowser();
+                this.addSupplierMaterial();
+                console.log("关闭窗口")
+                done();
+              })
+              .catch(_ => {});
+        }else{
+          this.closeBrowser();
+          this.addSupplierMaterial();
+          console.log("关闭窗口")
+        }
+
       }
       else if(item === 'copy'){
         this.closeBrowser();

@@ -79,15 +79,15 @@
           <el-col :span="6"><div class="grid-content bg-purple"></div>
             <time>制单人：{{$store.state.user_info.userName}}</time>
           </el-col>
-          <el-col :span="6"><div class="grid-content bg-purple">
+          <el-col :span="3"><div class="grid-content bg-purple">
             <span>仓库主管：</span>
           </div>
           </el-col>
-          <el-col :span="6"><div class="grid-content bg-purple">
+          <el-col :span="3"><div class="grid-content bg-purple">
             <span>审核人：</span>
           </div>
           </el-col>
-          <el-col :span="6"><div class="grid-content bg-purple">
+          <el-col :span="12"><div class="grid-content bg-purple">
             <span>送货人：</span>
           </div>
           </el-col>
@@ -95,14 +95,14 @@
         <hr style="height: 2px;background-color: black"/>
 
         <el-row :gutter="0" style="padding-top: 0px;margin-bottom: 10px">
-          <el-col :span="13" style="text-align: left"><div class="grid-content bg-purple"></div>
+          <el-col :span="10" style="text-align: left"><div class="grid-content bg-purple"></div>
             <span>注：一式两联：第一联财务（白），第二联供应商（红）</span>
           </el-col>
-          <el-col :span="6" style="text-align: right"><div class="grid-content bg-purple">
+          <el-col :span="4" style="text-align: right"><div class="grid-content bg-purple">
             <span>打印日期：{{new Date().toLocaleDateString()}}  </span>
           </div>
           </el-col>
-          <el-col :span="3" style="text-align: right"><div class="grid-content bg-purple">
+          <el-col :span="5" style="text-align: right"><div class="grid-content bg-purple">
             <span>第{{page}}页，共{{pages}}页</span>
           </div>
           </el-col>
