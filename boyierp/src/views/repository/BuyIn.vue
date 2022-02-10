@@ -647,8 +647,16 @@
           </el-form-item>
 
           <el-form-item  label="供应商单号" prop="supplierDocumentNum" >
-            <el-input :disabled="this.editForm.status!=1 ||  this.editForm.sourceType === 1"  size="mini" clearable style="width: 120px;" v-model="editForm.supplierDocumentNum">
-            </el-input>
+            <div :class=" [(this.editForm.status!=1 ||  this.editForm.sourceType === 1)? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']">
+              <input  class="el-input__inner"
+                      v-model.lazy="editForm.supplierDocumentNum">
+              </input>
+            </div>
+
+            <!--<el-input :validate-event="false" :disabled="this.editForm.status!=1 ||  this.editForm.sourceType === 1"  size="mini" clearable
+                    style="width: 120px;"
+                    v-model.lazy="editForm.supplierDocumentNum">
+            </el-input> -->
           </el-form-item>
 
           <el-form-item label="入库日期" prop="buyInDate">
@@ -890,6 +898,7 @@
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
       </el-pagination>
+
     </el-main>
 
 
@@ -1052,6 +1061,7 @@ export default {
       ,
       // 表单字段
       addOrUpdate: 'save',
+      allPageTotalAmount:'0.0',
       editForm: {
         status: 1, // 编辑表单初始默认值
         id: '',
@@ -1141,7 +1151,7 @@ export default {
          }else {
            this.$message.success("领料成功")
            this.tableData2 = []
-           this.getList();
+           this.getBuyInDocumentList();
          }
       })
     },
@@ -1699,6 +1709,7 @@ export default {
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
         this.tableData = res.data.data.records
+        this.allPageTotalAmount = res.data.msg
         console.time("str")  //开始
 
         let set = new Set();
@@ -2023,6 +2034,9 @@ export default {
         if (index === 0 ) {
           sums[index] = '求和';
           return;
+        }
+        if(index === 13){
+          sums[index] = this.allPageTotalAmount;
         }
         if (index === 10 || index === 12) {
           const values = data.map(item => Number(item[column.property]));

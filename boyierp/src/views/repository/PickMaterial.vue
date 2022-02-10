@@ -563,8 +563,14 @@
           </el-form-item>
 
           <el-form-item  label="领料人" prop="pickUser" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status!=1"  size="mini" clearable style="width: 100px" v-model="editForm.pickUser">
-            </el-input>
+<!--            <el-input :disabled="this.editForm.status!=1"  size="mini" clearable style="width: 100px" v-model="editForm.pickUser">
+            </el-input>-->
+
+            <div style="width: 100px" :class=" [(this.editForm.status!=1)? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']">
+              <input  class="el-input__inner"
+                      v-model.lazy="editForm.pickUser">
+              </input>
+            </div>
           </el-form-item>
 
           <el-form-item  label="备注" prop="comment" style="padding: -20px 0 ;margin-bottom: -20px">

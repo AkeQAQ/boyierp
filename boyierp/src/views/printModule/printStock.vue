@@ -1,27 +1,27 @@
 <template>
   <!-- 打印入库单据21cm的适配宽度 -->
-  <div style="width: 682px;margin-left: 50px;margin-top: 20px">
+  <div style="width: 682px;margin-left: 50px;margin-top: 0px">
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
       <div  class='tab_company_out'>
-        <h3 style="font-size: 20px;margin-bottom: 5px">及  时  库  存</h3>
+        <h3 style="font-size: 20px;margin-bottom: 0px;margin-top: 20px">及  时  库  存</h3>
 
         <table cellpadding='0' cellspacing='0' >
           <tr>
             <th width='20%'>物料编码</th>
             <th width='40%'>物料名称</th>
             <th width='10%'>库存数量</th>
-            <th width='20%'>基本单位</th>
-            <th width='10%'>规格型号</th>
+            <th width='10%'>基本单位</th>
+            <th width='20%'>规格型号</th>
 
           </tr>
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
             <td style="text-align: left;padding-left: 8px">{{row.materialId}}</td>
-            <td style="text-align: center">{{row.materialName}}</td>
+            <td style="text-align: center">{{row.materialName.length >16 ? row.materialName.substring(0,16):row.materialName}}</td>
             <td style="text-align: center">{{row.num.toFixed(3) }}</td>
-            <td style="text-align: center">{{row.unit}}</td>
-            <td style="text-align: center">{{row.specs}}</td>
+            <td style="text-align: center">{{row.unit.length >4 ? row.unit.substring(0,4):row.unit}}</td>
+            <td style="text-align: center">{{row.specs.length >8 ? row.specs.substring(0,8):row.specs}}</td>
           </tr>
           <!-- 插入空白行 -->
          <template v-if="blankLines===true && tableData.slice((page-1)*onePageRow,page*onePageRow).length<onePageRow">
@@ -60,7 +60,7 @@ export default {
     // 每页多少行
     onePageRow: {
       type: Number,
-      default: 30
+      default: 28
     },
     // 是否插入空白行
     blankLines: {
