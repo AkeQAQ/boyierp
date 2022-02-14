@@ -101,6 +101,18 @@
                 </el-popconfirm>
               </el-form-item>
 
+              <el-form-item v-if="hasAuth('baseData:supplier:list')" style="margin-left: 0">
+                <el-dropdown   @command="expChange">
+                  <el-button  icon="el-icon-download" size="mini" >
+                    导出<i class="el-icon-arrow-down el-icon--right"></i>
+                  </el-button>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
+                    <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </el-form-item>
+
             </el-form>
 
             <el-table
@@ -182,6 +194,20 @@
               </el-table-column>
 
               <el-table-column
+                  prop="zq"
+                  label="账期"
+
+                  show-overflow-tooltip>
+              </el-table-column>
+
+              <el-table-column
+                  prop="comment"
+                  label="备注"
+
+                  show-overflow-tooltip>
+              </el-table-column>
+
+              <el-table-column
                   prop="action"
                   label="操作"
                   width="100px"
@@ -243,6 +269,14 @@
                   <el-input v-model="editForm.tax"></el-input>
                 </el-form-item>
 
+                <el-form-item label="账期" prop="zq">
+                  <el-input v-model="editForm.zq"></el-input>
+                </el-form-item>
+
+                <el-form-item label="备注" prop="comment">
+                  <el-input v-model="editForm.comment"></el-input>
+                </el-form-item>
+
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
 
@@ -268,7 +302,7 @@
 </template>
 
 <script>
-import {request} from "@/axios";
+import {request, request2} from "@/axios";
 
 export default {
   name: "Supplier",
@@ -292,7 +326,9 @@ export default {
         name:'',
         address:'',
         mobile:'',
-        tax:''
+        tax:'',
+        comment:'',
+        zq:''
       },
       rules: {
 
@@ -343,7 +379,56 @@ export default {
     }
   },
   methods: {
+    expChange(item) {
+      console.log("导出:",item)
+      if (item === 'currentList') {
+        this.exportCurrentList()
+      } else if(item === 'all'){
+        this.exportAll()
+      }
+    },
+    exportCurrentList() {
 
+      request2.post('/baseData/supplier/export?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchField="+this.select+
+          "&&searchStr="+this.searchStr
+          ,null
+          ,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'供应商当前页.xlsx')
+      }).catch()
+    },
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportAll() {
+
+      request2.post('/baseData/supplier/export?'+
+          "searchField="+this.select+
+          "&&searchStr="+this.searchStr
+          ,null
+          ,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'供应商全部列表.xlsx')
+      }).catch()
+    },
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
     nodeDbClick(event,data){
       this.currentPage = 1
       console.log("双击获取分组的ID：",data.id)
