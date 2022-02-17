@@ -165,7 +165,7 @@
               <el-table-column
                   prop="groupName"
                   label="分组名称"
-                  width="100px"
+                  width="80px"
 
                   show-overflow-tooltip>
 
@@ -182,6 +182,7 @@
               <el-table-column
                   prop="address"
                   label="地址"
+                  width="80px"
 
                   show-overflow-tooltip>
               </el-table-column>
@@ -189,6 +190,7 @@
               <el-table-column
                   prop="tax"
                   label="含税"
+                  width="100px"
 
                   show-overflow-tooltip>
               </el-table-column>
@@ -196,6 +198,7 @@
               <el-table-column
                   prop="zq"
                   label="账期"
+                  width="100px"
 
                   show-overflow-tooltip>
               </el-table-column>
@@ -203,6 +206,12 @@
               <el-table-column
                   prop="comment"
                   label="备注"
+                  show-overflow-tooltip>
+              </el-table-column>
+
+              <el-table-column
+                  prop="fax"
+                  label="传真"
 
                   show-overflow-tooltip>
               </el-table-column>
@@ -277,6 +286,10 @@
                   <el-input v-model="editForm.comment"></el-input>
                 </el-form-item>
 
+                <el-form-item label="传真" prop="fax">
+                  <el-input v-model="editForm.fax"></el-input>
+                </el-form-item>
+
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
 
@@ -328,7 +341,8 @@ export default {
         mobile:'',
         tax:'',
         comment:'',
-        zq:''
+        zq:'',
+        fax:''
       },
       rules: {
 
