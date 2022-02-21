@@ -9,7 +9,7 @@
                :model="editForm2" :rules="rules" ref="editForm2"
                class="demo-editForm">
 
-        <el-form-item  v-show="editForm2.status===1" label="导入" style="margin-left: -50px">
+        <el-form-item   v-show="editForm2.status===1 && hasAuth('order:productPricePre:update')" label="导入" style="margin-left: -50px">
           <input  style="font-size:12px;padding: 0;margin: 0;width: 160px"  type="file" @change="uploadExcel" />
         </el-form-item>
 
@@ -35,7 +35,7 @@
         </el-form-item>
 -->
         <el-form-item label="">
-          <el-button type="primary" :disabled="this.isCopy" style="margin-bottom: 10px" @click="copy()">
+          <el-button v-show="hasAuth('order:productPricePre:update')" type="primary" :disabled="this.isCopy" style="margin-bottom: 10px" @click="copy()">
             {{this.isCopy ? '已复制':'复制'}}
           </el-button>
         </el-form-item>
@@ -52,7 +52,7 @@
       </el-form>
 
       <div class="bottom" >
-        <el-button type="primary" ref="saveBtn" style="margin-bottom: 10px" v-show="editForm2.status===1 || isCopy===true" :loading="isLoad" @click="submitForm('editForm2')">
+        <el-button type="primary" ref="saveBtn" style="margin-bottom: 10px" v-show="hasAuth('order:productPricePre:update') && (editForm2.status===1 || isCopy===true)" :loading="isLoad" @click="submitForm('editForm2')">
           保存报价
         </el-button>
         <el-button type="danger" ref="returnBtn" @click="returnPage">

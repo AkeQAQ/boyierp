@@ -151,7 +151,7 @@
           <template slot-scope="scope">
 
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('order:productPricePre:list') && scope.row.status != 1   ">查看报价
+                       v-if="hasAuth('order:productPricePre:list')    ">查看报价
             </el-button>
             <el-button type="text" size="small" @click="realEdit(scope.row.id)"
                        v-if="hasAuth('order:productPricePre:list') && scope.row.status === 0   ">查看实价
