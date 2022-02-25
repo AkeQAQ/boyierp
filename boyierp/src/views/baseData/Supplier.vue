@@ -446,6 +446,15 @@ export default {
     nodeDbClick(event,data){
       this.currentPage = 1
       console.log("双击获取分组的ID：",data.id)
+      this.lastClickTreeNode = {
+        id: data.id,
+        code: data.code,
+        label: data.label,
+        name: data.name,
+        parentId: data.parentId,
+        parentCode: data.parentCode
+      };
+
       request.get('/baseData/supplier/listByGroupCode', {
         params: {
           currentPage: this.currentPage

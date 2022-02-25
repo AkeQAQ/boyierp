@@ -1112,11 +1112,15 @@ export default {
             rowObj.materialId = item.id;
             rowObj.materialName = item.obj.name
             rowObj.unit = item.obj.unit
+            rowObj.bigUnit =  item.obj.bigUnit
+            rowObj.unitRadio =  item.obj.unitRadio
             rowObj.specs = item.obj.specs
             throw new Error();
           } else {
             rowObj.materialName = "";
             rowObj.unit = "";
+            rowObj.unitRadio =  "";
+            rowObj.bigUnit ="";
             rowObj.materialId = '';
             rowObj.specs = ''
 
