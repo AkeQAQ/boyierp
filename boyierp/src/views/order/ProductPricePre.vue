@@ -23,6 +23,23 @@
                     clearable></el-input>
         </el-form-item>
 
+        <el-form-item >
+          <el-select
+              size ="mini"
+              v-model="checkedBox"
+              multiple
+              collapse-tags
+              style="margin-left: 0;width: 150px"
+              placeholder="请选择状态">
+            <el-option
+                v-for="item in statusArr"
+                :key="item.val"
+                :label="item.name"
+                :value="item.val">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item>
           <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
@@ -127,6 +144,20 @@
             label="实价最后修改人"
             width="110px"
         >
+        </el-table-column>
+
+        <el-table-column
+            prop="yk"
+            label="盈亏"
+            width="100px"
+        >
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.ykStatus==0" type="warning">正常</el-tag>
+            <el-tag size="small" v-else-if="scope.row.ykStatus==1" type="danger">无法计算</el-tag>
+            <el-tag size="small" v-else-if="scope.row.ykStatus==2" type="success">盈利</el-tag>
+            <el-tag size="small" v-else-if="scope.row.ykStatus==3" type="info">亏损</el-tag>
+
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -454,6 +485,10 @@ export default {
   name: 'ProductPricePre',
   data() {
     return {
+      checkedBox:[1,2,3,0],
+
+      statusArr : [{'name':'无法计算','val':1},{'name':'盈利','val':2},{'name':'正常','val':0},{'name':'亏损','val':3}],
+
       fileSizeIsSatisfy: false,
       fileList: [],
 
@@ -673,6 +708,7 @@ export default {
 
     // 查询价目表单列表数据
     getList() {
+      let checkStr = this.checkedBox.join(",");
       console.log("搜索字段:", this.select)
       request.get('/order/productPricePre/list', {
         params: {
@@ -680,9 +716,8 @@ export default {
           , pageSize: this.pageSize
           , total: this.total
           , searchStr: this.searchStr
-          , searchStartDate: this.searchStartDate
-          , searchEndDate: this.searchEndDate
           , searchField: this.select
+          , ykStatus:checkStr
         }
       }).then(res => {
         this.tableData = res.data.data.records
