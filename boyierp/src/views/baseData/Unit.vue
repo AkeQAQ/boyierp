@@ -20,12 +20,19 @@
       <el-table-column
           prop="code"
           label="编码"
+          width="300"
           >
       </el-table-column>
       <el-table-column
           prop="name"
           label="名称"
-          >
+          width="300"
+      >
+      </el-table-column>
+      <el-table-column
+          prop="priority"
+          label="优先级(数字越大越高)"
+      >
       </el-table-column>
 
       <el-table-column
@@ -78,6 +85,10 @@
           <el-input v-model="editForm.name"></el-input>
         </el-form-item>
 
+        <el-form-item label="优先级" prop="priority">
+          <el-input v-model="editForm.priority"></el-input>
+        </el-form-item>
+
         <el-form-item>
           <el-button type="primary" @click="submitForm('editForm')">完成</el-button>
           <el-button @click="resetForm('editForm')">重置</el-button>
@@ -98,7 +109,8 @@ export default {
     return {
       editForm: {
         code:'',
-        name:''
+        name:'',
+        priority:''
       },
       rules: {
 

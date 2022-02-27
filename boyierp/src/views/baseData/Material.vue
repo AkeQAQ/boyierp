@@ -327,7 +327,7 @@ export default {
         unit:'',
         specs:'',
         bigUnit:'',
-        unitRadio:''
+        unitRadio:'1'
       },
       rules: {
         name: [
