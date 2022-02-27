@@ -781,7 +781,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="入库单价" align="center" width="75" prop="price">
+          <el-table-column label="入库单价" align="center" width="90" prop="price">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].price"/>
             </template>
