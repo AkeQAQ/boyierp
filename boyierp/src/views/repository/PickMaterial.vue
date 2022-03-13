@@ -80,25 +80,28 @@
           </el-autocomplete>
 
           <!-- 列表界面-单据编号搜索 -->
-          <el-input size="mini" v-model="searchStr" v-if="selectedName === 'id'" clearable
-                    style="width: 200px"
-                    @keyup.enter.native="search()"
 
-                    placeholder="请输入搜索内容"></el-input>
+          <div v-if="selectedName === 'id'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
 
           <!-- 列表界面-领料人搜索 -->
-          <el-input size="mini" v-model="searchStr" v-if="selectedName === 'pickUser'" clearable
-                    style="width: 200px"
-                    @keyup.enter.native="search()"
 
-                    placeholder="请输入搜索内容"></el-input>
+          <div v-if="selectedName === 'pickUser'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
 
           <!-- 列表界面-单据编号搜索 -->
-          <el-input size="mini" v-model="searchStr" v-if="selectedName === 'comment'" clearable
-                    style="width: 200px"
-                    @keyup.enter.native="search()"
+          <div v-if="selectedName === 'comment'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
 
-                    placeholder="请输入搜索内容"></el-input>
 
         </el-form-item>
 
@@ -148,17 +151,26 @@
               >
               </el-autocomplete>
 
-              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'id'" clearable
-                        style="width: 200px"
-                        placeholder="请输入搜索内容"></el-input>
 
-              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'pickUser'" clearable
-                        style="width: 200px"
-                        placeholder="请输入搜索内容"></el-input>
+              <div :class=" 'el-input el-input--mini'" v-if="item.selectField === 'id'" style="width: 200px">
+                <input  class="el-input__inner"   placeholder="请输入搜索内容"
+                        v-model.lazy="item.searchStr">
+                </input>
+              </div>
 
-              <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'comment'" clearable
-                        style="width: 200px"
-                        placeholder="请输入搜索内容"></el-input>
+
+              <div :class=" 'el-input el-input--mini'" v-if="item.selectField === 'pickUser'" style="width: 200px">
+                <input  class="el-input__inner"   placeholder="请输入搜索内容"
+                        v-model.lazy="item.searchStr">
+                </input>
+              </div>
+
+
+              <div :class=" 'el-input el-input--mini'" v-if="item.selectField === 'comment'" style="width: 200px">
+                <input  class="el-input__inner"   placeholder="请输入搜索内容"
+                        v-model.lazy="item.searchStr">
+                </input>
+              </div>
 
               <el-button type="danger" size="mini" icon="el-icon-delete" circle
                          @click="delSearch(index)"
@@ -808,7 +820,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[200, 500, 700, 1000]"
+          :page-sizes="[50, 200, 500, 1000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
@@ -955,7 +967,7 @@ export default {
 
       // 分页字段
       currentPage: 1 // 当前页
-      , pageSize: 200 // 一页多少条
+      , pageSize: 50 // 一页多少条
       , total: 0 // 总共多少数据
       ,
       // 表单字段

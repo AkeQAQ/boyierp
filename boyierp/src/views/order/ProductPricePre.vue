@@ -15,13 +15,17 @@
             </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item >
 
-        <el-form-item>
-          <el-input size="mini"
-                    placeholder="请输入搜索内容"
-                    v-model="searchStr"
-                    clearable></el-input>
+
+          <div  :class=" 'el-input el-input--mini'" >
+            <input  @keyup.enter="search()" class="el-input__inner"   placeholder="请输入搜索内容"
+                     v-model.lazy="searchStr">
+            </input>
+          </div>
+
         </el-form-item>
+
 
         <el-form-item >
           <el-select
