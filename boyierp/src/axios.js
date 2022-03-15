@@ -2,10 +2,10 @@ import axios from "axios";
 import router from "@/router";
 import Element from "element-ui"
 
-// axios.defaults.baseURL = "http://192.168.8.252:8081" // 定义请求的前缀
-//  axios.defaults.baseURL = "http://192.168.8.16:8081" // 定义请求的前缀
-axios.defaults.baseURL = "http://localhost:8081" // 定义请求的前缀
-//  axios.defaults.baseURL = "http://100.64.0.207:8081" // 定义请求的前缀
+// const sysbaseUrl="http://localhost:8081"
+const sysbaseUrl="http://192.168.8.252:8081"
+
+axios.defaults.baseURL = sysbaseUrl // 定义请求的前缀
 
 const request2 =axios.create({
     timeout:100000
@@ -69,5 +69,5 @@ request.interceptors.response.use(response=>{
 
 // 暴露出去，给其他地方引用
 export {
-    request,request2
+    request,request2,sysbaseUrl
 }

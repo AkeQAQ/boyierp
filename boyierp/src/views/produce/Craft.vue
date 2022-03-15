@@ -131,6 +131,10 @@
             fixed="right"
         >
           <template slot-scope="scope">
+            <el-button type="text" size="small" @click="showPicture(scope.row.id)"
+                       v-if="hasAuth('produce:craft:list')  ">查看确认样图片
+            </el-button>
+
 
             <el-button type="text" size="small" @click="edit(scope.row.id)"
                        v-if="hasAuth('produce:craft:list') && scope.row.status != 1   ">查看开发内容
@@ -218,7 +222,98 @@
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
       </el-pagination>
+
+      <el-dialog
+          title="确认样信息"
+          :visible.sync="dialogImportVisible"
+          :before-close="handleImportClose"
+          :append-to-body="true"
+
+          fullscreen
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 :inline="false"
+                 size="mini"
+                 label-width="100px"
+                 :model="editImportForm"  ref="editImportForm"
+                 class="demo-editForm myFormClass">
+
+          <el-form-item label="工艺单编号" prop="id" style="margin-bottom: 20px;width: 300px">
+            <el-input class="elInput_my" :disabled=true placeholder="" v-model="editImportForm.id">
+            </el-input>
+<!--            <el-button type="primary"  @click="importExcel('editImportForm')">
+              保存
+            </el-button>-->
+          </el-form-item>
+
+          <el-form-item label="上传文件:">
+            <!--          <el-upload
+                          class="upload-demo"
+                          action="/produce/craft/uploadPic"
+                          :on-preview="handlePreview"
+                          :on-remove="handleRemove"
+                          :file-list="fileList"
+                          list-type="picture">
+                        <el-button size="small" type="primary">点击上传</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                      </el-upload>-->
+
+            <!-- 新的缩略图-->
+            <el-upload
+                :disabled="!hasAuth('produce:craft:save')"
+                action="#"
+                ref="upload"
+                :http-request="uploadRequest"
+                :file-list="fileList"
+                list-type="picture-card"
+                :auto-upload="true">
+              <i slot="default" class="el-icon-plus"></i>
+              <div slot="file" slot-scope="{file}">
+                <img
+                    class="el-upload-list__item-thumbnail"
+                    :src="file.url" alt=""
+                >
+                <span class="el-upload-list__item-actions">
+                  <span
+                      class="el-upload-list__item-preview"
+                      @click="handlePictureCardPreview(file)"
+                  >
+                    <i class="el-icon-zoom-in"></i>
+                  </span>
+      <!--            <span
+                      v-if="!disabled"
+                      class="el-upload-list__item-delete"
+                      @click="handleDownload(file)"
+                  >
+                    <i class="el-icon-download"></i>
+                  </span>-->
+                  <span
+                      v-if="hasAuth('produce:craft:del') "
+                      class="el-upload-list__item-delete"
+                      @click="handleRemove(file)"
+                  >
+                      <i class="el-icon-delete"></i>
+                  </span>
+                </span>
+              </div>
+            </el-upload>
+
+            <el-dialog :visible.sync="dialogOnePicVisible" :append-to-body=true>
+              <img width="100%" :src="dialogOneImageUrl" alt="">
+            </el-dialog>
+
+          </el-form-item>
+
+
+        </el-form>
+
+
+
+
+      </el-dialog>
     </el-main>
+
+
 
   </el-container>
 
@@ -227,19 +322,31 @@
 <script>
 
 // POI，因为响应输出字节流，和ajax 的请求不一样。
-import {request} from "@/axios";
-
+import  {request} from "@/axios";
+import {sysbaseUrl} from "@/axios";
 import {request2} from "@/axios";
 
 // 导入SpreadJS
 import "@grapecity/spread-sheets/styles/gc.spread.sheets.excel2016colorful.css";
 import * as GC from "@grapecity/spread-sheets";
 import "@grapecity/spread-sheets-vue";
+import Vue from "vue";
 
 export default {
   name: 'Craft',
   data() {
     return {
+      disabled:false,
+
+      fileList: [{name: 'food.jpeg', url: 'http://localhost:8080/1_1.png'}],
+      dialogOnePicVisible:false,
+      dialogOneImageUrl:'',
+
+      dialogImportVisible: false,
+      editImportForm: {
+        id: ''
+      },
+
       // 搜索字段
       selectedName: 'companyNum',// 搜索默认值
       options: [
@@ -261,6 +368,114 @@ export default {
     }
   },
   methods: {
+    /*importExcel(formName) {
+      this.$refs[formName].validate((valid) => {
+        console.log("valid",valid)
+        console.log("this.fileList",this.fileList)
+        console.log("this.fileSizeIsSatisfy",this.fileSizeIsSatisfy)
+
+       /!* if(this.fileList.length <= 0 || this.fileList.length > 1){
+          this.$message.error("请上传一个文件！");
+          return;
+        }
+        if (!this.fileSizeIsSatisfy) {
+          this.$message.error("上传失败！存在文件大小超过5M！");
+          return;
+        }*!/
+        if (valid) {
+          this.$refs.upload.submit();
+        }
+        this.$refs['editImportForm'].resetFields();
+        this.fileList=[]
+        this.fileSizeIsSatisfy=false;
+        this.$refs.upload.clearFiles();
+        this.dialogImportVisible=false
+      })
+    }*/
+    // 图片放大预览。
+    handlePictureCardPreview(file) {
+      console.log("文件:",file)
+      this.dialogOneImageUrl = file.url;
+      this.dialogOnePicVisible = true;
+    },
+    handleDownload(file) {
+      console.log(file);
+    },
+    // 图片删除
+    handleRemove(file, fileList) {
+      console.log("删除图片:",file)
+      const url = file.url
+      const i = this.fileList.findIndex(x => x.url === url)
+      this.fileList.splice(i, 1)
+
+      request({
+        method: 'get',
+        url: '/produce/craft/delPic?fileName='+file.name,
+        headers: {'Content-Type': 'multipart/form-data'}
+      }).then(res => {
+          // 成功
+          this.$message({
+            message: '删除成功!',
+            type: 'success'
+          });
+
+      })
+    },
+
+    // 图片查询
+    showPicture(id){
+      this.fileList=[]
+      request.get('/produce/craft/getPicturesById?id='+id).then(res => {
+        let data = res.data.data;
+        for (let i = 0; i < data.length; i++) {
+          let oneFileName = data[i];
+          this.fileList.push({name:oneFileName,url: sysbaseUrl+"/"+oneFileName})
+        }
+        this.editImportForm.id = id;
+
+        this.dialogImportVisible=true
+      })
+
+    },
+
+    // 图片新增
+    uploadRequest(fileobj) {
+      let param = new FormData()
+      param.append('files', fileobj.file)
+      console.log("上传的文件对象:",fileobj)
+      request({
+        method: 'post',
+        url: '/produce/craft/uploadPic?id='+this.editImportForm.id,
+        headers: {'Content-Type': 'multipart/form-data'},
+        data: param
+      }).then(res => {
+          // 成功
+          this.$message({
+            message: '添加成功!',
+            type: 'success'
+          });
+
+            this.$nextTick(() => {
+              request.get('/produce/craft/getPicturesById?id='+this.editImportForm.id).then(res => {
+                let data = res.data.data;
+                this.fileList.push({name:data[data.length-1],url: sysbaseUrl+"/"+data[data.length-1]})
+              })
+            })
+
+
+      })
+    },
+    // 关闭弹窗处理动作
+    handleImportClose(done) {
+      this.$refs['editImportForm'].resetFields();
+      this.fileList=[]
+      this.fileSizeIsSatisfy=false;
+      this.$refs.upload.clearFiles();
+      console.log("关闭窗口")
+      done();
+    },
+
+
     // 最终编辑页面
     realEdit(id) {
       this.$store.commit("SET_CRAFTDATA", {select:this.select,searchStr:this.searchStr})
