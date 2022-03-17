@@ -2104,9 +2104,10 @@ export default {
     pickMaterial(){
       if(this.editForm.id != ''){
         let pickId = this.editForm.id;
+        let buyInDate = this.editForm.buyInDate
         this.closeMethod()
         this.dialogVisible = false;
-        this.$router.push({name:'repository:pickMaterial:list',params:{id:pickId}});
+        this.$router.push({name:'repository:pickMaterial:list',params:{id:pickId,buyInDate:buyInDate}});
       }else {
         this.$message.error("无单据编号的不能领料")
       }

@@ -611,7 +611,7 @@
             </el-button>
 
           </el-form-item>-->
-          <el-form-item v-if="hasAuth('baseData:supplier:save')">
+          <el-form-item v-if="hasAuth('order:buyOrder:save')">
             <el-dropdown   @command="action">
               <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>

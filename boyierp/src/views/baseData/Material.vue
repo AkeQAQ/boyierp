@@ -176,9 +176,22 @@
               </el-table-column>
 
               <el-table-column
+                  prop="status"
+                  label="状态"
+                  width="87px"
+                  sortable
+              >
+                <template slot-scope="scope">
+                  <el-tag size="small" v-if="scope.row.status === null" type="success">启用</el-tag>
+                  <el-tag size="small" v-else-if="scope.row.status===-1" type="danger">停用</el-tag>
+
+                </template>
+              </el-table-column>
+
+              <el-table-column
                   prop="action"
                   label="操作"
-                  width="100px"
+                  width="160px"
                   fixed="right"
               >
                 <template slot-scope="scope">
@@ -191,6 +204,28 @@
                                      title="确定删除吗？"
                       >
                         <el-button type="text" size="small" slot="reference">删除</el-button>
+                      </el-popconfirm>
+                    </template>
+                  </el-button>
+
+                  <el-divider direction="vertical" v-if="hasAuth('baseData:material:del') && scope.row.status ===null   "></el-divider>
+                  <el-button style="padding: 0" type="text"v-if="hasAuth('baseData:material:del')  && scope.row.status ===null   ">
+                    <template>
+                      <el-popconfirm  @confirm="stop(scope.row.id)"
+                                      title="确定禁用吗？"
+                      >
+                        <el-button type="text" size="small" slot="reference">禁用</el-button>
+                      </el-popconfirm>
+                    </template>
+                  </el-button>
+
+                  <el-divider direction="vertical" v-if="hasAuth('baseData:material:del')  && scope.row.status ===-1  "></el-divider>
+                  <el-button style="padding: 0" type="text"v-if="hasAuth('baseData:material:del') && scope.row.status ===-1   ">
+                    <template>
+                      <el-popconfirm  @confirm="startBM(scope.row.id)"
+                                      title="确定启用吗？"
+                      >
+                        <el-button type="text" size="small" slot="reference">启用</el-button>
                       </el-popconfirm>
                     </template>
                   </el-button>
@@ -257,26 +292,54 @@
                 </el-form-item>
 
                 <el-form-item label="换算系数" prop="unitRadio">
-
                   1入库单位=<el-input v-model="editForm.unitRadio" style="width: 100px"></el-input>库存单位
                 </el-form-item>
 
-<!--                <el-form-item >
+                <el-form-item >
+                  <!-- 新的缩略图-->
                   <el-upload
-                      style="margin-left: 0"
-                      class="upload-demo"
-                      drag
-                      :headers="headers"
-                      :auto-upload="false"
-                      :file-list="picList"
-                      :on-change="picChange"
+                      :disabled="!hasAuth('baseData:material:save') || this.fileList.length >=1"
                       action="#"
-                      multiple>
-                    <i class="el-icon-upload"></i>
-                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-                    <div class="el-upload__tip" slot="tip">上传图片文件</div>
+                      ref="upload"
+                      :http-request="uploadRequest"
+                      :file-list="fileList"
+                      list-type="picture-card"
+                      :auto-upload="true">
+                    <i slot="default" class="el-icon-plus"></i>
+                    <div slot="file" slot-scope="{file}">
+                      <img
+                          class="el-upload-list__item-thumbnail"
+                          :src="file.url" alt=""
+                      >
+                      <span class="el-upload-list__item-actions">
+                  <span
+                      class="el-upload-list__item-preview"
+                      @click="handlePictureCardPreview(file)"
+                  >
+                    <i class="el-icon-zoom-in"></i>
+                  </span>
+                        <!--            <span
+                                        v-if="!disabled"
+                                        class="el-upload-list__item-delete"
+                                        @click="handleDownload(file)"
+                                    >
+                                      <i class="el-icon-download"></i>
+                                    </span>-->
+                  <span
+                      v-if="hasAuth('baseData:material:del') "
+                      class="el-upload-list__item-delete"
+                      @click="handleRemove(file)"
+                  >
+                      <i class="el-icon-delete"></i>
+                  </span>
+                </span>
+                    </div>
                   </el-upload>
-                </el-form-item>-->
+
+                  <el-dialog :visible.sync="dialogOnePicVisible" :append-to-body=true>
+                    <img width="100%" :src="dialogOneImageUrl" alt="">
+                  </el-dialog>
+                </el-form-item>
 
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
@@ -303,13 +366,17 @@
 </template>
 
 <script>
-import {request} from "@/axios";
+import {request, sysbaseUrl} from "@/axios";
 
 export default {
   name: "Material",
 
   data() {
     return {
+      fileList: [],
+      dialogOnePicVisible:false,
+      dialogOneImageUrl:'',
+
       tableLoad:false,
       select:'',
       defaulExpandedKeys: [0],
@@ -393,6 +460,61 @@ export default {
     }
   },
   methods: {
+    // 图片放大预览。
+    handlePictureCardPreview(file) {
+      console.log("文件:",file)
+      this.dialogOneImageUrl = file.url;
+      this.dialogOnePicVisible = true;
+    },
+    // 图片删除
+    handleRemove(file, fileList) {
+      console.log("删除图片:",file)
+      const url = file.url
+      const i = this.fileList.findIndex(x => x.url === url)
+      this.fileList.splice(i, 1)
+
+      request({
+        method: 'get',
+        url: '/baseData/material/delPic?fileName='+file.name,
+        headers: {'Content-Type': 'multipart/form-data'}
+      }).then(res => {
+        // 成功
+        this.$message({
+          message: '删除成功!',
+          type: 'success'
+        });
+
+      })
+    },
+
+    // 图片新增
+    uploadRequest(fileobj) {
+
+      let param = new FormData()
+      param.append('files', fileobj.file)
+      console.log("上传的文件对象:",fileobj)
+      request({
+        method: 'post',
+        url: '/baseData/material/uploadPic?id='+this.editForm.id,
+        headers: {'Content-Type': 'multipart/form-data'},
+        data: param
+      }).then(res => {
+        // 成功
+        this.$message({
+          message: '添加成功!',
+          type: 'success'
+        });
+
+        this.$nextTick(() => {
+          request.get('/baseData/material/getPicturesById?id='+this.editForm.id).then(res => {
+            let data = res.data.data;
+            this.fileList.push({name:data[data.length-1],url: sysbaseUrl+"/"+data[data.length-1]})
+          })
+        })
+
+
+      })
+    },
 
     nodeDbClick(event,data){
 
@@ -677,15 +799,48 @@ export default {
     },
     // 编辑页面
     edit(id) {
+      this.fileList = []
       this.addOrUpdate = "update"
       request.get('/baseData/material/queryById?id=' + id).then(res => {
         let result = res.data.data
+
+        // 查看图片
+        request.get('/baseData/material/getPicturesById?id='+id).then(res => {
+          let data = res.data.data;
+          for (let i = 0; i < data.length; i++) {
+            let oneFileName = data[i];
+            this.fileList.push({name:oneFileName,url: sysbaseUrl+"/"+oneFileName})
+          }
+        })
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
         })
+
+      })
+    },
+
+    // 启用物料
+    startBM(id) {
+      request.post('/baseData/material/startBM', id).then(res => {
+        this.$message({
+          message: '启用成功!',
+          type: 'success'
+        });
+        this.getMaterialList()
+
+      })
+    },
+    // 禁用物料
+    stop(id) {
+      request.post('/baseData/material/stop', id).then(res => {
+        this.$message({
+          message: '禁用成功!',
+          type: 'success'
+        });
+        this.getMaterialList()
 
       })
     },

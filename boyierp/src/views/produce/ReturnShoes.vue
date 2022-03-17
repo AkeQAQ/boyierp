@@ -121,6 +121,8 @@
         stripe
         size="mini"
         :cell-style="{padding:'0'}"
+        :summary-method="getSummaries"
+        show-summary
 
         tooltip-effect="dark"
         style="width: 100%;color:black"
@@ -363,6 +365,36 @@ export default {
     }
   },
   methods: {
+    getSummaries(param) {
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0 ) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 6 ) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+
+        }
+
+      });
+
+      return sums;
+    },
     copy(){
       this.editForm.id = ''
       this.copyFlag=true;
