@@ -60,7 +60,11 @@
           </el-form-item>
 
           <el-form-item label="名称" prop="name">
-            <el-input v-model="groupEditForm.name"></el-input>
+
+            <div  :class=" 'el-input'" >
+              <input  class="el-input__inner"  v-model.lazy="groupEditForm.name">
+              </input>
+            </div>
           </el-form-item>
 
           <el-form-item>
@@ -256,11 +260,18 @@
                 </el-form-item>
 
                 <el-form-item label="名称" prop="name">
-                  <el-input v-model="editForm.name"></el-input>
+
+                  <div  :class=" 'el-input '" >
+                    <input  class="el-input__inner"  v-model.lazy="editForm.name">
+                    </input>
+                  </div>
                 </el-form-item>
 
                 <el-form-item label="规格型号" prop="specs">
-                  <el-input v-model="editForm.specs"></el-input>
+                  <div  :class=" 'el-input '" >
+                    <input  class="el-input__inner"  v-model.lazy="editForm.specs">
+                    </input>
+                  </div>
                 </el-form-item>
 
                 <el-form-item label="库存单位" prop="unit">
@@ -336,13 +347,14 @@
                     </div>
                   </el-upload>
 
-                  <el-dialog :visible.sync="dialogOnePicVisible" :append-to-body=true>
+                  <el-dialog :visible.sync="dialogOnePicVisible" :append-to-body=true top="0vh">
                     <img width="100%" :src="dialogOneImageUrl" alt="">
                   </el-dialog>
                 </el-form-item>
 
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
+                  <el-button type="primary" @click="addNew()">新增</el-button>
 
                 </el-form-item>
               </el-form>
@@ -577,6 +589,12 @@ export default {
       return (restaurant) => {
         return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
       };
+    },
+
+    addNew(){
+      this.addOrUpdate='save'
+
+      this.$refs['editForm'].resetFields();
     },
 
     // 物料列表 点击添加按钮

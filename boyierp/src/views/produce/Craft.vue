@@ -298,7 +298,7 @@
               </div>
             </el-upload>
 
-            <el-dialog :visible.sync="dialogOnePicVisible" :append-to-body=true>
+            <el-dialog :visible.sync="dialogOnePicVisible" :append-to-body=true top="0vh">
               <img width="100%" :src="dialogOneImageUrl" alt="">
             </el-dialog>
 
