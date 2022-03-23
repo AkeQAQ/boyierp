@@ -675,7 +675,12 @@
 
           <el-table-column label="单号" align="center" width="120" prop="orderSeq">
             <template slot-scope="scope">
-              <el-input :disabled="editForm.rowList[scope.row.seqNum-1].status === 0" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].orderSeq"/>
+              <el-input
+                  :ref='"input_orderSeq_"+scope.row.seqNum'
+                  @keyup.up.native="orderSeqUp(scope.row.seqNum)"
+                  @keyup.down.native="orderSeqEnter(scope.row.seqNum)"
+                  :disabled="editForm.rowList[scope.row.seqNum-1].status === 0"
+                        size="mini" v-model="editForm.rowList[scope.row.seqNum-1].orderSeq"/>
             </template>
           </el-table-column>
 
@@ -1199,14 +1204,30 @@ export default {
     },
 
     // 数量的上下光标事件
+    orderSeqEnter(seqNum){
+      if(this.$refs['input_orderSeq_'+(seqNum + 1)] != undefined){
+        this.$refs['input_orderSeq_'+(seqNum + 1)].focus()
+
+      }
+    },
+    orderSeqUp(seqNum){
+      if(this.$refs['input_orderSeq_'+(seqNum - 1)] != undefined){
+        this.$refs['input_orderSeq_'+(seqNum - 1)].focus()
+      }
+    },
+
+    // 数量的上下光标事件
     numEnter(seqNum){
       if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
         this.$refs['input_num_'+(seqNum + 1)].focus()
+        this.editForm.rowList[seqNum].num=''
+
       }
     },
     numUp(seqNum){
       if(this.$refs['input_num_'+(seqNum - 1)] != undefined){
         this.$refs['input_num_'+(seqNum - 1)].focus()
+        this.editForm.rowList[seqNum-1-1].num=''
       }
     },
     // 行点击事件
@@ -1287,21 +1308,29 @@ export default {
     },
     // 采购订单详细信息-添加自增长订单号
     handleAddDetailsAutoOrderSeq() {
+      let emptyArr = []; // 存放空内容 的 下标。
+      for (let i = 0; i < this.editForm.rowList.length; i++) {
+        let obj = this.editForm.rowList[i];
+
+        if((obj.orderSeq === undefined || obj.orderSeq === '')){
+          emptyArr.push(i+1);
+          continue;
+        }
+      }
+      // 移除空的数组内容
+      console.log("移除前的内容:",this.editForm.rowList)
+      let newArr = this.getNewArr(this.editForm.rowList,emptyArr);
+      this.editForm.rowList = newArr
+
       if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
         this.$message({
           message: '请录入至少一个单号信息!',
           type: 'error'
         });
       }else{
+
         let last = this.editForm.rowList[this.editForm.rowList.length - 1]
         console.log("自增之前的 orderSeq:",last.orderSeq)
-        if(last.orderSeq===''){
-          this.$message({
-            message: '请录入至少一个单号信息!',
-            type: 'error'
-          });
-          return
-        }
 
         let obj = {};
         obj.materialName = last.materialName;
