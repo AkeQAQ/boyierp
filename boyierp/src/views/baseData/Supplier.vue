@@ -35,6 +35,8 @@
           title="供应商分组信息"
           :visible.sync="groupDialogVisible"
           width="30%"
+          top="0vh"
+
           :before-close="handleClose_group"
           :append-to-body="true"
       >
@@ -246,6 +248,8 @@
                 title="供应商信息"
                 :visible.sync="dialogVisible"
                 width="30%"
+                top="0vh"
+
                 :before-close="handleClose"
                 :append-to-body="true"
             >
