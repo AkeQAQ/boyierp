@@ -235,10 +235,18 @@
               </template>
             </el-button>
 
+            <el-divider direction="vertical"
+                        v-if="hasAuth('produce:productConstituent:del')  && scope.row.status ===0  "></el-divider>
 
-            <el-button type="text" size="small" @click="openCalNum(scope.row.id)"
-                       v-if="hasAuth('produce:productConstituent:list')  && scope.row.status ===0    ">
-              计算用量
+            <el-button style="padding: 0" type="text"
+                       v-if="hasAuth('produce:productConstituent:del') && scope.row.status ===0   ">
+              <template>
+                <el-popconfirm @confirm="addSpecialMaterial(scope.row.id)"
+                               title="确定补充物料组成吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">补充物料组成</el-button>
+                </el-popconfirm>
+              </template>
             </el-button>
 
 
@@ -267,8 +275,9 @@
 
           <el-form-item label="公司货号" prop="productNum" style="margin-bottom: 10px">
             <!-- 公司货号 -->
-            <div  :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <div  :class=" [(this.editForm.status!=1 )? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']" style="margin: 0 0">
               <input  class="el-input__inner" style="width: 200px"
+                      :disabled="editForm.status!=1"
                       v-model.lazy="editForm.productNum">
               </input>
             </div>
@@ -276,8 +285,9 @@
 
           <el-form-item label="品牌" prop="productBrand" style="margin-bottom: 10px">
             <!-- 公司货号 -->
-            <div  :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <div  :class=" [(this.editForm.status!=1 )? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']" style="margin: 0 0">
               <input  class="el-input__inner" style="width: 200px"
+                      :disabled="editForm.status!=1"
                       v-model.lazy="editForm.productBrand">
               </input>
             </div>
@@ -285,8 +295,10 @@
 
           <el-form-item label="颜色" prop="productColor" style="margin-bottom: 10px">
             <!-- 公司货号 -->
-            <div  :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <div  :class=" [(this.editForm.status!=1 )? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']" style="margin: 0 0">
               <input  class="el-input__inner" style="width: 100px"
+                      :disabled="editForm.status!=1"
+
                       v-model.lazy="editForm.productColor">
               </input>
             </div>
@@ -299,7 +311,7 @@
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="save" v-show="hasAuth('produce:productConstituent:save') && this.editForm.status===1" >
+                <el-dropdown-item command="save" v-show="hasAuth('produce:productConstituent:save') && (this.editForm.status===1 || this.specialAddFlag)" >
                   提交单据</el-dropdown-item>
                 <el-dropdown-item command="subReturn" v-show="hasAuth('produce:productConstituent:save') && (this.editForm.status===2 || this.editForm.status===3)">
                   撤销</el-dropdown-item>
@@ -315,7 +327,7 @@
         <el-divider content-position="left">明细信息</el-divider>
 
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails"
-                   v-show="this.editForm.status===1">添加
+                   v-show="this.editForm.status===1 || this.specialAddFlag">添加
         </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
                    v-show="this.editForm.status===1">删除
@@ -340,7 +352,7 @@
                                 style="width: 300px"
                                 popper-class="my-autocomplete"
                                 size="mini" clearable
-                               :disabled="editForm.status!=1"
+                               :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.seqNum > specialAddOldSeq)"
                                class="inline-input"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
@@ -382,7 +394,8 @@
                          @keyup.down.native="numDown(scope.row.seqNum)"
                          @focus="addNext(scope.row.seqNum)"
 
-                         :disabled="editForm.status!=1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].dosage"/>
+                         :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.seqNum > specialAddOldSeq)"
+                         size="mini" v-model="editForm.rowList[scope.row.seqNum-1].dosage"/>
             </template>
           </el-table-column>
 
@@ -400,54 +413,6 @@
         <img width="100%" :src="dialogImageUrl" alt="">
       </el-dialog>
 
-      <el-dialog
-          title="用量计算"
-          :visible.sync="dialogCalNumVisible"
-          fullscreen
-      >
-        <div :class=" 'el-input el-input--small'" style="margin: 0 0">
-          <input   class="el-input__inner" style="width: 200px"  placeholder="请输入计算数目"
-                  v-model.lazy="calTheNum">
-          </input>
-          <el-button  type="button" size="small" @click="calNum(calNumId)"
-          >
-            计算
-          </el-button>
-        </div>
-        <el-divider></el-divider>
-
-        <el-collapse v-model="activeNames" @change="handleChange">
-          <el-collapse-item  style="font-size: 15px" v-for="(theObj,index) in calNumResult" :title="theObj.materialName+':  '+theObj.calNum+'('+theObj.materialUnit+')'" :name="index">
-            <div>
-              <el-table
-                  :data="theObj.suppliers"
-                  style="width: 100%">
-                <el-table-column
-                    prop="supplierName"
-                    label="供应商名称"
-                    width="180">
-                </el-table-column>
-                <el-table-column
-                    prop="price"
-                    label="供应商价格"
-                    width="180">
-                </el-table-column>
-                <el-table-column
-                    prop="startDate"
-                    label="最近价目生效开始日期">
-                </el-table-column>
-                <el-table-column
-                    prop="endDate"
-                    label="最近价目生效结束日期">
-                </el-table-column>
-              </el-table>
-            </div>
-          </el-collapse-item>
-
-        </el-collapse>
-
-
-      </el-dialog>
 
       <!--价目列表 分页组件 -->
       <el-pagination
@@ -479,11 +444,8 @@ export default {
   name: 'ProductConstituent',
   data() {
     return {
-      dialogCalNumVisible:false,
-      calNumId:-1,
-      calTheNum:'',
-      calNumResult:[{materialName:'ces1',calNum:200},{materialName: 'ces2',calNum:1}],
-      activeNames: ['0'],
+      specialAddFlag:false,
+      specialAddOldSeq:99999,
 
       dialogImageUrl :'',
       dialogPicVisible:false,
@@ -548,29 +510,24 @@ export default {
     }
   },
   methods: {
-    // 计算数量
-    calNum(id){
-      if(this.calTheNum ===''){
-        this.$message({
-          message: '请输入计算数量',
-          type: 'error'
-        });
-        return;
-      }
 
-      request.get('/produce/productConstituent/calNumById?id='+id+"&&calNum="+this.calTheNum).then(res => {
+    addSpecialMaterial(id){
 
-        let data = res.data.data;
-        this.calNumResult=data;
+      this.specialAddFlag=true;
+      this.addOrUpdate = "update"
+      request.get('/produce/productConstituent/queryById?id=' + id).then(res => {
+        let result = res.data.data
+
+        this.dialogVisible = true
+        this.specialAddOldSeq=result.rowList.length;
+        console.info("禁用的下标长度:",this.specialAddOldSeq)
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.editForm = result
+        })
 
       })
-    },
-    openCalNum(id){
-      this.calTheNum=''
-      this.calNumResult=[]
-      this.calNumId = id;
-
-      this.dialogCalNumVisible = true;
     },
 
     handlePictureCardPreview(materialId){
@@ -925,7 +882,7 @@ export default {
             return
           }
 
-          request.post('/produce/productConstituent/' + methodName, this.editForm).then(res => {
+          request.post('/produce/productConstituent/' + methodName+"?specialAddFlag="+this.specialAddFlag, this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -936,7 +893,13 @@ export default {
               this.editForm.id = res.data.data;
               this.addOrUpdate = "update"
             }
-            this.editForm.status = 2;
+
+            if(this.specialAddFlag){
+              this.specialAddFlag=false
+              this.dialogVisible=false;
+            }else{
+              this.editForm.status = 2;
+            }
           })
         } else {
           console.log('error submit!!');
@@ -1066,6 +1029,7 @@ export default {
       }
     },
     closeMethod(){
+      this.specialAddFlag=false
       this.$refs['editForm'].resetFields();
       this.handleDeleteAllDetails()
       this.getList()
