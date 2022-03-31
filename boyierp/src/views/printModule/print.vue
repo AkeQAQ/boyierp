@@ -47,7 +47,7 @@
             <td style="text-align: center">{{row.bigUnit}}</td>
             <td style="text-align: center">{{row.price}}</td>
             <td style="text-align: center">{{(row.price * row.num).toFixed(2)}}</td>
-            <td style="text-align: center">{{row.comment}} {{row.comment.length >5 ? row.specs.substring(0,5):row.comment}}</td>
+            <td style="text-align: center"> {{row.comment.length >7 ? row.comment.substring(0,7):row.comment}}</td>
           </tr>
           <!-- 插入空白行 -->
          <template v-if="blankLines===true && tableData.rowList.slice((page-1)*onePageRow,page*onePageRow).length<onePageRow">

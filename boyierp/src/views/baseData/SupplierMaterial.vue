@@ -526,11 +526,9 @@ export default {
     },
 
     searchMmaterialFocus() {
-      console.log("物料搜索框聚焦")
       this.loadMaterialValideAll()
     },
     searchSupplierFocus() {
-      console.log("供应商搜索框聚焦")
       this.loadSupplierValideAll()
     },
     /*computed: {

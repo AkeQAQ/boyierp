@@ -17,6 +17,23 @@
 
         <el-form-item>
 
+          <!-- 列表界面-物料搜索 -->
+          <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
+                           style="width: 200px"
+                           popper-class="my-autocomplete"
+
+                           class="inline-input"
+                           v-model="searchStr"
+                           :fetch-suggestions="querySearch2"
+                           :trigger-on-focus="false"
+                           placeholder="请输入搜索内容"
+                           @select="searchSelect"
+                           @focus="searchMmaterialFocus()"
+                           @keyup.enter.native="search()"
+
+          >
+          </el-autocomplete>
+
           <!-- 公司货号 -->
           <div v-if="selectedName === 'productNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
             <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
@@ -47,7 +64,23 @@
                     :value="item.value"
                 >
                 </el-option>
+
               </el-select>
+              <el-autocomplete size="mini" v-if="item.selectField === 'materialName'" clearable
+                               style="width: 200px"
+                               popper-class="my-autocomplete"
+                               class="inline-input"
+                               v-model="item.searchStr"
+                               :fetch-suggestions="querySearch2"
+                               :trigger-on-focus="false"
+                               @select="searchManySelect($event,index)"
+                               @focus="searchMmaterialFocus()"
+
+                               placeholder="请输入搜索内容"
+
+              >
+              </el-autocomplete>
+
               <!-- 公司货号 -->
               <div v-if="item.selectField==='productNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
                 <input   class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
@@ -126,7 +159,8 @@
           fit
           height="520px"
           :span-method="objectSpanMethod"
-
+          :summary-method="getSummaries"
+          show-summary
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
@@ -289,7 +323,7 @@ export default {
 
       // 多个搜索输入框
       manySearchArr:[{
-        selectField:'productNum',
+        selectField:'materialName',
         searchStr:'',
       }],
 
@@ -301,12 +335,14 @@ export default {
       checkedBox2:[1,0],
 
       // 搜索字段
-      selectedName: 'productNum',// 搜索默认值
+      selectedName: 'materialName',// 搜索默认值
       options: [
+        {value: 'materialName', label: '物料名称'},
+
         {value: 'productNum', label: '公司货号'},
         {value: 'productBrand', label: '品牌'}
       ],
-      select: 'productNum', // 搜索默认值
+      select: 'materialName', // 搜索默认值
       searchStr: '',
       searchStrList: [],
       searchField: '',
@@ -320,10 +356,38 @@ export default {
       spanArr: [],
       pos: '',
 
+      restaurants2: [], //
+
     }
   },
 
   methods: {
+    searchMmaterialFocus(){
+      this.loadMaterialAll()
+    },
+
+    searchSelect(item) {
+      this.searchStr = item.name
+
+    },
+
+    loadMaterialAll() {
+      request.post('/baseData/material/getSearchAllData').then(res => {
+        this.restaurants2 = res.data.data
+      })
+    },
+
+    querySearch2(queryString, cb) {
+      var restaurants = this.restaurants2;
+      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createFilter(queryString) {
+      return (restaurant) => {
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+      };
+    },
 
     /**
      * val 进度条的percentage值（接口的返回值）
@@ -372,6 +436,36 @@ export default {
 
     },
 
+    getSummaries(param) {
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0 ) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 7 || index === 8|| index === 10) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+
+        }
+
+      });
+
+      return sums;
+    },
 
     searchManySelect(item,index) {
       let theObj = this.manySearchArr[index];
@@ -457,6 +551,7 @@ export default {
 
   },
   created() {
+    this.loadMaterialAll();
     this.getList()
 
   }
