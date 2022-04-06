@@ -106,7 +106,7 @@ export default {
   ,
   created() {
     this.getUserInfo()
-    this.timer = setInterval(this.heartSend, 5000);
+    this.timer = setInterval(this.heartSend, 9000);
   }
 }
 Date.prototype.format = function(fmt) {

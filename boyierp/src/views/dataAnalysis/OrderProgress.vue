@@ -220,13 +220,13 @@
         <el-table-column
             prop="calNum"
             label="应报数目"
-            width="100px"
+            width="80px"
             show-overflow-tooltip>
         </el-table-column>
         <el-table-column
             prop="preparedNum"
             label="已报备数目"
-            width="100px"
+            width="90px"
             show-overflow-tooltip>
         </el-table-column>
         <el-table-column
@@ -242,7 +242,7 @@
         <el-table-column
             prop="inNum"
             label="入库数目"
-            width="100px"
+            width="80px"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -251,7 +251,7 @@
             width="100px"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <el-progress :percentage="parseInt(scope.row.inNum * 100 /scope.row.preparedNum)"
+            <el-progress :percentage="isNaN(parseInt(scope.row.inNum * 100 /scope.row.preparedNum))? 0 : parseInt(scope.row.inNum * 100 /scope.row.preparedNum)"
                          ></el-progress>
           </template>
         </el-table-column>
@@ -265,7 +265,7 @@
 
         <el-table-column
             prop="status"
-            width="100px"
+            width="90px"
             label="订单状态">
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.status === 0" type="success">已审核</el-tag>
@@ -281,8 +281,9 @@
             width="90px"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.prepared === 1" type="warning">备料未完成</el-tag>
-            <el-tag size="small" v-else-if="scope.row.prepared===0" type="success">备料完成</el-tag>
+            <el-tag size="small" v-if="scope.row.prepared === 2" type="warning">备料确认</el-tag>
+            <el-tag size="small" v-else="scope.row.prepared === 1" type="info">备料未确认</el-tag>
+            <el-tag size="small" v-else-if="scope.row.prepared===0" type="success">备料已报(完成)</el-tag>
           </template>
 
         </el-table-column>
@@ -331,8 +332,8 @@ export default {
       statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
       checkedBox:[1,2,3,0],
 
-      status2Arr : [{'name':'备料未完成','val':1},{'name':'备料完成','val':0}],
-      checkedBox2:[1,0],
+      status2Arr : [{'name':'备料已确认','val':2},{'name':'备料未确认','val':1},{'name':'备料完成(已报)','val':0}],
+      checkedBox2:[2,1,0],
 
       // 搜索字段
       selectedName: 'materialName',// 搜索默认值
@@ -401,7 +402,7 @@ export default {
      */
     progressFormat(val) {
       return () => {
-        return val + '%'
+        return val+ '%'
       }
     },
 
@@ -426,6 +427,38 @@ export default {
     },
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
       if (columnIndex === 0) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+       if (columnIndex === 1) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      if (columnIndex === 2) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      if (columnIndex === 3) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      if (columnIndex === 4) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {

@@ -143,6 +143,14 @@
           </el-popconfirm>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('order:productOrder:list')">
+          <el-popconfirm @confirm="prepareBatch()" title="确定批量备料吗？">
+            <el-button size="mini" icon="el-icon-shopping-cart-full" :disabled="this.multipleSelection.length === 0 " type="warning"
+                       slot="reference">批量备料
+            </el-button>
+          </el-popconfirm>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -180,7 +188,7 @@
         <el-table-column
             label="客户货号"
             prop="customerNum"
-            width="210px"
+            width="100px"
             show-overflow-tooltip
         >
         </el-table-column>
@@ -250,8 +258,9 @@
             width="130px"
             show-overflow-tooltip>
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.prepared === 1" type="warning">备料未完成</el-tag>
-            <el-tag size="small" v-else-if="scope.row.prepared===0" type="success">备料完成</el-tag>
+            <el-tag size="small" v-if="scope.row.prepared === 2" type="warning">备料确认</el-tag>
+            <el-tag size="small" v-else-if="scope.row.prepared === 1" type="info">备料未确认</el-tag>
+            <el-tag size="small" v-else-if="scope.row.prepared===0" type="success">备料已报(完成)</el-tag>
           </template>
 
         </el-table-column>
@@ -315,19 +324,47 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('order:productOrder:prepare')  && scope.row.status ===0  "></el-divider>
+                        v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   && scope.row.status ===0   "></el-divider>
 
             <el-button style="padding: 0" type="text" size="small"
-                       v-if="hasAuth('order:productOrder:prepare') && scope.row.status ===0   " @click="prepare(scope.row)">
+                       v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   && scope.row.status ===0   " @click="prepare(scope.row)">
 
-              备料
+              查看备料
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('order:productOrder:prepare')  && scope.row.status ===0  "></el-divider>
+                        v-if="hasAuth('order:productOrder:prepare')  && scope.row.status ===0  && scope.row.prepared ===1"></el-divider>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:prepare') && scope.row.status ===0   ">
+                       v-if="hasAuth('order:productOrder:prepare') && scope.row.status ===0 && scope.row.prepared ===1   ">
+              <template>
+                <el-popconfirm @confirm="prepareSure(scope.row.id)"
+                               title="确定确认吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">备料确认</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-divider direction="vertical"
+                        v-if="hasAuth('order:productOrder:prepare')  && scope.row.status ===0  && scope.row.prepared ===2"></el-divider>
+
+            <el-button style="padding: 0" type="text"
+                       v-if="hasAuth('order:productOrder:prepare') && scope.row.status ===0 && scope.row.prepared ===2   ">
+              <template>
+                <el-popconfirm @confirm="prepareNotSure(scope.row.id)"
+                               title="确定取消确认吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">取消确认</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-divider direction="vertical"
+                        v-if="hasAuth('order:productOrder:prepareDone')  && scope.row.status ===0 && scope.row.prepared ===2  "></el-divider>
+
+            <el-button style="padding: 0" type="text"
+                       v-if="hasAuth('order:productOrder:prepareDone') && scope.row.status === 0 && scope.row.prepared ===2  ">
               <template>
                 <el-popconfirm @confirm="prepareSuccess(scope.row.id)"
                                title="确定备料完成吗？"
@@ -338,10 +375,10 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('order:productOrder:prepare')  && scope.row.status ===0  "></el-divider>
+                        v-if="hasAuth('order:productOrder:prepareDone')  && scope.row.status ===0 && scope.row.prepared ===0  "></el-divider>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:prepare') && scope.row.status ===0   ">
+                       v-if="hasAuth('order:productOrder:prepareDone') && scope.row.status ===0 && scope.row.prepared ===0  ">
               <template>
                 <el-popconfirm @confirm="prepareNotSuccess(scope.row.id)"
                                title="确定解除备料完成吗？"
@@ -541,7 +578,7 @@
       >
         <el-descriptions class="margin-top" style="margin-top: 0px"  :column="3"  border>
           <template slot="extra">
-            <el-button type="primary" v-show="theCurrentOrderMsg.prepared===1" size="small" @click="submitPrepare">提交备料</el-button>
+            <el-button type="primary" v-show="theCurrentOrderMsg.prepared===1 && hasAuth('order:productOrder:prepare')  " size="small" @click="submitPrepare">提交备料</el-button>
           </template>
           <el-descriptions-item>
             <template slot="label">
@@ -640,7 +677,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="已备料数量" align="center" width="120" prop="preparedNum">
+          <el-table-column label="已报备料数量" align="center" width="120" prop="preparedNum">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true"  v-model="prepareList[scope.row.seqNum-1].preparedNum"/>
             </template>
@@ -648,7 +685,9 @@
 
           <el-table-column label="新增备料数量" align="center" width="120" prop="addNum">
             <template slot-scope="scope">
-              <el-input size="mini"   v-model="prepareList[scope.row.seqNum-1].addNum"/>
+              <el-input size="mini"
+                        oninput="value=value.replace(/[^0-9.-]/g,'')"
+                        v-model="prepareList[scope.row.seqNum-1].addNum"/>
             </template>
           </el-table-column>
 
@@ -664,6 +703,100 @@
             </template>
           </el-table-column>
 
+
+        </el-table>
+
+      </el-dialog>
+
+      <el-dialog
+          :visible.sync="dialogPrepareBatchVisible"
+          fullscreen
+          title="批量备料"
+          :before-close="handleCloseBatchPrepare"
+      >
+        <el-button type="primary" v-show="canPrepareBatchFlag===true" size="small" @click="submitPrepareBatch">提交批量备料</el-button>
+
+        <el-divider content-position="left">明细信息</el-divider>
+
+
+        <el-table
+            :data="prepareBatchList"
+            :row-class-name="rowClassName"
+            ref="tb"
+            height="500"
+            size="mini"
+            :cell-style="cellStyle"
+            fit
+        >
+
+          <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
+
+          <el-table-column label="物料编码" align="center" prop="materialId" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" @click="">{{prepareBatchList[scope.row.seqNum-1].materialId}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="物料名称" align="center" prop="materialName" width="300px">
+            <template slot-scope="scope">
+              <span style="text-align: left" @click="">{{prepareBatchList[scope.row.seqNum-1].materialName}}</span>
+            </template>
+          </el-table-column>
+
+
+          <el-table-column label="库存单位" align="center" prop="materialUnit" width="80">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].materialUnit}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="应报备料数目(合计)" align="center" width="130" prop="calNums">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].calNums}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="已报备料数量(合计)" align="center" width="140" prop="preparedNums">
+            <template slot-scope="scope">
+              <el-input size="mini" :disabled="true"  v-model="prepareBatchList[scope.row.seqNum-1].preparedNums"/>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="新增备料数量" align="center" width="120" prop="addNums">
+            <template slot-scope="scope">
+              <el-input size="mini"   v-model="prepareBatchList[scope.row.seqNum-1].addNums"/>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="进度" align="center" width="120" prop="progressPercent">
+            <template slot-scope="scope">
+              <el-progress :percentage="isNaN(parseInt(scope.row.preparedNums * 100 /scope.row.calNums))? 0 : parseInt(scope.row.preparedNums * 100 /scope.row.calNums)"
+              ></el-progress>
+            </template>
+          </el-table-column>
+          <el-table-column label="明细" align="center" width="140" >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="900"
+                  trigger="click">
+                <el-table :data="prepareBatchList[scope.row.seqNum-1].details"
+                          :summary-method="getSummaries"
+                          show-summary>
+                  <el-table-column width="80" property="orderId" label="订单ID"></el-table-column>
+                  <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                  <el-table-column width="100" property="productNum" label="公司货号"></el-table-column>
+                  <el-table-column width="100" property="productBrand" label="品牌"></el-table-column>
+                  <el-table-column width="100" property="productColor" label="颜色"></el-table-column>
+                  <el-table-column width="100" property="orderNumber" label="订单数量"></el-table-column>
+                  <el-table-column width="100" property="dosage" label="用料"></el-table-column>
+                  <el-table-column width="100" property="calNum" label="应报备用量"></el-table-column>
+                  <el-table-column width="100" property="preparedNum" label="已报备用量"></el-table-column>
+                </el-table>
+                <el-button slot="reference">查看明细</el-button>
+              </el-popover>
+            </template>
+
+          </el-table-column>
 
         </el-table>
 
@@ -702,6 +835,8 @@ export default {
     return {
       prepareCheckVal:[],
 
+      dialogPrepareBatchVisible:false,
+
 
       dialogCalNumVisible:false,
       calNumResult:[],
@@ -723,8 +858,8 @@ export default {
       statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
       checkedBox:[1,2,3,0],
 
-      status2Arr : [{'name':'备料未完成','val':1},{'name':'备料完成','val':0}],
-      checkedBox2:[1,0],
+      status2Arr : [{'name':'备料已确认','val':2},{'name':'备料未确认','val':1},{'name':'备料完成(已报)','val':0}],
+      checkedBox2:[2,1,0],
 
       // 搜索字段
       selectedName: 'productNum',// 搜索默认值
@@ -760,6 +895,17 @@ export default {
       theCurrentPrepareOrderId:'',
       theCurrentOrderMsg:{id:'',orderNum:'',customerNum:'',productNum:'',productBrand:'',productColor:'',productRegion:''},
       prepareList:[{preparedNum:'',addNum:''}],
+      prepareBatchList:
+      [
+          {'materialName':'物料','materialUnit':'单位1','calNums':'10','preparedNums':'1'
+        ,'details':
+            [
+                {'orderId':1,'orderNum':1,'productNum':'10S57202','productBrand':'蔻度','productColor':'黄橙','orderNumber':10,'dosage':0.1,'calNum':1,'preparedNum':0},
+                {'orderId':1,'orderNum':2,'productNum':'10S57202','productBrand':'蔻度','productColor':'黄橙','orderNumber':7,'dosage':0.2,'calNum':1.4,'preparedNum':0}
+
+            ]}
+      ],
+      canPrepareBatchFlag:false,
       dialogVisible: false,
       tableData: [],
       spanArr: [],
@@ -769,6 +915,36 @@ export default {
   },
 
   methods: {
+    getSummaries(param) {
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 8 || index === 7) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+        }
+
+      });
+
+      return sums;
+    },
+
     prepareNotSuccess(id){
       request.post('/order/productOrder/preparedNotSuccess?id='+id)
           .then(res => {
@@ -784,7 +960,27 @@ export default {
       request.post('/order/productOrder/preparedSuccess?id='+id)
           .then(res => {
             this.$message({
-              message: "备料成功",
+              message: "备料完成！",
+              type: 'success'
+            });
+            this.getList()
+          })
+    },
+    prepareSure(id){
+      request.post('/order/productOrder/prepareSure?id='+id)
+          .then(res => {
+            this.$message({
+              message: "备料确认成功",
+              type: 'success'
+            });
+            this.getList()
+          })
+    },
+    prepareNotSure(id){
+      request.post('/order/productOrder/prepareNotSure?id='+id)
+          .then(res => {
+            this.$message({
+              message: "备料取消确认成功",
               type: 'success'
             });
             this.getList()
@@ -794,6 +990,12 @@ export default {
     //进度条方法
     format(percentage) {
       return percentage === 100 ? '满' : `${percentage}%`;
+    },
+    submitPrepareBatch(){
+      let ids = this.multipleSelection;
+      request.post('/produce/orderMaterialProgress/saveBatch?orderIds='+ids,this.prepareBatchList).then(res => {
+        this.prepareBatch()
+      })
     },
     submitPrepare(){
       for (let i = 0; i < this.prepareList.length; i++) {
@@ -820,7 +1022,15 @@ export default {
     handleChange(value, direction, movedKeys) {
       console.log(value, direction, movedKeys);
     },
+    prepareBatch(){
 
+      let ids = this.multipleSelection;
+      request.post('/order/productOrder/listBatchOrderConstituentProgress',ids).then(res => {
+        this.canPrepareBatchFlag = res.data.data.canBatchPrepareFlag;
+        this.prepareBatchList = res.data.data.datas;
+        this.dialogPrepareBatchVisible = true;
+      })
+    },
     prepare(scopeRow){
       console.info("prepare row:",scopeRow)
       this.theCurrentOrderMsg=scopeRow
@@ -970,6 +1180,7 @@ export default {
         this.getList()
       })
     },
+
     searchManySelect(item,index) {
       let theObj = this.manySearchArr[index];
       theObj.searchStr = item.name;
@@ -1198,7 +1409,12 @@ export default {
       })
     },
     handleClosePrepare(done) {
+      this.prepareList = []
       this.dialogCalNumVisible=false;
+      this.getList()
+    },
+    handleCloseBatchPrepare(done) {
+      this.dialogPrepareBatchVisible=false;
       this.getList()
     },
     // 关闭弹窗处理动作

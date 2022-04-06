@@ -44,7 +44,7 @@
         <el-form-item>
           <!-- 列表界面-供应商搜索 -->
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'"
-                           style="width: 200px"
+                           style="width: 180px"
                            popper-class="my-autocomplete"
 
                            clearable
@@ -62,7 +62,7 @@
 
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
-                           style="width: 200px"
+                           style="width: 180px"
 
                            popper-class="my-autocomplete"
                            class="inline-input"
@@ -80,13 +80,13 @@
           <!-- 列表界面-单据编号搜索 -->
 
           <div v-if="selectedName === 'id'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
-            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 180px"  placeholder="请输入搜索内容"
                     v-model.lazy="searchStr">
             </input>
           </div>
 
           <div v-if="selectedName === 'price'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
-            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 180px"  placeholder="请输入搜索内容"
                     v-model.lazy="searchStr">
             </input>
           </div>
@@ -164,10 +164,8 @@
 
         <el-form-item>
 
-
-
           <div :class="'el-input el-input--mini'">
-            <input  class="el-input__inner" style="width: 200px"  @keyup.enter.native="search()" placeholder="请输入搜索单号(,分割)"
+            <input  class="el-input__inner" style="width: 150px"  @keyup.enter.native="search()" placeholder="请输入搜索单号(,分割)"
                     v-model.lazy="searchDocNum">
             </input>
           </div>
@@ -197,6 +195,23 @@
                           placeholder="结束日期">
           </el-date-picker>
 
+        </el-form-item>
+
+        <el-form-item >
+          <el-select
+              size ="mini"
+              v-model="checkedBox"
+              multiple
+              collapse-tags
+              style="margin-left: 0;width: 140px"
+              placeholder="请选择状态">
+            <el-option
+                v-for="item in statusArr"
+                :key="item.val"
+                :label="item.name"
+                :value="item.val">
+            </el-option>
+          </el-select>
         </el-form-item>
 
 
@@ -829,6 +844,9 @@ export default {
   },
   data() {
     return {
+      statusArr : [{'name':'未下推','val':1},{'name':'已下推','val':0}],
+      checkedBox:[1,0],
+
       materialNameFilterSet:new Set(),
       materialNameFileterArr:[],
       materialNameFileterArrReset:[],
@@ -1087,8 +1105,9 @@ export default {
       }
     },
     exportAll() {
-
+      let checkStr = this.checkedBox.join(",");
       request2.post('/order/buyOrder/export?'+
+          "&&searchStatus="+checkStr+
           "&&searchDocNum="+this.searchDocNum+
           "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
@@ -1102,10 +1121,12 @@ export default {
       }).catch()
     },
     exportCurrent() {
-
+      let checkStr = this.checkedBox.join(",");
       request2.post('/order/buyOrder/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
+          "&&searchStatus="+checkStr+
+          "&&searchDocNum="+this.searchDocNum+
           "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select
@@ -1713,11 +1734,12 @@ export default {
     // 查询价目表单列表数据
     getBuyOrderDocumentList() {
       this.tableLoad = true;
-
+      let checkStr = this.checkedBox.join(",");
       console.log("搜索字段:", this.select)
        request.post('/order/buyOrder/list?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
+           "&&searchStatus="+checkStr+
            "&&searchDocNum="+this.searchDocNum+
            "&&searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate+
