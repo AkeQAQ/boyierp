@@ -151,6 +151,14 @@
         </el-table-column>
 
         <el-table-column
+            prop="created"
+            label="备料日期"
+            width="90px"
+            :formatter="gridDateFormatter"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
             prop="comment"
               label="备注"
             width="200px"
@@ -164,9 +172,52 @@
             fixed="right"
         >
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('order:complementPrepare:save')   ">编辑
+            <el-button type="text" size="small" @click="edit(scope.row.id) "
+                       v-if="hasAuth('order:complementPrepare:save') && scope.row.complementStatus ===1   ">编辑
             </el-button>
+
+            <el-divider direction="vertical"
+                        v-if="hasAuth('order:complementPrepare:del')  && scope.row.complementStatus ===1  "></el-divider>
+
+            <el-button style="padding: 0" type="text"
+                       v-if="hasAuth('order:complementPrepare:del') && scope.row.complementStatus ===1   ">
+              <template>
+                <el-popconfirm @confirm="del(scope.row.id)"
+                               title="确定删除吗？"
+                >
+                  <el-button type="text" size="small" slot="reference" @click.stop="">删除</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-divider direction="vertical"
+                        v-if="hasAuth('order:complementPrepare:valid')  && scope.row.complementStatus ===1  "></el-divider>
+
+            <el-button style="padding: 0" type="text"
+                       v-if="hasAuth('order:complementPrepare:valid')  && scope.row.complementStatus === 1  ">
+
+              <template>
+                <el-popconfirm @confirm="statusPass(scope.row.id)"
+                               title="确定设置审核通过吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">审核通过</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+
+            <el-button style="padding: 0" type="text"
+                       v-if="hasAuth('order:complementPrepare:valid')  && scope.row.complementStatus === 0  ">
+
+              <template>
+                <el-popconfirm @confirm="statusReturn(scope.row.id)"
+                               title="确定设置反审核吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">反审核通过</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
           </template>
         </el-table-column>
 
@@ -342,7 +393,16 @@ export default {
   },
 
   methods: {
-
+    gridDateFormatter(row, column, cellValue, index) {
+      const daterc = row[column.property];
+      if (daterc) {
+        const dateMat = new Date(daterc);
+        const Y = dateMat.getFullYear() + "-";
+        const M = (dateMat.getMonth() + 1) < 10 ? '0' + (dateMat.getMonth() + 1) + "-" : (dateMat.getMonth() + 1) + "-";
+        const D = dateMat.getDate() < 10 ? '0' + dateMat.getDate() + " " : dateMat.getDate() + " ";
+        return Y + M + D;
+      }
+    },
     getSummaries(param) {
       const {columns, data} = param;
       const sums = [];
@@ -662,7 +722,7 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
-      request.post('/order/productOrder/del', ids).then(res => {
+      request.post('/produce/orderMaterialProgress/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -696,7 +756,7 @@ export default {
     },
     // 状态待审核
     statusPass(id) {
-      request.get('/order/productOrder/statusPass?id=' + id).then(res => {
+      request.post('/produce/orderMaterialProgress/complementValid?id=' + id).then(res => {
         this.$message({
           message: '审核通过!',
           type: 'success'
@@ -706,7 +766,7 @@ export default {
     },
     // 状态反审核
     statusReturn(id) {
-      request.get('/order/productOrder/statusReturn?id=' + id).then(res => {
+      request.post('/produce/orderMaterialProgress/complementReValid?id=' + id).then(res => {
         this.$message({
           message: '反审核完成!',
           type: 'success'

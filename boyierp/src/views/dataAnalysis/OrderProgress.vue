@@ -172,7 +172,7 @@
         <el-table-column
             label="订单号"
             prop="orderNum"
-            width="80px"
+            width="70px"
             show-overflow-tooltip
         >
         </el-table-column>
@@ -181,7 +181,7 @@
         <el-table-column
             label="公司货号"
             prop="productNum"
-            width="100"
+            width="80"
             show-overflow-tooltip
         >
         </el-table-column>
@@ -240,6 +240,14 @@
         </el-table-column>
 
         <el-table-column
+            prop="created"
+            label="备料日期"
+            width="90px"
+            :formatter="gridDateFormatter"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
             prop="inNum"
             label="入库数目"
             width="80px"
@@ -282,7 +290,7 @@
             show-overflow-tooltip>
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.prepared === 2" type="warning">备料确认</el-tag>
-            <el-tag size="small" v-else="scope.row.prepared === 1" type="info">备料未确认</el-tag>
+            <el-tag size="small" v-else-if="scope.row.prepared === 1" type="info">备料未确认</el-tag>
             <el-tag size="small" v-else-if="scope.row.prepared===0" type="success">备料已报(完成)</el-tag>
           </template>
 
@@ -363,6 +371,18 @@ export default {
   },
 
   methods: {
+
+    //表格时间格式化的方法（格式化格式为：yyyy-MM-dd，其他格式类似）
+    gridDateFormatter(row, column, cellValue, index) {
+      const daterc = row[column.property];
+      if (daterc) {
+        const dateMat = new Date(daterc);
+        const Y = dateMat.getFullYear() + "-";
+        const M = (dateMat.getMonth() + 1) < 10 ? '0' + (dateMat.getMonth() + 1) + "-" : (dateMat.getMonth() + 1) + "-";
+        const D = dateMat.getDate() < 10 ? '0' + dateMat.getDate() + " " : dateMat.getDate() + " ";
+        return Y + M + D;
+      }
+    },
     searchMmaterialFocus(){
       this.loadMaterialAll()
     },
@@ -477,7 +497,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 7 || index === 8|| index === 10) {
+        if (index === 7 || index === 8|| index === 11) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
