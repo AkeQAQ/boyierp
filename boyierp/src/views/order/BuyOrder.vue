@@ -23,8 +23,6 @@
       </el-input>
       <el-button v-else class="button-new-tag" size="small" @click="showInput"> + 方案</el-button>
 
-
-
     </el-header>
     <el-main class="elMain_my" style="padding-top: 0;padding-right: 0px">
       <!-- 入库单列表 -->
@@ -78,7 +76,6 @@
           </el-autocomplete>
 
           <!-- 列表界面-单据编号搜索 -->
-
           <div v-if="selectedName === 'id'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
             <input  @keyup.enter="search()" class="el-input__inner" style="width: 180px"  placeholder="请输入搜索内容"
                     v-model.lazy="searchStr">

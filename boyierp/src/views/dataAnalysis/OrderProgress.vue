@@ -107,7 +107,6 @@
 
         </el-popover>
 
-
         <el-form-item >
           <el-select
               size ="mini"
@@ -144,6 +143,10 @@
 
         <el-form-item>
           <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
+        </el-form-item>
+
+        <el-form-item>
+          <el-button size="mini" icon="el-icon-data-analysis"  v-if="hasAuth('order:productOrder:import')" @click="calOrderNeedMaterials()" type="primary">产品订单导入计算物料</el-button>
         </el-form-item>
 
 
@@ -298,6 +301,130 @@
 
       </el-table>
 
+      <el-dialog
+          title="导入订单计算"
+          :visible.sync="dialogCalMaterials"
+          :before-close="handleImportClose"
+          fullscreen
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 :inline="true"
+                 size="mini"
+                 label-width="100px"
+                 ref="editImportForm"
+                 class="demo-editForm myFormClass">
+
+          <el-form-item label="上传文件:">
+            <el-upload
+                class="upload-demo"
+                ref="upload"
+                :file-list="fileList"
+                :http-request="uploadRequest"
+                action=""
+                :on-change="addFile"
+                :on-remove="removeFile"
+                :auto-upload="false"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div class="el-upload__tip" slot="tip">只能上传一个，且不超过5M</div>
+            </el-upload>
+          </el-form-item>
+
+
+          <el-form-item style="margin-left: 100px">
+            <el-button type="primary"  @click="importExcel('editImportForm')">
+              确认计算
+            </el-button>
+          </el-form-item>
+
+        </el-form>
+
+
+        <el-table
+            ref="multipleTable2"
+            :data="tableData2"
+            v-if="tableData2.length>0"
+            border
+            stripe
+            size="mini"
+            :cell-style="{padding:'0'}"
+            height="500px"
+            tooltip-effect="dark"
+            style="width: 100%;color:black;font-size: 20px">
+          <el-table-column
+              label="提示信息"
+              prop="content"
+          >
+          </el-table-column>
+
+        </el-table>
+
+        <el-table
+            :data="prepareBatchList"
+            :row-class-name="rowClassName"
+            ref="tb"
+            height="580"
+            size="mini"
+            :cell-style="cellStyle"
+            fit
+        >
+
+          <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
+
+          <el-table-column label="物料编码" align="center" prop="materialId" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" @click="">{{prepareBatchList[scope.row.seqNum-1].materialId}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="物料名称" align="center" prop="materialName" width="300px">
+            <template slot-scope="scope">
+              <span style="text-align: left" @click="">{{prepareBatchList[scope.row.seqNum-1].materialName}}</span>
+            </template>
+          </el-table-column>
+
+
+          <el-table-column label="库存单位" align="center" prop="materialUnit" width="80">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].materialUnit}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="应报备料数目(合计)" align="center" width="130" prop="calNums">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].calNums}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="明细" align="center" width="140" >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="900"
+                  trigger="click">
+                <el-table :data="prepareBatchList[scope.row.seqNum-1].details"
+                          :summary-method="getDetailSummaries"
+                          show-summary
+                          max-height="350"
+                >
+                  <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                  <el-table-column width="100" property="productNum" label="公司货号"></el-table-column>
+                  <el-table-column width="100" property="productBrand" label="品牌"></el-table-column>
+                  <el-table-column width="100" property="productColor" label="颜色"></el-table-column>
+                  <el-table-column width="100" property="orderNumber" label="订单数量"></el-table-column>
+                  <el-table-column width="100" property="dosage" label="用料"></el-table-column>
+                  <el-table-column width="100" property="calNum" label="应报备用量"></el-table-column>
+                </el-table>
+                <el-button slot="reference">查看明细</el-button>
+              </el-popover>
+            </template>
+
+          </el-table-column>
+
+        </el-table>
+
+
+      </el-dialog>
+
 
       <!--价目列表 分页组件 -->
       <el-pagination
@@ -367,10 +494,117 @@ export default {
 
       restaurants2: [], //
 
+      dialogCalMaterials:false,
+      fileList: [],
+      fileSizeIsSatisfy: false,
+      tableData2: [],
+      prepareBatchList:
+          [
+
+          ],
+
     }
+
   },
 
   methods: {
+    rowClassName({row, rowIndex}) {
+      row.seqNum = rowIndex + 1;
+    },
+
+    importExcel() {
+      console.log("this.fileList",this.fileList)
+      console.log("this.fileSizeIsSatisfy",this.fileSizeIsSatisfy)
+
+      if(this.fileList.length <= 0 || this.fileList.length > 1){
+        this.$message.error("请上传一个文件！");
+        return;
+      }
+      if (!this.fileSizeIsSatisfy) {
+        this.$message.error("上传失败！存在文件大小超过5M！");
+        return;
+      }
+      this.$refs.upload.submit();
+    },
+    // 文件导入--------------------
+    uploadRequest(fileobj) {
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      let param = new FormData()
+      param.append('files', fileobj.file)
+
+      request({
+        method: 'post',
+        url: '/produce/orderMaterialProgress/upload',
+        headers: {'Content-Type': 'multipart/form-data'},
+        data: param
+      }).then(res => {
+        let theData = res.data.data;
+        console.log("返回的内容:",theData)
+        load.close()
+
+        if(theData instanceof Array && theData.length > 0){
+          this.tableData2 = theData
+        }else {
+          // 成功
+          this.$message({
+            message: '计算成功!',
+            type: 'success'
+          });
+          // 关闭弹窗并且重置内容
+          this.$refs['editImportForm'].resetFields();
+          this.tableData2 = []
+          this.fileList=[]
+          this.fileSizeIsSatisfy=false;
+          this.$refs.upload.clearFiles();
+
+          this.prepareBatchList = res.data.data.datas;
+        }
+
+      }).catch(()=>{
+        load.close()
+      })
+    },
+
+    // 文件上传功能
+    uploadUrl: function () {
+      return "#";
+    }
+    ,
+    // 判断文件大小
+    addFile(file, fileList) {
+      console.log("addFile")
+      this.fileList = fileList;
+      //限制上传文件为5M
+      console.log("文件大小", file.size)
+      this.fileSizeIsSatisfy = file.size < 5 * 1024 * 1024 ? true : false;
+      return this.fileSizeIsSatisfy
+    },
+    // 判断文件大小
+    removeFile(file, fileList) {
+      console.log("removeFile")
+      this.fileList = fileList;
+    },
+
+    // 关闭弹窗处理动作
+    handleImportClose(done) {
+      this.$refs['editImportForm'].resetFields();
+      this.tableData2 = []
+      this.prepareBatchList=[]
+      this.fileList=[]
+      this.fileSizeIsSatisfy=false;
+      this.$refs.upload.clearFiles();
+      console.log("关闭窗口")
+      done();
+    },
+    calOrderNeedMaterials(){
+      this.dialogCalMaterials = true;
+
+    },
 
     //表格时间格式化的方法（格式化格式为：yyyy-MM-dd，其他格式类似）
     gridDateFormatter(row, column, cellValue, index) {
@@ -488,7 +722,35 @@ export default {
       }
 
     },
+    getDetailSummaries(param) {
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 6 ) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+        }
 
+      });
+
+      return sums;
+    },
     getSummaries(param) {
       const {columns, data} = param;
       const sums = [];
