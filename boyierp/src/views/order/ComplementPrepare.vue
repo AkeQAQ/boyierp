@@ -497,14 +497,23 @@ export default {
           throw new Error();
         }
       }
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
       request.post('/produce/orderMaterialProgress/save?orderId='+this.theCurrentOrderMsg.id, this.prepareList,null)
           .then(res => {
+            load.close()
         this.$message({
           message: "备料成功",
           type: 'success'
         });
         this.prepare(this.theCurrentOrderMsg)
 
+      }).catch(()=>{
+        load.close()
       })
     },
 
@@ -647,8 +656,14 @@ export default {
       this.$refs[formName].validate((valid) => {
 
         if (valid) {
-
+          const load = this.$loading({
+            lock: true,
+            text: '处理中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
           request.post('/produce/orderMaterialProgress/complementSave', this.editForm).then(res => {
+            load.close()
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -661,6 +676,8 @@ export default {
             }
             this.getList()
             this.dialogCalNumVisible=false;
+          }).catch(()=>{
+            load.close()
           })
         } else {
           console.log('error submit!!');

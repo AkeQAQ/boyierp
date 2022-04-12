@@ -1151,10 +1151,17 @@ export default {
   },
   methods: {
     batchPickDone(){
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
        request.get('/repository/buyIn/batchPick?startDateStr='+this.editBatchPickForm.startDate
            +'&&endDateStr='+this.editBatchPickForm.endDate
            +'&&pickDateStr='+this.editBatchPickForm.pickDate
        ).then(res => {
+         load.close()
          let theData = res.data.data;
          console.log("theRes data:",theData)
          if(theData instanceof Array && theData.length > 0){
@@ -1164,7 +1171,9 @@ export default {
            this.tableData2 = []
            this.getBuyInDocumentList();
          }
-      })
+      }).catch(()=>{
+         load.close()
+       })
     },
     orderBatchPick(){
       this.dialogPickVisible = true;
@@ -1622,6 +1631,7 @@ export default {
     },
     // 表单提交
      submitForm(formName, methodName) {
+
       this.$refs[formName].validate((valid) => {
 
         console.log("当前供应商id:", this.editForm.supplierId)
@@ -1682,8 +1692,15 @@ export default {
             });
             return
           }
+          const load = this.$loading({
+            lock: true,
+            text: '处理中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
 
            request.post('/repository/buyIn/' + methodName, this.editForm).then(res => {
+             load.close()
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -1696,7 +1713,10 @@ export default {
             }
              this.editForm.status = 2;
 
-          })
+          }).catch(()=>{
+             load.close()
+           })
+
         } else {
           console.log('error submit!!');
           return false;
@@ -1792,7 +1812,14 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
       request.post('/repository/buyIn/del', ids).then(res => {
+        load.close()
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -1800,6 +1827,8 @@ export default {
         this.getBuyInDocumentList()
         console.log("删除后重新加载页面")
 
+      }).catch(()=>{
+        load.close()
       })
     },
     // 撤销

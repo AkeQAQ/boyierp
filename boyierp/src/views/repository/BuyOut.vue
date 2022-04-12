@@ -1270,7 +1270,14 @@ export default {
             return
           }
 
+          const load = this.$loading({
+            lock: true,
+            text: '处理中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
           request.post('/repository/buyOut/' + methodName, this.editForm).then(res => {
+            load.close()
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -1289,6 +1296,8 @@ export default {
             // this.handleDeleteAllDetails()
             // this.getBuyOutDocumentList()
 
+          }).catch(()=>{
+            load.close()
           })
         } else {
           console.log('error submit!!');
@@ -1378,7 +1387,14 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id", ids)
       }
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
       request.post('/repository/buyOut/del', ids).then(res => {
+        load.close()
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -1386,7 +1402,10 @@ export default {
         this.getBuyOutDocumentList()
         console.log("删除后重新加载页面")
 
+      }).catch(()=>{
+        load.close()
       })
+
     },
     // 撤销提交
     statusSubReturn(id) {

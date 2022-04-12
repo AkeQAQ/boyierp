@@ -143,13 +143,22 @@ export default {
       this.$refs[formName].validate((valid) => {
 
         if (valid) {
+          const load = this.$loading({
+            lock: true,
+            text: '处理中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
           request.post('/produce/craft/' + methodName, this.editForm2).then(res => {
+            load.close()
             this.$message({
               message: (methodName === 'update' ? '编辑' : '新增') + '成功!',
               type: 'success'
             });
 
             this.returnPage()
+          }).catch(()=>{
+            load.close()
           })
         }
       })

@@ -881,8 +881,15 @@ export default {
             });
             return
           }
+          const load = this.$loading({
+            lock: true,
+            text: '处理中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
 
           request.post('/produce/productConstituent/' + methodName+"?specialAddFlag="+this.specialAddFlag, this.editForm).then(res => {
+            load.close()
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -900,6 +907,8 @@ export default {
             }else{
               this.editForm.status = 2;
             }
+          }).catch(()=>{
+            load.close()
           })
         } else {
           console.log('error submit!!');

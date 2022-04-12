@@ -161,7 +161,9 @@ export default {
         load.close()
         this.$refs['saveBtn'].disabled = false
         this.$refs['returnBtn'].disabled = false
-      }).catch()
+      }).catch(()=>{
+        load.close()
+      })
 
 
     },

@@ -680,8 +680,14 @@ export default {
             });
             return
           }
-
+          const load = this.$loading({
+            lock: true,
+            text: '处理中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
           request.post('/repository/check/' + methodName, this.editForm).then(res => {
+            load.close()
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -693,6 +699,8 @@ export default {
             this.handleDeleteAllDetails()
             this.getList()
 
+          }).catch(()=>{
+            load.close()
           })
         } else {
           console.log('error submit!!');

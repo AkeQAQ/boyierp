@@ -714,7 +714,14 @@ export default {
       this.$refs[formName].validate((valid) => {
         console.log("当前物料id:",this.editForm.id)
         if (valid) {
+          const load = this.$loading({
+            lock: true,
+            text: '处理中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
           request.post('/baseData/material/'+methodName, this.editForm).then(res => {
+            load.close()
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -728,6 +735,8 @@ export default {
             }
             this.getMaterialList();
 
+          }).catch(()=>{
+            load.close()
           })
         } else {
           console.log('error submit!!');
