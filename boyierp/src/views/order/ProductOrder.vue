@@ -188,7 +188,7 @@
         <el-table-column
             label="客户货号"
             prop="customerNum"
-            width="100px"
+            width="70px"
             show-overflow-tooltip
         >
         </el-table-column>
@@ -237,6 +237,7 @@
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.orderType === 0" type="success">订单</el-tag>
             <el-tag size="small" v-else-if="scope.row.orderType===1" type="warning">回单</el-tag>
+            <el-tag size="small" v-else-if="scope.row.orderType===2" type="danger">取消</el-tag>
           </template>
         </el-table-column>
 
@@ -287,7 +288,7 @@
 
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
+                       v-if="hasAuth('order:productOrder:valid') && scope.row.orderType !=2 && (scope.row.status === 2 || scope.row.status === 3)   ">
 
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
@@ -299,7 +300,7 @@
             </el-button>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:valid')  && scope.row.status ===0  ">
+                       v-if="hasAuth('order:productOrder:valid') && scope.row.orderType !=2 && scope.row.prepared ===1   && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"
@@ -333,10 +334,10 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('order:productOrder:prepare')  && scope.row.status ===0  && scope.row.prepared ===1"></el-divider>
+                        v-if="hasAuth('order:productOrder:prepare') && scope.row.orderType !=2 && scope.row.status ===0  && scope.row.prepared ===1"></el-divider>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:prepare') && scope.row.status ===0 && scope.row.prepared ===1   ">
+                       v-if="hasAuth('order:productOrder:prepare') && scope.row.orderType !=2 && scope.row.status ===0 && scope.row.prepared ===1   ">
               <template>
                 <el-popconfirm @confirm="prepareSure(scope.row.id)"
                                title="确定确认吗？"
@@ -347,10 +348,10 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('order:productOrder:prepare')  && scope.row.status ===0  && scope.row.prepared ===2"></el-divider>
+                        v-if="hasAuth('order:productOrder:prepare') && scope.row.orderType !=2 && scope.row.status ===0  && scope.row.prepared ===2"></el-divider>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:prepare') && scope.row.status ===0 && scope.row.prepared ===2   ">
+                       v-if="hasAuth('order:productOrder:prepare')&& scope.row.orderType !=2 && scope.row.status ===0 && scope.row.prepared ===2   ">
               <template>
                 <el-popconfirm @confirm="prepareNotSure(scope.row.id)"
                                title="确定取消确认吗？"
@@ -361,10 +362,10 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('order:productOrder:prepareDone')  && scope.row.status ===0 && scope.row.prepared ===2  "></el-divider>
+                        v-if="hasAuth('order:productOrder:prepareDone')&& scope.row.orderType !=2  && scope.row.status ===0 && scope.row.prepared ===2  "></el-divider>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:prepareDone') && scope.row.status === 0 && scope.row.prepared ===2  ">
+                       v-if="hasAuth('order:productOrder:prepareDone')&& scope.row.orderType !=2 && scope.row.status === 0 && scope.row.prepared ===2  ">
               <template>
                 <el-popconfirm @confirm="prepareSuccess(scope.row.id)"
                                title="确定备料完成吗？"
@@ -375,15 +376,29 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('order:productOrder:prepareDone')  && scope.row.status ===0 && scope.row.prepared ===0  "></el-divider>
+                        v-if="hasAuth('order:productOrder:prepareDone')&& scope.row.orderType !=2  && scope.row.status ===0 && scope.row.prepared ===0  "></el-divider>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:prepareDone') && scope.row.status ===0 && scope.row.prepared ===0  ">
+                       v-if="hasAuth('order:productOrder:prepareDone')&& scope.row.orderType !=2 && scope.row.status ===0 && scope.row.prepared ===0  ">
               <template>
                 <el-popconfirm @confirm="prepareNotSuccess(scope.row.id)"
                                title="确定解除备料完成吗？"
                 >
                   <el-button type="text" size="small" slot="reference">解除备料完成</el-button>
+                </el-popconfirm>
+              </template>
+            </el-button>
+
+            <el-divider direction="vertical"
+                        v-if="hasAuth('order:productOrder:del') && scope.row.orderType !=2  "></el-divider>
+
+            <el-button style="padding: 0" type="text"
+                       v-if="hasAuth('order:productOrder:del') && scope.row.orderType !=2 ">
+              <template>
+                <el-popconfirm @confirm="cancelOrder(scope.row.id)"
+                               title="确定订单取消吗？"
+                >
+                  <el-button type="text" size="small" slot="reference">订单取消</el-button>
                 </el-popconfirm>
               </template>
             </el-button>
@@ -944,6 +959,17 @@ export default {
       return sums;
     },
 
+    cancelOrder(id){
+      request.post('/order/productOrder/cancelOrder?id='+id)
+          .then(res => {
+            this.$message({
+              message: "订单取消完成",
+              type: 'success'
+            });
+            this.getList()
+          })
+
+    },
     prepareNotSuccess(id){
       request.post('/order/productOrder/preparedNotSuccess?id='+id)
           .then(res => {

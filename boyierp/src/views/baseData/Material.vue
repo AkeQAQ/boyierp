@@ -149,7 +149,7 @@
               <el-table-column
                   prop="name"
                   label="名称"
-                  width="300px"
+                  width="250px"
                   show-overflow-tooltip>
               </el-table-column>
 
@@ -164,19 +164,28 @@
               <el-table-column
                   prop="unit"
                   label="库存单位"
-
+                  width="70px"
                   show-overflow-tooltip>
               </el-table-column>
 
               <el-table-column
                   prop="bigUnit"
                   label="入库单位"
+                  width="70px"
                   show-overflow-tooltip>
               </el-table-column>
 
               <el-table-column
                   prop="unitRadio"
                   label="换算系数"
+                  width="70px"
+                  show-overflow-tooltip>
+              </el-table-column>
+
+              <el-table-column
+                  prop="lowWarningLine"
+                  label="低预警线"
+                  width="70px"
                   show-overflow-tooltip>
               </el-table-column>
 
@@ -248,11 +257,12 @@
                 top="0vh"
                 :before-close="handleClose"
                 :append-to-body="true"
+                style="padding: 0 0"
             >
 
-              <el-form :model="editForm" :rules="rules" ref="editForm" label-width="100px" class="demo-editForm">
+              <el-form style="margin-top: -30px" :model="editForm" :rules="rules" ref="editForm" label-width="100px" class="demo-editForm">
 
-                <el-form-item  v-if="false" label="唯一编码" prop="id">
+                <el-form-item  v-if="false" label="唯一编码" prop="id" >
                   <el-input   v-model="editForm.id" ></el-input>
                 </el-form-item>
 
@@ -307,6 +317,12 @@
                 <el-form-item label="换算系数" prop="unitRadio">
                   1入库单位=<el-input v-model="editForm.unitRadio" style="width: 100px"></el-input>库存单位
                 </el-form-item>
+                <el-form-item label="低预警线" prop="lowWarningLine">
+                  <div  :class=" 'el-input '" >
+                    <input  class="el-input__inner"  v-model.lazy="editForm.lowWarningLine">
+                    </input>
+                  </div>
+                </el-form-item>
 
                 <el-form-item >
                   <!-- 新的缩略图-->
@@ -357,6 +373,7 @@
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
                   <el-button type="primary" @click="addNew()">新增</el-button>
+                  <el-button type="primary" :disabled="copyFlag" @click="copy()">复制</el-button>
 
                 </el-form-item>
               </el-form>
@@ -387,6 +404,9 @@ export default {
 
   data() {
     return {
+      copyFlag:false,
+
+
       fileList: [],
       dialogOnePicVisible:false,
       dialogOneImageUrl:'',
@@ -408,7 +428,8 @@ export default {
         unit:'',
         specs:'',
         bigUnit:'',
-        unitRadio:'1'
+        unitRadio:'1',
+        lowWarningLine:''
       },
       rules: {
         name: [
@@ -593,6 +614,14 @@ export default {
       };
     },
 
+    copy(){
+      this.editForm.id = ''
+      this.editForm.subId=''
+      this.addOrUpdate='save'
+      this.copyFlag=true;
+      this.$message.success("已复制")
+    },
+
     addNew(){
       this.addOrUpdate='save'
 
@@ -742,6 +771,7 @@ export default {
           console.log('error submit!!');
           return false;
         }
+        this.copyFlag=false;
       });
     },
     // 物料分组 表单提交
@@ -935,6 +965,8 @@ export default {
     handleClose(done) {
       this.$refs['editForm'].resetFields();
       console.log("关闭窗口")
+      this.fileList=[]
+      this.copyFlag=false;
       done();
     },
     // 物料分组 关闭弹窗处理动作
