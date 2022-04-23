@@ -330,6 +330,25 @@
             </el-upload>
           </el-form-item>
 
+          <el-form-item  label="系统起始日期" prop="startDate">
+            <el-date-picker style="width: 130px;"
+                            value-format="yyyy-MM-dd"
+                            v-model="editForm.startDate"
+                            type="date"
+                            clearable
+                            placeholder="选择日期">
+            </el-date-picker>
+          </el-form-item>
+
+          <el-form-item label="系统截至日期" prop="endDate">
+            <el-date-picker  style="width: 130px;"
+                             value-format="yyyy-MM-dd"
+                             v-model="editForm.endDate"
+                             type="date"
+                             clearable
+                             placeholder="选择日期">
+            </el-date-picker>
+          </el-form-item>
 
           <el-form-item style="margin-left: 100px">
             <el-button type="primary"  @click="importExcel('editImportForm')">
@@ -394,6 +413,11 @@
               <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].calNums}}</span>
             </template>
           </el-table-column>
+          <el-table-column label="系统净入库数量(合计)" align="center" width="150" prop="netInNums">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].netInNums}}</span>
+            </template>
+          </el-table-column>
 
           <el-table-column label="明细" align="center" width="140" >
             <template slot-scope="scope">
@@ -456,6 +480,10 @@ export default {
   name: 'OrderProgress',
   data() {
     return {
+      editForm:{
+        startDate:new Date().format("yyyy-MM-dd") ,
+        endDate:new Date().format("yyyy-MM-dd") ,
+  },
 
       // 多个搜索输入框
       manySearchArr:[{
@@ -539,7 +567,7 @@ export default {
 
       request({
         method: 'post',
-        url: '/produce/orderMaterialProgress/upload',
+        url: '/produce/orderMaterialProgress/upload?startDate='+this.editForm.startDate+"&&endDate="+this.editForm.endDate,
         headers: {'Content-Type': 'multipart/form-data'},
         data: param
       }).then(res => {
