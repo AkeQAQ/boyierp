@@ -262,34 +262,18 @@
         </el-form-item>
 
 
-        <el-form-item  v-if="hasAuth('repository:pickMaterial:save')">
+        <el-form-item  >
           <el-dropdown   @command="expChangeImport">
-            <el-button  icon="el-icon-upload2" size="mini" >
-              导入<i class="el-icon-arrow-down el-icon--right"></i>
+            <el-button  icon="el-icon-more" size="mini" >
+              其他操作<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="import">导入</el-dropdown-item>
+              <el-dropdown-item v-if="hasAuth('repository:pickMaterial:save')" command="import">导入</el-dropdown-item>
               <el-dropdown-item command="importDemo">导入模板下载</el-dropdown-item>
+              <el-dropdown-item command="batchPrint">批量打印</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
-<!--
-        <el-form-item v-if="hasAuth('repository:pickMaterial:save')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('repository:pickMaterial:save')"
-                     @click="dialogImportVisible = true;"
-
-          >导入
-          </el-button>
-        </el-form-item>
-
-        <el-form-item v-if="hasAuth('repository:pickMaterial:save')">
-          <el-button size="mini" icon="el-icon-download" type="primary" v-if="hasAuth('repository:pickMaterial:save')"
-                     @click="downImportDemo()"
-
-          >导入模板下载
-          </el-button>
-
-        </el-form-item>-->
 
       </el-form>
 
@@ -515,6 +499,27 @@
         <vue-easy-print tableShow ref="easyPrint">
           <template slot-scope="func">
             <print :tableData="editForm" :getChineseNumber="func.getChineseNumber"></print>
+          </template>
+        </vue-easy-print>
+
+      </el-dialog>
+
+      <!-- 批量打印弹窗 -->
+      <el-dialog
+          title=""
+          :visible.sync="dialogVisibleBatchPrint"
+          width="55%"
+          style="padding-top: 0"
+          :before-close="printBatchClose"
+      >
+        <el-button v-if="dialogVisibleBatchPrint"
+                   @click="printBatchDemo"
+                   v-focus ref="printBatchBtn"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="easyBatchPrint">
+          <template slot-scope="func">
+            <print-pick-batch :tableData="editBatchForm" :getChineseNumber="func.getChineseNumber"></print-pick-batch>
           </template>
         </vue-easy-print>
 
@@ -845,13 +850,16 @@ import {request} from "@/axios";
 // 引入打印基础组件，和打印模块print页面
 import vueEasyPrint from "vue-easy-print";
 import print from "@/views/printModule/printPick";
+import printPickBatch from "@/views/printModule/printPickBatch";
 import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
+import PrintPickBatch from "@/views/printModule/printPickBatch";
 
 export default {
   name: 'PickMaterial',
   // 引入打印模块基础组件和该打印模块的模板页面
   components: {
+    PrintPickBatch,
     vueEasyPrint,
     print,
     exportExcelCommon
@@ -1018,11 +1026,36 @@ export default {
       tableData2: [],
       spanArr: [],
       pos: '',
-      multipleSelection: [] // 多选框数组
-
+      multipleSelection: [], // 多选框数组
+      editBatchForm:{'content':[]},
+      dialogVisibleBatchPrint:false
     }
   },
   methods: {
+    printBatchDemo() {
+      this.$refs.easyBatchPrint.print()
+    },
+    printBatchClose(done) {
+
+      this.$refs.easyBatchPrint.tableShow = false;
+      done();
+    },
+    batchPrint(){
+      if(this.multipleSelection.length ==0){
+        this.$message.error("请至少选中一个")
+        return;
+      }
+      let ids = this.multipleSelection;
+      request.post('/repository/pickMaterial/getBatchPrintByIds',ids).then(res => {
+        this.editBatchForm.content = res.data.data;
+        if (this.$refs.easyBatchPrint) {
+          this.$refs.easyBatchPrint.tableData = this.editBatchForm
+        }
+        this.dialogVisibleBatchPrint = true
+      })
+
+    },
+
     rowClass({ row, rowIndex }) {
       if (this.multipleSelection.includes(row.id)) {
         return { "background-color": "rgba(255,235,205, 0.75)" };
@@ -1221,12 +1254,20 @@ export default {
         this.$refs['input_num_'+(seqNum - 1)].focus()
       }
     },
-    // 导入
+    otherBtn(item) {
+      if (item === 'orderBatchPick') {
+        this.orderBatchPick()
+      } else if(item === 'batchPrint'){
+        this.batchPrint()
+      }
+    },
     expChangeImport(item) {
       if (item === 'import') {
         this.dialogImportVisible = true;
       } else if(item === 'importDemo'){
         this.downImportDemo();
+      }else if(item === 'batchPrint'){
+        this.batchPrint();
       }
     },
     action(item) {
@@ -1587,7 +1628,9 @@ export default {
       this.multipleSelection = []
 
       val.forEach(theId => {
-        this.multipleSelection.push(theId.id)
+        if(!this.multipleSelection.some(item=>item==theId.id)){
+          this.multipleSelection.push(theId.id)
+        }
       })
       console.log("多选框 选中的 ", this.multipleSelection)
     },

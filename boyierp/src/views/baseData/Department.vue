@@ -177,7 +177,9 @@ export default {
         if(theId.id === 1){
           // 是超级管理员部门，不能删除
         }else {
+          if(!this.multipleSelection.some(item=>item==theId.id)){
           this.multipleSelection.push(theId.id)
+        }
         }
       })
       console.log("多选框 选中的 ", this.multipleSelection)

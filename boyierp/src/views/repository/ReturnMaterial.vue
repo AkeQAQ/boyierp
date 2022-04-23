@@ -1224,7 +1224,9 @@ export default {
       this.multipleSelection = []
 
       val.forEach(theId => {
-        this.multipleSelection.push(theId.id)
+        if(!this.multipleSelection.some(item=>item==theId.id)){
+          this.multipleSelection.push(theId.id)
+        }
       })
       console.log("多选框 选中的 ", this.multipleSelection)
     },

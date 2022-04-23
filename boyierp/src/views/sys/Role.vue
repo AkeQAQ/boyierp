@@ -255,7 +255,9 @@ export default {
         if(theId.id ===6){
           // 假如是超级管理员的ID，不能删除
         }else {
+          if(!this.multipleSelection.some(item=>item==theId.id)){
           this.multipleSelection.push(theId.id)
+        }
 
         }
       })

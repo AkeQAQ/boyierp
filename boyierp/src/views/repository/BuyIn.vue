@@ -254,13 +254,30 @@
           </el-dropdown>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('repository:buyIn:save')">
-          <el-button size="mini" icon="el-icon-share" type="primary" v-if="hasAuth('repository:buyIn:save')"
-                     @click="orderBatchPick()"
+        <el-form-item >
+          <el-dropdown   @command="otherBtn">
+            <el-button  icon="el-icon-more" size="mini" >
+              其他操作<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
 
-          >订单一键领料
-          </el-button>
+              <el-dropdown-item v-if="hasAuth('repository:buyIn:save')" command="orderBatchPick">订单一键领料</el-dropdown-item>
+              <el-dropdown-item command="batchPrint">批量打印</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </el-form-item>
+<!--        <el-button size="mini" icon="el-icon-share" type="primary"
+                   @click="orderBatchPick()"
+
+        >订单一键领料
+        </el-button>
+        <el-form-item >
+          <el-button size="mini" icon="el-icon-share" type="primary"
+                     @click="batchPrint()"
+
+          >批量打印
+          </el-button>
+        </el-form-item>-->
 
         <!--        <el-form-item v-if="hasAuth('repository:buyIn:del')">
                   <el-popconfirm @confirm="del(null)" title="确定删除吗？">
@@ -606,6 +623,27 @@
 
       </el-dialog>
 
+      <!-- 批量打印弹窗 -->
+      <el-dialog
+          title=""
+          :visible.sync="dialogVisibleBatchPrint"
+          width="55%"
+          class="elDialog_print_my"
+          :before-close="printBatchClose"
+      >
+        <el-button v-if="dialogVisibleBatchPrint"
+                   @click="printBatchDemo"
+                   v-focus ref="printBatchBtn"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="easyBatchPrint">
+          <template slot-scope="func">
+            <print-batch :tableData="editBatchForm" :getChineseNumber="func.getChineseNumber"></print-batch>
+          </template>
+        </vue-easy-print>
+
+      </el-dialog>
+
       <!-- 采购入库弹窗 -->
       <el-dialog
 
@@ -933,6 +971,8 @@ import {request} from "@/axios";
 // 引入打印基础组件，和打印模块print页面
 import vueEasyPrint from "vue-easy-print";
 import print from "@/views/printModule/print";
+import printBatch from "@/views/printModule/printBatch";
+
 import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
 
@@ -942,10 +982,69 @@ export default {
   components: {
     vueEasyPrint,
     print,
+    printBatch,
     exportExcelCommon
   },
   data() {
     return {
+      editBatchForm:{'content':[
+          {
+            buyInDate:'2022-04-23',
+            supplierName:'ces1',
+            supplierDocumentNum:'123',
+            id:'1',
+            rowList:[
+              {
+                materialId:'01.01',
+                materialName:'wul1',
+                specs:'1',
+                orderSeq:'2',
+                num:'3',
+                bigUnit:'4',
+                price:'5',
+                comment:'6',
+                totalNum:'7',
+                totalAmount:'8'
+
+              }
+            ]
+          },
+          {
+            buyInDate:'2022-04-22',
+            supplierName:'ces2',
+            supplierDocumentNum:'124',
+            id:'2',
+            rowList:[
+              {
+                materialId:'02.01',
+                materialName:'2wul1',
+                specs:'21',
+                orderSeq:'2',
+                num:'3',
+                bigUnit:'4',
+                price:'5',
+                comment:'6',
+                totalNum:'7',
+                totalAmount:'8'
+
+              },
+              {
+                materialId:'02.03',
+                materialName:'wul1',
+                specs:'23',
+                orderSeq:'2',
+                num:'3',
+                bigUnit:'4',
+                price:'5',
+                comment:'6',
+                totalNum:'7',
+                totalAmount:'8'
+
+              }
+            ]
+          },
+        ]},
+
       tableData2: [],
 
       priceFileterArr:[],
@@ -1133,6 +1232,7 @@ export default {
       ,
       dialogVisible: false,
       dialogVisiblePrint: false,
+      dialogVisibleBatchPrint: false,
       dialogPickVisible: false,
       tableData: [],
       spanArr: [],
@@ -1313,6 +1413,9 @@ export default {
     // 打印按钮事件
     printDemo() {
       this.$refs.easyPrint.print()
+    },
+    printBatchDemo() {
+      this.$refs.easyBatchPrint.print()
     },
     // 设置每一行的seqNum = 游标+1
     rowClassName({row, rowIndex}) {
@@ -1625,7 +1728,9 @@ export default {
       this.multipleSelection = []
 
       val.forEach(theId => {
-        this.multipleSelection.push(theId.id)
+        if(!this.multipleSelection.some(item=>item==theId.id)){
+          this.multipleSelection.push(theId.id)
+        }
       })
       console.log("多选框 选中的 ", this.multipleSelection)
     },
@@ -1908,9 +2013,14 @@ export default {
     },
     // 关闭打印弹窗弹窗处理动作
     printClose(done) {
-      console.log("打印弹窗关闭...")
 
       this.$refs.easyPrint.tableShow = false;
+      done();
+    },
+    // 关闭打印弹窗弹窗处理动作
+    printBatchClose(done) {
+
+      this.$refs.easyBatchPrint.tableShow = false;
       done();
     },
     // 重置表单
@@ -1954,6 +2064,13 @@ export default {
         this.editForm.id = '';
         this.editForm.status = 1;
         this.addOrUpdate = 'save';
+      }
+    },
+    otherBtn(item) {
+      if (item === 'orderBatchPick') {
+        this.orderBatchPick()
+      } else if(item === 'batchPrint'){
+        this.batchPrint()
       }
     },
     expChange(item) {
@@ -2103,6 +2220,21 @@ export default {
       });
 
       return sums;
+    },
+    batchPrint(){
+      if(this.multipleSelection.length ==0){
+        this.$message.error("请至少选中一个")
+        return;
+      }
+      let ids = this.multipleSelection;
+      request.post('/repository/buyIn/getBatchPrintByIds',ids).then(res => {
+        this.editBatchForm.content = res.data.data;
+        if (this.$refs.easyBatchPrint) {
+          this.$refs.easyBatchPrint.tableData = this.editBatchForm
+        }
+        this.dialogVisibleBatchPrint = true
+      })
+
     },
     preViewPrint() {
       if(this.editForm.id ==='' || this.editForm.id === undefined){
