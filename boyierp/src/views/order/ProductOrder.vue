@@ -32,6 +32,13 @@
             </input>
           </div>
 
+          <!-- 订单号 -->
+          <div v-if="selectedName === 'orderNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
+
         </el-form-item>
 
         <el-popover
@@ -60,6 +67,13 @@
               <div v-if="item.selectField==='productBrand'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
                 <input   class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
                         v-model.lazy="item.searchStr">
+                </input>
+              </div>
+
+              <!-- 订单号 -->
+              <div v-if="item.selectField==='orderNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+                <input   class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                         v-model.lazy="item.searchStr">
                 </input>
               </div>
 
@@ -879,7 +893,9 @@ export default {
       selectedName: 'productNum',// 搜索默认值
       options: [
         {value: 'productNum', label: '公司货号'},
-        {value: 'productBrand', label: '品牌'}
+        {value: 'productBrand', label: '品牌'},
+        {value: 'orderNum', label: '订单号'}
+
       ],
       select: 'productNum', // 搜索默认值
       searchStr: '',

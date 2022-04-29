@@ -10,7 +10,7 @@
           <el-col :span="4"><div class="grid-content bg-purple"></div>
             <time>发料日期：{{tableData.pickDate}}</time>
           </el-col>
-          <el-col :span="6"><div class="grid-content bg-purple">
+          <el-col :span="4"><div class="grid-content bg-purple">
             <span>收料部门：{{tableData.departmentName}}</span>
           </div>
           </el-col>
@@ -18,7 +18,11 @@
             <span>单号：{{"SCLL"+tableData.id}}</span>
           </div>
           </el-col>
-          <el-col :span="6"><div class="grid-content bg-purple">
+          <el-col :span="4"><div class="grid-content bg-purple">
+            <span>生产序号：{{tableData.batchId}}</span>
+          </div>
+          </el-col>
+          <el-col :span="4"><div class="grid-content bg-purple">
             <span>备注：{{tableData.comment}}</span>
           </div>
           </el-col>

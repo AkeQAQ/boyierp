@@ -332,6 +332,12 @@
         </el-table-column>
 
         <el-table-column
+            prop="batchId"
+            width="80px"
+            label="生产序号">
+        </el-table-column>
+
+        <el-table-column
             label="领料人"
             prop="pickUser"
             width="80px"
@@ -342,16 +348,14 @@
         <el-table-column
             label="备注"
             prop="comment"
-            width="110px"
+            width="80px"
             show-overflow-tooltip
         >
         </el-table-column>
 
-
-
         <el-table-column
             prop="status"
-            width="110px"
+            width="90px"
             label="状态">
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.status === 0" type="success">已审核</el-tag>
@@ -361,15 +365,13 @@
           </template>
         </el-table-column>
 
-<!--        <el-table-column
-            prop="produceDocNum"
-            width="110px"
-            label="生产单号">
-        </el-table-column>-->
+
 
         <el-table-column
             prop="materialId"
             label="物料编码"
+            width="100px"
+            show-overflow-tooltip
         >
         </el-table-column>
 
@@ -377,12 +379,15 @@
         <el-table-column
             prop="materialName"
             label="物料名称"
+            width="130px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="specs"
-            label="规格型号">
+            label="规格型号"
+            width="80px"
+        >
         </el-table-column>
 
         <el-table-column
@@ -542,7 +547,7 @@
                  class="demo-editForm">
 
           <el-form-item label="单据编号" prop="id" style="margin-bottom: 0">
-            <el-input class="elInput_my" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
+            <el-input class="elInput_my" :disabled=true placeholder="保存自动生成" v-model="editForm.id" style="width: 100px">
             </el-input>
           </el-form-item>
 
@@ -554,7 +559,7 @@
             <!-- 搜索框 -->
             <el-autocomplete
                 :disabled="this.editForm.status!=1"
-                style="width: 150px"
+                style="width: 120px"
                 popper-class="my-autocomplete"
 
                 class="inline-input"
@@ -570,7 +575,7 @@
             </el-autocomplete>
           </el-form-item>
           <el-form-item label="领料日期" prop="pickDate">
-            <el-date-picker :disabled="this.editForm.status!=1" style="width: 150px"
+            <el-date-picker :disabled="this.editForm.status!=1" style="width: 125px"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.pickDate"
                             type="date"
@@ -579,11 +584,11 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item  label="领料人" prop="pickUser" style="padding: -20px 0 ;margin-bottom: -20px">
+          <el-form-item  label="领料人" prop="pickUser" style="padding: -20px -40px ;margin-bottom: -20px">
 <!--            <el-input :disabled="this.editForm.status!=1"  size="mini" clearable style="width: 100px" v-model="editForm.pickUser">
             </el-input>-->
 
-            <div style="width: 100px" :class=" [(this.editForm.status!=1)? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']">
+            <div style="width: 100px;padding-left: -30px" :class=" [(this.editForm.status!=1)? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']">
               <input  class="el-input__inner"
                       v-model.lazy="editForm.pickUser">
               </input>
@@ -596,10 +601,13 @@
           </el-form-item>
 
 
-<!--          <el-form-item  label="生产单号" prop="produceDocNum" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status===0"  size="mini" clearable style="width: 100px" v-model="editForm.produceDocNum">
-            </el-input>
-          </el-form-item>-->
+          <el-form-item  label="生产序号" prop="batchId" style="padding: -20px 0 ;margin-bottom: -20px">
+            <div style="width: 70px;padding-left: -30px" :class=" [(this.editForm.status!=1)? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']">
+              <input  class="el-input__inner"
+                      v-model.lazy="editForm.batchId">
+              </input>
+            </div>
+          </el-form-item>
 
           <el-form-item v-if="hasAuth('repository:buyIn:save')">
             <el-dropdown   @command="action">
@@ -992,7 +1000,7 @@ export default {
         endDate: '',
         produceDocNum: '',
         comment: '',
-
+        batchId:'',
         totalAmount:'',
 
         rowList: [{
@@ -1588,7 +1596,7 @@ export default {
         price: '',
         totalAmount:'',
         comment: '',
-
+        batchId:'',
         rowList: [{
           materialName:'',
           unit:'',
@@ -1975,7 +1983,15 @@ export default {
           colspan: _col
         }
       }
-      else if (columnIndex === 12) {
+      else if (columnIndex === 7) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      else if (columnIndex === 13) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -2025,7 +2041,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 11 ) {
+        if (index === 12 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
