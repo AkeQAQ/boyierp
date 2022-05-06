@@ -36,7 +36,7 @@
             <td style="text-align: center">{{row.specs.length >8 ? row.specs.substring(0,8):row.specs}}</td>
             <td style="text-align: center">{{row.num}}</td>
             <td style="text-align: center">{{row.unit}}</td>
-            <td style="text-align: center">{{row.comment}}</td>
+            <td style="text-align: center">{{row.reason}}</td>
           </tr>
 
           <!-- 插入空白行 -->

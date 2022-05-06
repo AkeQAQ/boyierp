@@ -32,6 +32,23 @@
             </input>
           </div>
 
+          <!-- 列表界面-物料搜索 -->
+          <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
+                           style="width: 200px"
+                           popper-class="my-autocomplete"
+
+                           class="inline-input"
+                           v-model="searchStr"
+                           :fetch-suggestions="querySearch2"
+                           :trigger-on-focus="false"
+                           placeholder="请输入搜索内容"
+                           @select="searchSelect"
+                           @focus="searchMmaterialFocus()"
+                           @keyup.enter.native="search()"
+
+          >
+          </el-autocomplete>
+
         </el-form-item>
 
         <el-popover
@@ -40,7 +57,7 @@
             trigger="click">
           <ul v-for="(item,index) in manySearchArr">
             <li>
-              <el-select style="width: 130px" size="mini" v-model="item.selectField" filterable  placeholder="请选择搜索字段">
+              <el-select style="width: 100px" size="mini" v-model="item.selectField" filterable  placeholder="请选择搜索字段">
                 <el-option
                     v-for="item in options"
                     :key="item.value"
@@ -63,9 +80,26 @@
                 </input>
               </div>
 
+              <el-autocomplete size="mini" v-if="item.selectField === 'materialName'" clearable
+                               style="width: 200px"
+                               popper-class="my-autocomplete"
+                               class="inline-input"
+                               v-model="item.searchStr"
+                               :fetch-suggestions="querySearch2"
+                               :trigger-on-focus="false"
+                               @select="searchManySelect($event,index)"
+                               @focus="searchMmaterialFocus()"
+
+                               placeholder="请输入搜索内容"
+
+              >
+              </el-autocomplete>
+
               <el-button type="danger" size="mini" icon="el-icon-delete" circle
                          @click="delSearch(index)"
               ></el-button>
+
+
 
             </li>
           </ul>
@@ -467,7 +501,9 @@ export default {
       selectedName: 'productNum',// 搜索默认值
       options: [
         {value: 'productNum', label: '公司货号'},
-        {value: 'productBrand', label: '品牌'}
+        {value: 'productBrand', label: '品牌'},
+        {value: 'materialName', label: '物料名称'}
+
       ],
       select: 'productNum', // 搜索默认值
       searchStr: '',
@@ -510,7 +546,10 @@ export default {
     }
   },
   methods: {
+    searchSelect(item) {
+      this.searchStr = item.name
 
+    },
     addSpecialMaterial(id){
 
       this.specialAddFlag=true;
