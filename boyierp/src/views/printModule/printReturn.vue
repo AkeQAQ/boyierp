@@ -10,12 +10,16 @@
           <el-col :span="4"><div class="grid-content bg-purple"></div>
             <time>收料日期：{{tableData.returnDate}}</time>
           </el-col>
-          <el-col :span="10"><div class="grid-content bg-purple">
+          <el-col :span="4"><div class="grid-content bg-purple">
             <span>退料部门：{{tableData.departmentName}}</span>
           </div>
           </el-col>
           <el-col :span="6"><div class="grid-content bg-purple">
             <span>单号：{{"SCTL"+tableData.id}}</span>
+          </div>
+          </el-col>
+          <el-col :span="4"><div class="grid-content bg-purple">
+            <span>生产序号：{{tableData.batchId}}</span>
           </div>
           </el-col>
         </el-row>

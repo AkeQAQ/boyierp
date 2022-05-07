@@ -164,6 +164,11 @@
               </template>
             </el-button>
 
+            <el-button type="text" size="small" @click="preViewPrint(scope.row.id) "
+                       v-if="hasAuth('produce:batch:list') && scope.row.status ===0   ">裁断计划单预览
+            </el-button>
+
+
           </template>
         </el-table-column>
 
@@ -171,8 +176,9 @@
 
       <el-dialog
           :visible.sync="dialogCalNumVisible"
-          width="50%"
+          width="30%"
           title="生产序号信息"
+          top="0vh"
           :before-close="handleClosePrepare"
       >
         <el-form :model="editForm" :rules="rules" ref="editForm" label-width="120px" class="demo-editForm">
@@ -195,10 +201,117 @@
             </div>
           </el-form-item>
 
+          <el-form-item label="34码" prop="size34">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size34">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="35码" prop="size35">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size35">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="36码" prop="size36">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size36">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="37码" prop="size37">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size37">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="38码" prop="size38">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size38">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="39码" prop="size39">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size39">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="40码" prop="size40">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size40">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="41码" prop="size41">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size41">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="42码" prop="size42">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size42">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="43码" prop="size43">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size43">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="44码" prop="size44">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size44">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="45码" prop="size45">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size45">
+              </input>
+            </div>
+          </el-form-item>
+          <el-form-item label="46码" prop="size46">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size46">
+              </input>
+            </div>
+          </el-form-item>
+
+          <el-form-item label="47码" prop="size47">
+            <div  :class=" 'el-input '" >
+              <input  class="el-input__inner"  v-model.lazy="editForm.size47">
+              </input>
+            </div>
+          </el-form-item>
+
           <el-form-item>
             <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
           </el-form-item>
         </el-form>
+
+      </el-dialog>
+
+      <!-- 打印弹窗 -->
+      <el-dialog
+          title=""
+          :visible.sync="dialogVisiblePrint"
+          width="55%"
+          style="padding-top: 0"
+          :before-close="printClose"
+      >
+        <el-button v-if="dialogVisiblePrint"
+                   @click="printDemo"
+                   v-focus ref="printBtn1"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="easyPrint">
+          <template slot-scope="func">
+            <print :tableData="printCaiDuanDataList" :getChineseNumber="func.getChineseNumber"></print>
+          </template>
+        </vue-easy-print>
 
       </el-dialog>
 
@@ -223,15 +336,35 @@
 <script>
 
 // POI，因为响应输出字节流，和ajax 的请求不一样。
+import vueEasyPrint from "vue-easy-print";
+
 import {request} from "@/axios";
 import {sysbaseUrl} from "@/axios";
+import print from "@/views/printModule/printCaiDuan";
 
 import {request2} from "@/axios";
+import exportExcelCommon from "@/views/common/ExportExcelCommon";
 
 export default {
   name: 'Batch',
+  // 引入打印模块基础组件和该打印模块的模板页面
+  components: {
+    vueEasyPrint,
+    print,
+  },
   data() {
     return {
+      dialogVisiblePrint: false,
+      printCaiDuanDataList:
+          {rowList:[
+          {productNum:'10s57202',batchId:123,customerNum:'112233'
+        ,size34:'0',size35:'0',size36:'0',size37:'0',size38:'0',size39:'0',size40:'0',size41:'0'
+        ,size42:'0',size43:'0',size44:'0',size45:'0',size46:'0',size47:'0',
+        subList:[
+          {materialId:'01.01',materialName:'哈哈',dosage:'1.21',needNum:'189',comment:'我啊我啊我啊我啊我啊我啊我啊我啊我啊'}
+        ]}]
+          },
+
       rules: {
         batchId: [
           {required: true, message: '请输入生产序号', trigger: 'blur'}
@@ -290,6 +423,8 @@ export default {
         id: '',
         batchId:'',
         orderNum:'',
+        size34:'',size35:'',size36:'',size37:'',size38:'',size39:'',size40:'',size41:'',
+        size42:'',size43:'',size44:'',size45:'',size46:'',size47:'',
       },
 
       theCurrentPrepareOrderId:'',
@@ -304,6 +439,39 @@ export default {
   },
 
   methods: {
+    printDemo() {
+      this.$refs.easyPrint.print()
+    },
+
+    // 关闭打印弹窗弹窗处理动作
+    printClose(done) {
+      console.log("打印弹窗关闭...")
+      this.$refs.easyPrint.tableShow = false;
+      done();
+    },
+
+    preViewPrint(id) {
+      // 查询裁断计划数据
+     request.get('/produce/batch/queryCaiDuanPrintById?id=' + id).then(res => {
+        let result = res.data.data
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.printCaiDuanDataList = result
+        })
+
+      })
+
+      console.log("打印时的easyPrint：", this.$refs.easyPrint)
+      if (this.$refs.easyPrint) {
+        console.log("设置前打印内容", this.$refs.easyPrint.tableData)
+
+        this.$refs.easyPrint.tableData = this.printCaiDuanDataList
+        console.log("设置后打印内容", this.$refs.easyPrint.tableData)
+      }
+      this.dialogVisiblePrint = true
+    },
+
     gridDateFormatter(row, column, cellValue, index) {
       const daterc = row[column.property];
       if (daterc) {
@@ -572,6 +740,16 @@ export default {
   created() {
     this.getList()
 
+  }// 自定义指令，，insert在DOM加入的时候才生效
+  , directives: {
+    // 声明自定义指令v-focus
+    focus: {
+      // v-foucs指令的钩子函数
+      inserted: function (el, binding) {
+        console.log("聚焦...")
+        el.focus();
+      },
+    },
   }
 
 }

@@ -322,6 +322,13 @@
 
 
         <el-table-column
+            prop="batchId"
+            width="80px"
+            label="生产序号">
+        </el-table-column>
+
+
+        <el-table-column
             prop="num"
             label="数量"
             width="100px"
@@ -486,6 +493,14 @@
                             clearable
                             placeholder="选择日期">
             </el-date-picker>
+          </el-form-item>
+
+          <el-form-item  label="生产序号" prop="batchId" style="padding: -20px 0 ;margin-bottom: -20px">
+            <div style="width: 70px;padding-left: -30px" :class=" [(this.editForm.status!=1)? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']">
+              <input  class="el-input__inner"
+                      v-model.lazy="editForm.batchId">
+              </input>
+            </div>
           </el-form-item>
 
           <el-form-item v-if="hasAuth('repository:returnMaterial:save')">
@@ -759,6 +774,7 @@ export default {
         reason:'',
         endDate: '',
         totalAmount:'',
+        batchId:'',
 
         rowList: [{
           materialName:'',
@@ -1183,7 +1199,7 @@ export default {
         endDate: '',
         price: '',
         totalAmount:'',
-
+        batchId:'',
         rowList: [{
           materialName:'',
           unit:'',
@@ -1534,7 +1550,7 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 10) {
+      } else if (columnIndex === 11) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1584,7 +1600,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 9 ) {
+        if (index === 10 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {

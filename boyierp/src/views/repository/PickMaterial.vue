@@ -600,7 +600,6 @@
             </el-input>
           </el-form-item>
 
-
           <el-form-item  label="生产序号" prop="batchId" style="padding: -20px 0 ;margin-bottom: -20px">
             <div style="width: 70px;padding-left: -30px" :class=" [(this.editForm.status!=1)? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']">
               <input  class="el-input__inner"
