@@ -69,6 +69,18 @@
           </el-button>
         </el-form-item>
 
+        <el-form-item  v-if="hasAuth('produce:batch:import')">
+          <el-dropdown   @command="expChangeImport">
+            <el-button  icon="el-icon-upload2" size="mini" >
+              导入<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="import">导入</el-dropdown-item>
+              <el-dropdown-item command="importDemo">导入模板下载</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -98,19 +110,107 @@
             show-overflow-tooltip>
         </el-table-column>
 
-        <el-table-column
-            prop="batchId"
-            label="生产序号"
-            width="300px"
-            show-overflow-tooltip>
-        </el-table-column>
+
 
         <el-table-column
             prop="orderNum"
             label="订单号"
-            width="180px"
+            width="100px"
             show-overflow-tooltip>
         </el-table-column>
+
+        <el-table-column
+            prop="batchId"
+            label="生产序号"
+            width="100px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="size34"
+            label="34码"
+            width="50px"
+            >
+        </el-table-column>
+        <el-table-column
+            prop="size35"
+            label="35码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size36"
+            label="36码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size37"
+            label="37码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size38"
+            label="38码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size39"
+            label="39码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size40"
+            label="40码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size41"
+            label="41码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size42"
+            label="42码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size43"
+            label="43码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size44"
+            label="44码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size45"
+            label="45码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size46"
+            label="46码"
+            width="50px"
+        >
+        </el-table-column>
+        <el-table-column
+            prop="size47"
+            label="47码"
+            width="50px"
+        >
+        </el-table-column>
+
 
         <el-table-column
             prop="action"
@@ -327,6 +427,66 @@
           :total="this.total">
       </el-pagination>
 
+      <el-dialog
+          title="导入信息"
+          :visible.sync="dialogImportVisible"
+          :before-close="handleImportClose"
+          fullscreen
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 :inline="true"
+                 size="mini"
+                 label-width="100px"
+                 ref="editImportForm"
+                 class="demo-editForm myFormClass">
+
+          <el-form-item label="上传文件:">
+            <el-upload
+                class="upload-demo"
+                ref="upload"
+                :file-list="fileList"
+                :http-request="uploadRequest"
+                action=""
+                :on-change="addFile"
+                :on-remove="removeFile"
+                :auto-upload="false"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div class="el-upload__tip" slot="tip">只能上传一个，且不超过5M</div>
+            </el-upload>
+          </el-form-item>
+
+          <el-form-item style="margin-left: 100px">
+            <el-button type="primary"  @click="importExcel('editImportForm')">
+              保存
+            </el-button>
+          </el-form-item>
+
+        </el-form>
+
+
+        <el-table
+            ref="multipleTable2"
+            :data="tableData2"
+            v-if="tableData2.length>0"
+            border
+            stripe
+            size="mini"
+            :cell-style="{padding:'0'}"
+            height="500px"
+            tooltip-effect="dark"
+            style="width: 100%;color:black;font-size: 20px">
+          <el-table-column
+              label="提示信息"
+              prop="content"
+          >
+          </el-table-column>
+
+        </el-table>
+
+
+      </el-dialog>
+
     </el-main>
 
   </el-container>
@@ -439,10 +599,86 @@ export default {
   },
 
   methods: {
+    importExcel() {
+      console.log("this.fileList",this.fileList)
+      console.log("this.fileSizeIsSatisfy",this.fileSizeIsSatisfy)
+
+      if(this.fileList.length <= 0 || this.fileList.length > 1){
+        this.$message.error("请上传一个文件！");
+        return;
+      }
+      if (!this.fileSizeIsSatisfy) {
+        this.$message.error("上传失败！存在文件大小超过5M！");
+        return;
+      }
+      this.$refs.upload.submit();
+    },
+
+    // 文件导入--------------------
+    uploadRequest(fileobj) {
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      let param = new FormData()
+      param.append('files', fileobj.file)
+
+      request({
+        method: 'post',
+        url: '/produce/batch/upload',
+        headers: {'Content-Type': 'multipart/form-data'},
+        data: param
+      }).then(res => {
+        let theData = res.data.data;
+        console.log("返回的内容:",theData)
+        load.close()
+
+        if(theData instanceof Array && theData.length > 0){
+          this.tableData2 = theData
+        }else {
+          // 成功
+          this.$message({
+            message: '导入成功!',
+            type: 'success'
+          });
+          // 关闭弹窗并且重置内容
+          this.$refs['editImportForm'].resetFields();
+          this.tableData2 = []
+          this.fileList=[]
+          this.fileSizeIsSatisfy=false;
+          this.$refs.upload.clearFiles();
+          this.dialogImportVisible = false;
+          this.getList()
+        }
+
+      }).catch(()=>{
+        load.close()
+      })
+    },
+
+    // 文件上传功能
+    uploadUrl: function () {
+      return "#";
+    },
+    // 判断文件大小
+    addFile(file, fileList) {
+      console.log("addFile")
+      this.fileList = fileList;
+      //限制上传文件为5M
+      console.log("文件大小", file.size)
+      this.fileSizeIsSatisfy = file.size < 5 * 1024 * 1024 ? true : false;
+      return this.fileSizeIsSatisfy
+    },
+    // 判断文件大小
+    removeFile(file, fileList) {
+      console.log("removeFile")
+      this.fileList = fileList;
+    },
     printDemo() {
       this.$refs.easyPrint.print()
     },
-
     // 关闭打印弹窗弹窗处理动作
     printClose(done) {
       console.log("打印弹窗关闭...")
@@ -508,6 +744,30 @@ export default {
         this.dialogImportVisible = true;
       } else if(item === 'importDemo'){
         this.downImportDemo();
+      }
+    },
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    downImportDemo() {
+
+      request2.post('/produce/batch/down',null,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'生产序号模板.xlsx')
+      }).catch()
+    },
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
       }
     },
 
