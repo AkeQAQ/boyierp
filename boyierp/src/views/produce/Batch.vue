@@ -81,6 +81,14 @@
           </el-dropdown>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('produce:batch:list')">
+          <el-popconfirm @confirm="batchPrint()" title="确定批量打印吗？">
+            <el-button size="mini" icon="el-icon-receiving" :disabled="this.multipleSelection.length === 0 " type="warning"
+                       slot="reference">批量打印
+            </el-button>
+          </el-popconfirm>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -102,6 +110,10 @@
           :default-sort="{prop:'id',order:'descending'}"
           @selection-change="handleSelectionChange">
 
+        <el-table-column
+            type="selection"
+            width="50">
+        </el-table-column>
 
         <el-table-column
             prop="id"
@@ -685,7 +697,28 @@ export default {
       this.$refs.easyPrint.tableShow = false;
       done();
     },
+    batchPrint(){
+      let ids = this.multipleSelection;
+      // 查询裁断计划数据
+      request.post('/produce/batch/queryCaiDuanPrintByIds' , ids).then(res => {
+        let result = res.data.data
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.printCaiDuanDataList = result
+        })
 
+      })
+
+      console.log("打印时的easyPrint：", this.$refs.easyPrint)
+      if (this.$refs.easyPrint) {
+        console.log("设置前打印内容", this.$refs.easyPrint.tableData)
+
+        this.$refs.easyPrint.tableData = this.printCaiDuanDataList
+        console.log("设置后打印内容", this.$refs.easyPrint.tableData)
+      }
+      this.dialogVisiblePrint = true
+    },
     preViewPrint(id) {
       // 查询裁断计划数据
      request.get('/produce/batch/queryCaiDuanPrintById?id=' + id).then(res => {
