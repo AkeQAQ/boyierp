@@ -283,11 +283,123 @@
               </template>
             </el-button>
 
+            <el-button type="text" size="small" @click="queryRealDosage(scope.row.id)"
+                       v-if="hasAuth('produce:productConstituent:list') && scope.row.status ===0  ">查看实际用量
+            </el-button>
+
 
           </template>
         </el-table-column>
 
       </el-table>
+
+      <el-dialog
+          title="实际用量"
+          :visible.sync="dialogRealDosageVisible"
+          fullscreen
+      >
+
+        <el-table
+            :row-style="rowClass"
+
+            ref="multipleTable"
+            :data="tableRealDosageData"
+            border
+            fit
+            height="520px"
+
+            size="mini"
+            tooltip-effect="dark"
+            style="width: 100%;color:black"
+            :cell-style="{padding:'0',borderColor:'black'}"
+            :header-cell-style="{borderColor:'black'}"
+            :default-sort="{prop:'id',order:'descending'}">
+
+
+          <el-table-column
+              label="订单号"
+              prop="orderNum"
+              width="100px"
+              show-overflow-tooltip
+          >
+          </el-table-column>
+
+          <el-table-column
+              label="公司货号"
+              prop="productNum"
+              width="100px"
+              show-overflow-tooltip
+          >
+          </el-table-column>
+
+          <el-table-column
+              prop="productBrand"
+              label="品牌"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+          <el-table-column
+              label="订单数目"
+              prop="orderNumber"
+              width="100px"
+              show-overflow-tooltip
+          >
+          </el-table-column>
+
+          <el-table-column
+              prop="batchId"
+              label="生产序号"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="materialId"
+              label="物料编码"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="materialName"
+              label="物料名称"
+              width="200px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="num"
+              label="领料数量"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="returnNum"
+              label="退料数量"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="realDosage"
+              label="实际用量"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="avgDosage"
+              label="实际用量(均值)"
+              width="130px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+        </el-table>
+
+      </el-dialog>
 
       <!-- 货号组成结构弹窗 -->
       <el-dialog
@@ -433,10 +545,33 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="图片预览">
+          <el-table-column label="图片预览" width="80">
             <template slot-scope="scope">
               <el-button icon="el-icon-search" circle  @click="handlePictureCardPreview(editForm.rowList[scope.row.seqNum-1].materialId)"></el-button>
             </template>
+          </el-table-column>
+
+          <el-table-column label="价目信息" align="center" width="120" >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="900"
+                  trigger="click">
+                <el-table :data="oneMaterialPrices">
+                  <el-table-column width="80" property="supplierId" label="供应商ID"></el-table-column>
+                  <el-table-column width="100" property="supplierName" label="供应商名称"></el-table-column>
+                  <el-table-column width="100" property="materialId" label="物料编码"></el-table-column>
+                  <el-table-column width="150" property="materialName" label="物料名称"></el-table-column>
+                  <el-table-column width="80" property="unit" label="基本单位"></el-table-column>
+                  <el-table-column width="80" property="price" label="单价"></el-table-column>
+                  <el-table-column width="100" property="startDate" label="生效日期"></el-table-column>
+                  <el-table-column width="100" property="endDate" label="失效日期"></el-table-column>
+                  <el-table-column width="100" property="comment" label="用量金额"></el-table-column>
+                </el-table>
+                <el-button slot="reference" @click="queryPrices(editForm.rowList[scope.row.seqNum-1].materialId,editForm.rowList[scope.row.seqNum-1].dosage)">查询价目</el-button>
+              </el-popover>
+            </template>
+
           </el-table-column>
 
         </el-table>
@@ -478,6 +613,7 @@ export default {
   name: 'ProductConstituent',
   data() {
     return {
+      oneMaterialPrices:[],
       specialAddFlag:false,
       specialAddOldSeq:99999,
 
@@ -538,7 +674,9 @@ export default {
         }]
       },
       dialogVisible: false,
+      dialogRealDosageVisible: false,
       tableData: [],
+      tableRealDosageData: [],
       spanArr: [],
       pos: '',
       multipleSelection: [] // 多选框数组
@@ -546,6 +684,25 @@ export default {
     }
   },
   methods: {
+    queryRealDosage(id){
+      request.get('/produce/productConstituent/queryRealDosageById?id=' + id).then(res => {
+        this.tableRealDosageData = res.data.data
+        this.dialogRealDosageVisible = true
+
+      })
+    },
+    queryPrices(materialId,dosage){
+      if(materialId==null || materialId == '' || dosage == null || dosage == ''){
+        this.$message.error("请确保有物料编码和用料信息")
+        return;
+      }
+      // 获取该物料价目信息
+      request.get('/baseData/supplierMaterial/queryPriceByMaterialId?materialId='+materialId+'&&dosage='+dosage).then(res => {
+        if(res.data.data != null){
+          this.oneMaterialPrices = res.data.data
+        }
+      })
+    },
     searchSelect(item) {
       this.searchStr = item.name
 
