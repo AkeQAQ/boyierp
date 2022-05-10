@@ -11,7 +11,7 @@
           <el-col :span="4"><div class="grid-content bg-purple"></div>
             <time>发料日期：{{oneDoc.pickDate}}</time>
           </el-col>
-          <el-col :span="6"><div class="grid-content bg-purple">
+          <el-col :span="4"><div class="grid-content bg-purple">
             <span>收料部门：{{oneDoc.departmentName}}</span>
           </div>
           </el-col>
@@ -19,7 +19,11 @@
             <span>单号：{{"SCLL"+oneDoc.id}}</span>
           </div>
           </el-col>
-          <el-col :span="6"><div class="grid-content bg-purple">
+          <el-col :span="4"><div class="grid-content bg-purple">
+            <span>生产序号：{{oneDoc.batchId}}</span>
+          </div>
+          </el-col>
+          <el-col :span="4"><div class="grid-content bg-purple">
             <span>备注：{{oneDoc.comment}}</span>
           </div>
           </el-col>
