@@ -476,7 +476,7 @@
                    v-show="this.editForm.status===1 || this.specialAddFlag">添加
         </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
-                   v-show="this.editForm.status===1">删除
+                   v-show="this.editForm.status===1 || this.specialAddFlag" >删除
         </el-button>
 
         <el-table
@@ -489,16 +489,18 @@
             :cell-style="cellStyle"
             fit
         >
-          <el-table-column type="selection" width="80" align="center"/>
+          <el-table-column type="selection" width="80" align="center" :selectable="selectable" >
+          </el-table-column>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
+<!--          :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.seqNum > specialAddOldSeq)"-->
           <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="320" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete
                                 style="width: 300px"
                                 popper-class="my-autocomplete"
                                 size="mini" clearable
-                               :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.seqNum > specialAddOldSeq)"
+                               :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.canChange )"
                                class="inline-input"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
@@ -540,7 +542,7 @@
                          @keyup.down.native="numDown(scope.row.seqNum)"
                          @focus="addNext(scope.row.seqNum)"
 
-                         :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.seqNum > specialAddOldSeq)"
+                         :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.canChange )"
                          size="mini" v-model="editForm.rowList[scope.row.seqNum-1].dosage"/>
             </template>
           </el-table-column>
@@ -684,6 +686,11 @@ export default {
     }
   },
   methods: {
+    selectable:function(row, index)
+    {
+      return row.canChange;
+    },
+
     queryRealDosage(id){
       request.get('/produce/productConstituent/queryRealDosageById?id=' + id).then(res => {
         this.tableRealDosageData = res.data.data
@@ -841,6 +848,7 @@ export default {
       obj.num = ''
       obj.specs = ''
       obj.dosage=''
+      obj.canChange = true;
 
       this.editForm.rowList.push(obj);
     },
@@ -853,7 +861,9 @@ export default {
             type: 'error'
           });
         }else{
-          this.editForm.rowList.splice(this.editForm.rowList.length-1,1)
+          if(this.editForm.rowList[this.editForm.rowList.length-1].canChange){
+            this.editForm.rowList.splice(this.editForm.rowList.length-1,1)
+          }
         }
       }else {
         this.editForm.rowList = this.getNewArr(this.editForm.rowList,this.checkedDetail);
