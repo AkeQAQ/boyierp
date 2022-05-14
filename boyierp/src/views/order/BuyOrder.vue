@@ -162,7 +162,7 @@
         <el-form-item>
 
           <div :class="'el-input el-input--mini'">
-            <input  class="el-input__inner" style="width: 150px"  @keyup.enter.native="search()" placeholder="请输入搜索单号(,分割)"
+            <input  class="el-input__inner" style="width: 150px"  placeholder="请输入搜索单号(,分割)"
                     v-model.lazy="searchDocNum">
             </input>
           </div>
@@ -953,7 +953,9 @@ export default {
       tableData: [],
       spanArr: [],
       pos: '',
-      multipleSelection: [] // 多选框数组
+      multipleSelection: [], // 多选框数组
+      allPageTotalAmount: '0.0',
+      allPageTotalSum: '0.0'
 
     }
   },
@@ -998,7 +1000,10 @@ export default {
       return row[property] === value;
     },
     rowClass({ row, rowIndex }) {
-      if (this.multipleSelection.includes(row.detailId)) {
+      if(row === undefined || this.multipleSelection==undefined){
+        console.log("rowClass,undefined:,multi",row,this.multipleSelection)
+      }
+      else if(this.multipleSelection.includes(row.detailId)) {
         return { "background-color": "rgba(255,235,205, 0.75)" };
       }
     },
@@ -1738,11 +1743,11 @@ export default {
       this.getBuyOrderDocumentList()
     },
     // 查询价目表单列表数据
-    getBuyOrderDocumentList() {
+    async getBuyOrderDocumentList() {
       this.tableLoad = true;
       let checkStr = this.checkedBox.join(",");
       console.log("搜索字段:", this.select)
-       request.post('/order/buyOrder/list?currentPage='+this.currentPage+
+      await request.post('/order/buyOrder/list?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&total="+this.total+
            "&&searchStatus="+checkStr+
@@ -1754,6 +1759,12 @@ export default {
           null).then(res => {
 
          this.tableData = res.data.data.records
+        let split = res.data.msg.split("_");
+         this.allPageTotalAmount = split[0];
+         this.allPageTotalSum = split[1]
+        console.log("获取sumAmount:",res.data.msg.split[0])
+        console.log("sumNum:",res.data.msg.split[1])
+
          console.time("str")  //开始
 
          let set = new Set();
@@ -1784,8 +1795,6 @@ export default {
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
         this.tableLoad = false;
-
-        console.log("获取用户表单数据", res.data.data.records)
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
@@ -2029,6 +2038,14 @@ export default {
         if (index === 0) {
           sums[index] = '求和';
           return;
+        }
+        if(index === 8){
+          console.log("合计数目:",this.allPageTotalSum)
+          sums[index] = this.allPageTotalSum;
+        }
+        if(index === 14){
+          console.log("合计金额:",this.allPageTotalAmount)
+          sums[index] = this.allPageTotalAmount;
         }
         if (index === 7  || index === 13) {
           const values = data.map(item => Number(item[column.property]));

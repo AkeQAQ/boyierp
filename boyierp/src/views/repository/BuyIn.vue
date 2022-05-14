@@ -2319,8 +2319,6 @@ export default {
 
   },
   created() {
-    let a = "宏叶280g黑色水晶超柔复0.2海绵+里"
-    console.log(a.length)
     console.log("1激活created钩子函数");
     this.getBuyInDocumentList()
     this.loadSupplierAll()
