@@ -45,20 +45,20 @@
           <tr>
             <td  width="25%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].customerNum}}</td>
             <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].totalNum}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size34}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size35}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size36}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size37}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size38}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size39}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size40}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size41}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size42}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size43}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size44}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size45}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size46}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size47}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size34==0?"":tableData.rowList[page-1].size34}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size35==0?"":tableData.rowList[page-1].size35}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size36==0?"":tableData.rowList[page-1].size36}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size37==0?"":tableData.rowList[page-1].size37}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size38==0?"":tableData.rowList[page-1].size38}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size39==0?"":tableData.rowList[page-1].size39}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size40==0?"":tableData.rowList[page-1].size40}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size41==0?"":tableData.rowList[page-1].size41}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size42==0?"":tableData.rowList[page-1].size42}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size43==0?"":tableData.rowList[page-1].size43}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size44==0?"":tableData.rowList[page-1].size44}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size45==0?"":tableData.rowList[page-1].size45}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size46==0?"":tableData.rowList[page-1].size46}}</td>
+            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size47==0?"":tableData.rowList[page-1].size47}}</td>
 
           </tr>
           <tr>

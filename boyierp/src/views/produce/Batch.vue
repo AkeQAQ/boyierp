@@ -118,7 +118,7 @@
         <el-table-column
             prop="id"
             label="唯一编码"
-            width="100px"
+            width="70px"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -127,33 +127,47 @@
         <el-table-column
             prop="orderNum"
             label="订单号"
-            width="100px"
+            width="70px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="batchId"
             label="生产序号"
+            width="90px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="productNum"
+            label="公司货号"
+            width="100px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="productBrand"
+            label="品牌"
             width="100px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="size34"
-            label="34码"
-            width="50px"
+            label="34"
+            width="37px"
             >
         </el-table-column>
         <el-table-column
             prop="size35"
-            label="35码"
-            width="50px"
+            label="35"
+            width="37px"
         >
         </el-table-column>
         <el-table-column
             prop="size36"
-            label="36码"
-            width="50px"
+            label="36"
+            width="37px"
         >
         </el-table-column>
         <el-table-column
@@ -212,14 +226,14 @@
         </el-table-column>
         <el-table-column
             prop="size46"
-            label="46码"
-            width="50px"
+            label="46"
+            width="37px"
         >
         </el-table-column>
         <el-table-column
             prop="size47"
-            label="47码"
-            width="50px"
+            label="47"
+            width="37px"
         >
         </el-table-column>
 

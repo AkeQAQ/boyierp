@@ -82,15 +82,15 @@
               </el-autocomplete>
 
               <!-- 公司货号 -->
-              <div v-if="item.selectField==='productNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
-                <input   class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+              <div v-if="item.selectField==='productNum'" :class=" 'el-input el-input--mini'" style="width: 200px">
+                <input   class="el-input__inner"  placeholder="请输入搜索内容"
                         v-model.lazy="item.searchStr">
                 </input>
               </div>
 
               <!-- 品牌 -->
-              <div v-if="item.selectField==='productBrand'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
-                <input   class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+              <div v-if="item.selectField==='productBrand'" :class=" 'el-input el-input--mini'" style="width: 200px">
+                <input   class="el-input__inner"   placeholder="请输入搜索内容"
                         v-model.lazy="item.searchStr">
                 </input>
               </div>
