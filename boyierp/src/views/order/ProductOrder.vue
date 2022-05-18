@@ -1068,7 +1068,7 @@ export default {
           .then(res => {
 
         this.$message({
-          message: "备料成功",
+          message: res.data.data,
           type: 'success'
         });
         this.prepare(this.theCurrentOrderMsg)
