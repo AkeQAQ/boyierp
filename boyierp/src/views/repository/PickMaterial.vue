@@ -102,6 +102,12 @@
             </input>
           </div>
 
+          <div v-if="selectedName === 'batchId'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
+
 
         </el-form-item>
 
@@ -167,6 +173,12 @@
 
 
               <div :class=" 'el-input el-input--mini'" v-if="item.selectField === 'comment'" style="width: 200px">
+                <input  class="el-input__inner"   placeholder="请输入搜索内容"
+                        v-model.lazy="item.searchStr">
+                </input>
+              </div>
+
+              <div :class=" 'el-input el-input--mini'" v-if="item.selectField === 'batchId'" style="width: 200px">
                 <input  class="el-input__inner"   placeholder="请输入搜索内容"
                         v-model.lazy="item.searchStr">
                 </input>
@@ -967,7 +979,8 @@ export default {
         {value: 'materialName', label: '物料名称'},
         {value: 'id', label: '单据编号'},
         {value: 'comment', label: '备注'},
-        {value: 'pickUser', label: '领料人'}
+        {value: 'pickUser', label: '领料人'},
+        {value: 'batchId', label: '生产序号'}
 
       ],
       select: 'departmentName', // 搜索默认值

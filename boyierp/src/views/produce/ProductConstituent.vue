@@ -148,6 +148,14 @@
           </el-popconfirm>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('produce:productConstituent:list')">
+          <el-button size="mini" icon="el-icon-download" type="primary" v-if="hasAuth('produce:productConstituent:list')"
+                     @click="exportAll()"
+
+          >导出实际用量
+          </el-button>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -339,13 +347,19 @@
               show-overflow-tooltip>
           </el-table-column>
 
-
           <el-table-column
               label="订单数目"
               prop="orderNumber"
               width="100px"
               show-overflow-tooltip
           >
+          </el-table-column>
+
+          <el-table-column
+              prop="batchNum"
+              label="生产序号数目"
+              width="100px"
+              show-overflow-tooltip>
           </el-table-column>
 
           <el-table-column
@@ -368,6 +382,8 @@
               width="200px"
               show-overflow-tooltip>
           </el-table-column>
+
+
 
           <el-table-column
               prop="num"
@@ -686,6 +702,31 @@ export default {
     }
   },
   methods: {
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportAll() {
+      request2.post('/produce/productConstituent/exportAllRealDosage',null
+          ,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'产品组成全部实际用料.xlsx')
+      }).catch()
+    },
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
+
     selectable:function(row, index)
     {
       return row.canChange;
