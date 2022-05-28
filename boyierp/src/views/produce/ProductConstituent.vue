@@ -149,7 +149,7 @@
         </el-form-item>
 
         <el-form-item v-if="hasAuth('produce:productConstituent:list')">
-          <el-button size="mini" icon="el-icon-download" type="primary" v-if="hasAuth('produce:productConstituent:list')"
+          <el-button size="mini" icon="el-icon-download" type="primary" v-if="hasAuth('produce:productConstituent:queryRealDosage')"
                      @click="exportAll()"
 
           >导出实际用量
@@ -292,7 +292,7 @@
             </el-button>
 
             <el-button type="text" size="small" @click="queryRealDosage(scope.row.id)"
-                       v-if="hasAuth('produce:productConstituent:list') && scope.row.status ===0  ">查看实际用量
+                       v-if="hasAuth('produce:productConstituent:queryRealDosage') && scope.row.status ===0  ">查看实际用量
             </el-button>
 
 
