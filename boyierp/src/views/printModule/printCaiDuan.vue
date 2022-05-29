@@ -66,8 +66,8 @@
           </tr>
 
           <tr>
-            <td colspan="3" style="text-align: center;font-size: 18px">皮料名称</td>
-            <td colspan="3" style="text-align: center;font-size: 18px">标准用量</td>
+            <td colspan="4" style="text-align: center;font-size: 18px">皮料名称</td>
+            <td colspan="2" style="text-align: center;font-size: 18px">标准用量</td>
             <td colspan="3" style="text-align: center;font-size: 18px">应发用量</td>
             <td colspan="3" style="text-align: center;font-size: 18px">实发用量</td>
             <td colspan="4" style="text-align: center;font-size: 15px">备注</td>
@@ -75,12 +75,12 @@
           </tr>
 
           <tr v-for="(row,index) in tableData.rowList[page-1].subList" :key="index">
-            <td colspan="3" style="text-align: center;font-size: 18px;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length < 17">{{row.materialId}}:{{row.materialName}}</td>
-            <td colspan="3" style="text-align: center;font-size: 12px ;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length >= 17">{{row.materialId}}:{{row.materialName}}</td>
-            <td colspan="3" style="text-align: center;font-size: 18px">{{row.dosage}}</td>
+            <td colspan="4" style="text-align: center;font-size: 16px;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length < 25">{{row.materialId}}:{{row.materialName}}</td>
+            <td colspan="4" style="text-align: center;font-size: 13px ;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length >= 25">{{row.materialId}}:{{row.materialName}}</td>
+            <td colspan="2" style="text-align: center;font-size: 16px">{{row.dosage}}</td>
             <td colspan="3" style="text-align: center;font-size: 18px">{{row.needNum}}</td>
-            <td colspan="3" style="text-align: center;font-size: 18px"></td>
-            <td colspan="4"  style="text-align: center;font-size: 18px" v-if="index===0" rowspan='3'></td>
+            <td colspan="3" style="text-align: center;font-size: 16px"></td>
+            <td colspan="4"  style="text-align: center;font-size: 16px" v-if="index===0" rowspan='3'></td>
 
           </tr>
 
