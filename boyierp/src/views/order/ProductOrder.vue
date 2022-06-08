@@ -165,6 +165,14 @@
           </el-popconfirm>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('order:productOrder:prepare')">
+          <el-popconfirm @confirm="statusSureBatch()" title="确定确认吗？">
+            <el-button size="mini" icon="el-icon-success" :disabled="this.multipleSelection.length === 0 " type="danger"
+                       slot="reference">批量确认
+            </el-button>
+          </el-popconfirm>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -218,7 +226,7 @@
         <el-table-column
             prop="productBrand"
             label="品牌"
-            width="100px"
+            width="80px"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -257,7 +265,7 @@
 
         <el-table-column
             prop="status"
-            width="100px"
+            width="80px"
             label="状态">
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.status === 0" type="success">已审核</el-tag>
@@ -270,7 +278,7 @@
         <el-table-column
             prop="prepared"
             label="备料进度"
-            width="130px"
+            width="100px"
             show-overflow-tooltip>
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.prepared === 2" type="warning">备料确认</el-tag>
@@ -281,6 +289,12 @@
         </el-table-column>
 
 
+        <el-table-column
+            prop="created"
+            label="创建日期"
+            width="150px"
+            show-overflow-tooltip>
+        </el-table-column>
 
         <el-table-column
             prop="comment"
@@ -289,10 +303,11 @@
             show-overflow-tooltip>
         </el-table-column>
 
+
         <el-table-column
             prop="action"
             label="操作"
-            width="350px"
+            width="400px"
             fixed="right"
         >
           <template slot-scope="scope">
@@ -346,6 +361,8 @@
 
               查看备料
             </el-button>
+
+
 
             <el-divider direction="vertical"
                         v-if="hasAuth('order:productOrder:prepare') && scope.row.orderType !=2 && scope.row.status ===0  && scope.row.prepared ===1"></el-divider>
@@ -404,7 +421,18 @@
             </el-button>
 
             <el-divider direction="vertical"
+                        v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   && scope.row.status ===0   "></el-divider>
+
+            <el-button style="padding: 0" type="text" size="small"
+                       v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   && scope.row.status ===0   " @click="updateOrderNum(scope.row.id)">
+
+              修改订单号
+            </el-button>
+
+            <el-divider direction="vertical"
                         v-if="hasAuth('order:productOrder:del') && scope.row.orderType !=2  "></el-divider>
+
+
 
             <el-button style="padding: 0" type="text"
                        v-if="hasAuth('order:productOrder:del') && scope.row.orderType !=2 ">
@@ -422,6 +450,41 @@
         </el-table-column>
 
       </el-table>
+
+      <el-dialog
+          title="产品订单信息"
+          :visible.sync="dialogUpdateOrderNumVisible"
+          :before-close="handleOrderNumClose"
+          width="35%"
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 size="mini" :inline="true"
+                 label-width="100px"
+                 :model="editOrderNumForm"  ref="editOrderNumForm"
+                 class="demo-editForm">
+
+          <el-form-item label="编号" prop="id" v-show="false" style="margin-bottom: 0">
+            <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editOrderNumForm.id">
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="订单号" prop="orderNum" >
+            <div :class="'el-input el-input--mini'">
+              <input  class="el-input__inner" style="width: 150px"
+                      v-model.lazy="editOrderNumForm.orderNum" >
+              </input>
+            </div>
+          </el-form-item>
+
+          <el-form-item v-if="hasAuth('order:productOrder:save')">
+            <el-button type="primary"  @click="updateOrderNumSubmit()">
+              提交修改
+            </el-button>
+          </el-form-item>
+
+        </el-form>
+
+      </el-dialog>
 
       <!-- 产品订单弹窗 -->
       <el-dialog
@@ -921,6 +984,12 @@ export default {
         productRegion:'',
         orderType:0
       },
+      editOrderNumForm: {
+        id: '',
+        orderNum:'',
+      },
+
+
 
       theCurrentPrepareOrderId:'',
       theCurrentOrderMsg:{id:'',orderNum:'',customerNum:'',productNum:'',productBrand:'',productColor:'',productRegion:''},
@@ -937,6 +1006,7 @@ export default {
       ],
       canPrepareBatchFlag:false,
       dialogVisible: false,
+      dialogUpdateOrderNumVisible: false,
       tableData: [],
       spanArr: [],
       multipleSelection: [] // 多选框数组
@@ -945,6 +1015,33 @@ export default {
   },
 
   methods: {
+
+    updateOrderNumSubmit(){
+
+        if(this.editOrderNumForm.orderNum==='' ){
+          this.$message({
+            message: '订单序号不能为空',
+            type: 'error'
+          });
+          return
+        }
+        const load = this.$loading({
+          lock: true,
+          text: '处理中...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        });
+        request.post('/order/productOrder/updateOrderNum', this.editOrderNumForm).then(res => {
+          load.close()
+          this.$message({
+            message:  '修改成功!',
+            type: 'success'
+          });
+
+        }).catch(()=>{
+          load.close()
+        })
+    },
     getSummaries(param) {
       const {columns, data} = param;
       const sums = [];
@@ -1080,6 +1177,16 @@ export default {
 
     handleChange(value, direction, movedKeys) {
       console.log(value, direction, movedKeys);
+    },
+    statusSureBatch(){
+      let ids = this.multipleSelection;
+      request.post('/order/productOrder/sureBatch',ids).then(res => {
+        this.$message({
+          message: '批量确认完成!',
+          type: 'success'
+        });
+        this.getList()
+      })
     },
     prepareBatch(){
 
@@ -1399,6 +1506,18 @@ export default {
         console.log("error:",error)
       })
     },
+    updateOrderNum(id){
+      request.get('/order/productOrder/queryById?id=' + id).then(res => {
+        let result = res.data.data
+        this.dialogUpdateOrderNumVisible = true
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.editOrderNumForm = result
+        })
+
+      })
+    },
     // 编辑页面
     edit(id) {
       this.addOrUpdate = "update"
@@ -1501,6 +1620,11 @@ export default {
         this.closeMethod();
         done();
       }
+    },
+    handleOrderNumClose(done) {
+      this.$refs['editOrderNumForm'].resetFields();
+      this.getList()
+      done();
     },
     closeMethod(){
       this.$refs['editForm'].resetFields();
