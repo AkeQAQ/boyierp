@@ -806,6 +806,7 @@
           :before-close="handleCloseBatchPrepare"
       >
         <el-button type="primary" v-show="canPrepareBatchFlag===true" size="small" @click="submitPrepareBatch">提交批量备料</el-button>
+        <el-button type="info" v-show="canPrepareBatchFlag===true" size="small" @click="submitPrepareBatchAndSure">提交批量备料并确认</el-button>
 
         <el-divider content-position="left">明细信息</el-divider>
 
@@ -1128,6 +1129,21 @@ export default {
     //进度条方法
     format(percentage) {
       return percentage === 100 ? '满' : `${percentage}%`;
+    },
+    submitPrepareBatchAndSure(){
+      let ids = this.multipleSelection;
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      request.post('/produce/orderMaterialProgress/saveBatchAndSure?orderIds='+ids,this.prepareBatchList).then(res => {
+        this.prepareBatch()
+        load.close()
+      }).catch(()=>{
+        load.close()
+      })
     },
     submitPrepareBatch(){
       let ids = this.multipleSelection;
