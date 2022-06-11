@@ -137,6 +137,8 @@
             </el-button>
           </el-popconfirm>
         </el-form-item>
+
+
         <!--
 
                 <el-form-item v-if="hasAuth('baseData:supplierMaterial:del')">
@@ -156,6 +158,12 @@
               <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
+        </el-form-item>
+
+        <el-form-item v-if="hasAuth('baseData:supplierMaterial:valid')" >
+          <el-button @click="preViewPrint()" size="mini" icon="el-icon-printer" type="primary"
+          >打印预览
+          </el-button>
         </el-form-item>
 
       </el-form>
@@ -327,6 +335,26 @@
 
       </el-table>
 
+      <el-dialog
+          title=""
+          :visible.sync="dialogVisiblePrint"
+          width="65%"
+          class="elDialog_print_my"
+          :before-close="printClose"
+      >
+        <el-button v-if="dialogVisiblePrint"
+                   @click="printDemo"
+                   v-focus ref="printBtn"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="easyPrint">
+          <template slot-scope="func">
+            <print :tableData="tableData" :getChineseNumber="func.getChineseNumber"></print>
+          </template>
+        </vue-easy-print>
+
+      </el-dialog>
+
       <!-- 价目列表 弹窗 -->
       <el-dialog
           title="价目信息"
@@ -459,13 +487,23 @@
 </template>
 
 <script>
+import vueEasyPrint from "vue-easy-print";
+
 import {request, request2} from "@/axios";
+import print from "@/views/printModule/printSupplierMaterial";
+import exportExcelCommon from "@/views/common/ExportExcelCommon";
 
 export default {
   name: "supplierMaterial",
-
+  // 引入打印模块基础组件和该打印模块的模板页面
+  components: {
+    vueEasyPrint,
+    print,
+  },
   data() {
     return {
+      dialogVisiblePrint:false,
+
       manySearchArr:[{
         selectField:'supplierName',
         searchStr:'',
@@ -526,6 +564,33 @@ export default {
     }
   },
   methods: {
+    printDemo() {
+      this.$refs.easyPrint.print()
+    },
+
+    printClose(done) {
+      this.$refs.easyPrint.tableShow = false;
+      done();
+    },
+
+    preViewPrint() {
+      if (this.tableData) {
+        console.log("打印时的easyPrint：", this.$refs.easyPrint)
+        console.log("打印时的editForm：", this.tableData)
+        if (this.$refs.easyPrint) {
+
+          this.$refs.easyPrint.tableData = this.tableData
+
+        }
+        this.dialogVisiblePrint = true
+      } else {
+        this.$message({
+          message: '没有内容!',
+          type: 'error'
+        });
+      }
+    },
+
     exportCurrentList() {
 
       let checkStr = this.checkedBox.join(",");
