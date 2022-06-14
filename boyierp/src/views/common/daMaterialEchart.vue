@@ -72,6 +72,14 @@
 
     <el-divider></el-divider>
 
+    <div  id="line3" style="height: 600px; width: 1300px;">
+
+    </div>
+    <el-divider></el-divider>
+
+    <div  id="line4" style="height: 600px; width: 1300px;">
+
+    </div>
 
   </div>
 
@@ -97,6 +105,8 @@ export default {
       data:{
       },
       materialPercentDatas:{},
+      productNumBrandMaterialWinPercentDatas:{},
+      productNumBrandMaterialLosePercentDatas:{},
 
       searchStartDate: new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 180).format("yyyy-MM-dd"),
       searchEndDate: new Date().format("yyyy-MM-dd"),
@@ -164,8 +174,127 @@ export default {
         }
       })
 
-    },
+      await  request.get('/analysis/productNumBrandMaterialWinPercent?'+"searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate).then(res => {
+        if(res.data.data != null){
+          this.productNumBrandMaterialWinPercentDatas = res.data.data;
+          this.drawLine3();
+        }
+      })
 
+      await  request.get('/analysis/productNumBrandMaterialLosePercent?'+"searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate).then(res => {
+        if(res.data.data != null){
+          this.productNumBrandMaterialLosePercentDatas = res.data.data;
+          this.drawLine4();
+        }
+      })
+
+    },
+    drawLine4() {
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.$echarts.init(document.getElementById("line4"));
+      // 指定图表的配置项和数据
+      let option = {
+        title: {
+          text: '品牌款式皮尺亏损排行榜',
+          subtext: '',
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b} : {c} ({d}%)'
+        },
+        legend: {
+          type: 'scroll',
+          orient: 'vertical',
+          right: 10,
+          top: 20,
+          bottom: 20,
+          data: this.productNumBrandMaterialLosePercentDatas.legendData
+        },
+        series: [
+          {
+            name: '品牌-款式',
+            type: 'pie',
+            radius: '75%',
+            center: ['40%', '50%'],
+            data: this.productNumBrandMaterialLosePercentDatas.seriesData,
+            label: {
+              normal: {
+                show: true, // 隐藏引导线
+              },
+            },
+            labelLine: {
+              normal: {
+                show: true// 隐藏引导线
+              }
+            },
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          }
+        ]
+      };;
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option);
+    },
+    drawLine3() {
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.$echarts.init(document.getElementById("line3"));
+      // 指定图表的配置项和数据
+      let option = {
+        title: {
+          text: '品牌款式皮尺盈利排行榜',
+          subtext: '',
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b} : {c} ({d}%)'
+        },
+        legend: {
+          type: 'scroll',
+          orient: 'vertical',
+          right: 10,
+          top: 20,
+          bottom: 20,
+          data: this.productNumBrandMaterialWinPercentDatas.legendData
+        },
+        series: [
+          {
+            name: '品牌-款式',
+            type: 'pie',
+            radius: '75%',
+            center: ['40%', '50%'],
+            data: this.productNumBrandMaterialWinPercentDatas.seriesData,
+            label: {
+              normal: {
+                show: true, // 隐藏引导线
+              },
+            },
+            labelLine: {
+              normal: {
+                show: true// 隐藏引导线
+              }
+            },
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          }
+        ]
+      };;
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option);
+    },
     drawLine2() {
       // 基于准备好的dom，初始化echarts实例
       let myChart = this.$echarts.init(document.getElementById("line2"));
@@ -276,6 +405,8 @@ export default {
   mounted() {
     this.drawLine();
     this.drawLine2();
+    this.drawLine3();
+    this.drawLine4();
   },created() {
     this.getData()
     this.getAllSupplierGroup();

@@ -276,6 +276,17 @@
             </el-date-picker>
           </el-form-item>
 
+          <el-form-item label="账存截至日期(包含)" prop="stockEndDate" label-width="150px">
+            <el-date-picker :disabled="this.editForm.status===0 || this.editForm.rowList.length > 0" style="width: 130px"
+                            value-format="yyyy-MM-dd"
+                            v-model="editForm.stockEndDate"
+                            type="date"
+                            clearable
+                            placeholder="选择日期"
+            >
+            </el-date-picker>
+          </el-form-item>
+
           <el-form-item style="margin-left: 100px">
             <el-button type="primary" v-show="this.editForm.status===1" @click="submitForm('editForm',addOrUpdate)">
               保存
@@ -432,7 +443,8 @@ export default {
         checkUser:'',
         stockNum:'',
         checkNum:'',
-        rowList: []
+        rowList: [],
+        stockEndDate:''
       },
       rules: {
         checkUser: [
@@ -469,6 +481,11 @@ export default {
     },
     // 盘点详细信息-添加
     handleAddDetails() {
+      if(this.editForm.stockEndDate === '' || this.editForm.stockEndDate === undefined){
+        this.$message.error("请先选择出入库数据截至日期")
+        return ;
+      }
+
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
         this.editForm.rowList = [];
@@ -511,7 +528,7 @@ export default {
     },
 
     loadTableSearchMaterialDetailAllWithStock() {
-      request.post('/baseData/material/loadTableSearchMaterialDetailAllWithStock').then(res => {
+      request.post('/baseData/material/loadTableSearchMaterialDetailAllWithStockGTEndDate?endDate='+this.editForm.stockEndDate).then(res => {
         this.restaurants3 = res.data.data
       })
     },

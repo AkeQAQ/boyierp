@@ -413,6 +413,13 @@
               show-overflow-tooltip>
           </el-table-column>
 
+          <el-table-column
+              prop="planDosage"
+              label="计划用量"
+              width="130px"
+              show-overflow-tooltip>
+          </el-table-column>
+
         </el-table>
 
       </el-dialog>
