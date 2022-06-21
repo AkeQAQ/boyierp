@@ -173,6 +173,14 @@
           </el-popconfirm>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('order:productOrder:prepare')">
+          <el-popconfirm @confirm="calNoProductOrders()" title="确定计算吗？">
+            <el-button size="mini" icon="el-icon-data-analysis"  type="primary"
+                       slot="reference">计算未投订单所需皮尺
+            </el-button>
+          </el-popconfirm>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -186,7 +194,8 @@
           border
           fit
           height="520px"
-
+          :summary-method="getSummaries"
+          show-summary
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
@@ -825,12 +834,12 @@
 
           <el-table-column label="物料编码" align="center" prop="materialId" width="100px">
             <template slot-scope="scope">
-              <span style="text-align: left" @click="">{{prepareBatchList[scope.row.seqNum-1].materialId}}</span>
+              <span style="text-align: left" >{{prepareBatchList[scope.row.seqNum-1].materialId}}</span>
             </template>
           </el-table-column>
           <el-table-column label="物料名称" align="center" prop="materialName" width="300px">
             <template slot-scope="scope">
-              <span style="text-align: left" @click="">{{prepareBatchList[scope.row.seqNum-1].materialName}}</span>
+              <span style="text-align: left" >{{prepareBatchList[scope.row.seqNum-1].materialName}}</span>
             </template>
           </el-table-column>
 
@@ -894,6 +903,96 @@
 
       </el-dialog>
 
+      <el-dialog
+          title="未投订单计算"
+          :visible.sync="dialogCalMaterials"
+          :before-close="handleCalNoProductClose"
+          fullscreen
+      >
+
+        <el-table
+            :data="tableDataNoProduct"
+            :row-class-name="rowClassName"
+            ref="tbNoProduct"
+            height="580"
+            size="mini"
+            :cell-style="cellStyle"
+            fit
+        >
+
+          <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
+
+          <el-table-column label="订单号" align="center" prop="orderNum" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].orderNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="客户货号" align="center" prop="customerNum" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].customerNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="公司货号" align="center" prop="productNum" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].productNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="产品品牌" align="center" prop="productBrand" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].productBrand}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="产品颜色" align="center" prop="productColor" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].productColor}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="订单数目" align="center" prop="orderNumber" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].orderNumber}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="品牌区域" align="center" prop="productRegion" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].productRegion}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="订单备注" align="center" prop="comment" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].comment}}</span>
+            </template>
+          </el-table-column>
+
+
+          <el-table-column label="物料编码" align="center" prop="materialId" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].materialId}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="物料名称" align="center" prop="materialName" width="300px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].materialName}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="计算需要数量" align="center" prop="needNum" width="300px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].needNum}}</span>
+            </template>
+          </el-table-column>
+
+        </el-table>
+
+
+      </el-dialog>
+
 
       <!--价目列表 分页组件 -->
       <el-pagination
@@ -925,6 +1024,7 @@ export default {
   name: 'ProductOrder',
   data() {
     return {
+      dialogCalMaterials:false,
       prepareCheckVal:[],
 
       dialogPrepareBatchVisible:false,
@@ -939,6 +1039,7 @@ export default {
       dialogImportVisible:false,
       tableData2: [],
       tableData3: [],
+      tableDataNoProduct: [],
 
       // 多个搜索输入框
       manySearchArr:[{
@@ -1017,6 +1118,13 @@ export default {
 
   methods: {
 
+    calNoProductOrders(){
+      request.post('/order/productOrder/calNoProductOrders').then(res => {
+        this.tableDataNoProduct = res.data.data
+        this.dialogCalMaterials = true;
+      })
+    },
+
     updateOrderNumSubmit(){
 
         if(this.editOrderNumForm.orderNum==='' ){
@@ -1051,7 +1159,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 8 || index === 7) {
+        if (index === 6 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1336,6 +1444,11 @@ export default {
       this.fileList=[]
       this.fileSizeIsSatisfy=false;
       this.$refs.upload.clearFiles();
+      console.log("关闭窗口")
+      done();
+    },
+    handleCalNoProductClose(done) {
+      this.tableDataNoProduct = []
       console.log("关闭窗口")
       done();
     },

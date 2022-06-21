@@ -1185,6 +1185,7 @@ export default {
         price: '',
         sourceType: 0,
         totalAmount:'',
+        totalNum:'',
         rowList: [{
           obj:'',
           materialName:'',
@@ -1610,6 +1611,8 @@ export default {
       param.bigUnit =  selectItem.obj.bigUnit
       param.unitRadio =  selectItem.obj.unitRadio
       param.specs = selectItem.obj.specs
+      param.price = ''
+      param.num = ''
       console.log("rowList：", this.editForm.rowList);
 
     },

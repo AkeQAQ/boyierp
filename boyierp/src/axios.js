@@ -2,13 +2,19 @@ import axios from "axios";
 import router from "@/router";
 import Element from "element-ui"
 
-const sysbaseUrl="http://localhost:8081"
-// const sysbaseUrl="http://192.168.8.252:8081"
+// const sysbaseUrl="http://localhost:8081"
+const sysbaseUrl="http://192.168.8.252:8081"
 
 axios.defaults.baseURL = sysbaseUrl // 定义请求的前缀
 
 const request2 =axios.create({
     timeout:100000
+})
+const requestForm =axios.create({
+    timeout:100000,
+    headers:{
+        'Content-Type':"application/x-www-form-urlencoded;charset=utf-8"
+    }
 })
 
 // 声明请求实例
@@ -32,7 +38,12 @@ request2.interceptors.request.use(config=>{
     config.headers['Authorization'] = sessionStorage.getItem("token")
     return config
 })
-
+// 请求前置拦截器
+requestForm.interceptors.request.use(config=>{
+    // 给请求头添加 Authorization 信息
+    config.headers['Authorization'] = sessionStorage.getItem("token")
+    return config
+})
 
 // 请求后置拦截器
 request.interceptors.response.use(response=>{
@@ -69,5 +80,5 @@ request.interceptors.response.use(response=>{
 
 // 暴露出去，给其他地方引用
 export {
-    request,request2,sysbaseUrl
+    request,request2,sysbaseUrl,requestForm
 }

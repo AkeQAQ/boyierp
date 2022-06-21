@@ -122,6 +122,8 @@ export default {
     },
     getChineseNumber: Function, // 求数字的中文写法，从easyPrint组件传入
     tableData: {
+      totalAmount:'',
+      totalNum:''
     }
   },
   data: {
@@ -148,8 +150,6 @@ export default {
     }
   },
   created() {
-    let totalNum = 0
-    let totalAmount= 0
     console.log("传入参数:",this.tableData)
   }
 };

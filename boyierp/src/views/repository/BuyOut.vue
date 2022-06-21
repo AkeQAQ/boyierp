@@ -778,6 +778,9 @@ export default {
       // 表单字段
       addOrUpdate: 'save',
       editForm: {
+        totalAmount:'',
+        totalNum:'',
+
         status: 1, // 编辑表单初始默认值
         id: '',
         supplierId: '',
@@ -1145,6 +1148,9 @@ export default {
       param.bigUnit = selectItem.obj.bigUnit
       param.unitRadio =  selectItem.obj.unitRadio
       param.specs = selectItem.obj.specs
+      param.price=''
+      param.num = ''
+
       console.log("rowList：", this.editForm.rowList);
 
     },

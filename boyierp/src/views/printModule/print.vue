@@ -131,7 +131,9 @@ export default {
     },
     getChineseNumber: Function, // 求数字的中文写法，从easyPrint组件传入
     tableData: {
-      totalAmount: ''
+      totalAmount: '',
+      totalNum:''
+
     }
   },
   data: {
