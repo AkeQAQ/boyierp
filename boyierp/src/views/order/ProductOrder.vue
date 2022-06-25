@@ -144,6 +144,7 @@
             </el-button>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="import">导入</el-dropdown-item>
+              <el-dropdown-item command="importValidNoProduct">导入生管未投EXCEL校验</el-dropdown-item>
               <el-dropdown-item command="importDemo">导入模板下载</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -669,7 +670,65 @@
 
 
       </el-dialog>
+      <el-dialog
+          title="导入生管未投EXCEL与系统校验"
+          :visible.sync="dialogImportValidNoProductVisible"
+          :before-close="handleImportValidNoProductClose"
+          fullscreen
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 :inline="true"
+                 size="mini"
+                 label-width="100px"
+                 ref="editImportValidNoProductForm"
+                 class="demo-editForm myFormClass">
 
+          <el-form-item label="上传文件:">
+            <el-upload
+                class="upload-demo"
+                ref="uploadValidNoProduct"
+                :file-list="fileListValidNoProduct"
+                :http-request="uploadRequestValidNoProduct"
+                action=""
+                :on-change="addFileValidNoProduct"
+                :on-remove="removeFileValidNoProduct"
+                :auto-upload="false"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div class="el-upload__tip" slot="tip">只能上传一个，且不超过5M</div>
+            </el-upload>
+          </el-form-item>
+
+          <el-form-item style="margin-left: 100px">
+            <el-button type="primary"  @click="importValidNoProductExcel('editImportValidNoProductForm')">
+              开始校验
+            </el-button>
+          </el-form-item>
+
+        </el-form>
+
+
+        <el-table
+            ref="multipleTable2"
+            :data="tableDataValidNoProduct"
+            v-if="tableDataValidNoProduct.length>0"
+            border
+            stripe
+            size="mini"
+            :cell-style="{padding:'0'}"
+            height="500px"
+            tooltip-effect="dark"
+            style="width: 100%;color:black;font-size: 20px">
+          <el-table-column
+              label="提示信息"
+              prop="content"
+          >
+          </el-table-column>
+
+        </el-table>
+
+
+      </el-dialog>
       <el-dialog
           :visible.sync="dialogCalNumVisible"
           fullscreen
@@ -1035,11 +1094,16 @@ export default {
       activeNames: ['0'],
       // 导入
       fileList: [],
+      fileListValidNoProduct: [],
+
       fileSizeIsSatisfy: false,
       dialogImportVisible:false,
+      dialogImportValidNoProductVisible:false,
+
       tableData2: [],
       tableData3: [],
       tableDataNoProduct: [],
+      tableDataValidNoProduct: [],
 
       // 多个搜索输入框
       manySearchArr:[{
@@ -1373,6 +1437,46 @@ export default {
       }
       this.$refs.upload.submit();
     },
+    importValidNoProductExcel() {
+
+      if(this.fileListValidNoProduct.length <= 0 || this.fileListValidNoProduct.length > 1){
+        this.$message.error("请上传一个文件！");
+        return;
+      }
+      if (!this.fileSizeIsSatisfy) {
+        this.$message.error("上传失败！存在文件大小超过5M！");
+        return;
+      }
+      this.$refs.uploadValidNoProduct.submit();
+    },
+    uploadRequestValidNoProduct(fileobj) {
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      let param = new FormData()
+      param.append('files', fileobj.file)
+
+      request({
+        method: 'post',
+        url: '/order/productOrder/uploadValidNoProduct',
+        headers: {'Content-Type': 'multipart/form-data'},
+        data: param
+      }).then(res => {
+        let theData = res.data.data;
+        console.log("返回的内容:",theData)
+        load.close()
+
+        if(theData instanceof Array && theData.length > 0){
+          this.tableDataValidNoProduct = theData
+        }
+
+      }).catch(()=>{
+        load.close()
+      })
+    },
     // 文件导入--------------------
     uploadRequest(fileobj) {
       const load = this.$loading({
@@ -1422,6 +1526,13 @@ export default {
       return "#";
     }
     ,
+    addFileValidNoProduct(file, fileList) {
+      this.fileListValidNoProduct = fileList;
+      //限制上传文件为5M
+      console.log("文件大小", file.size)
+      this.fileSizeIsSatisfy = file.size < 5 * 1024 * 1024 ? true : false;
+      return this.fileSizeIsSatisfy
+    },
     // 判断文件大小
     addFile(file, fileList) {
       console.log("addFile")
@@ -1432,8 +1543,11 @@ export default {
       return this.fileSizeIsSatisfy
     },
     // 判断文件大小
+    removeFileValidNoProduct(file, fileList) {
+      this.fileListValidNoProduct = fileList;
+    },
+    // 判断文件大小
     removeFile(file, fileList) {
-      console.log("removeFile")
       this.fileList = fileList;
     },
 
@@ -1445,6 +1559,14 @@ export default {
       this.fileSizeIsSatisfy=false;
       this.$refs.upload.clearFiles();
       console.log("关闭窗口")
+      done();
+    },
+    handleImportValidNoProductClose(done) {
+      this.$refs['editImportValidNoProductForm'].resetFields();
+      this.tableDataValidNoProduct = []
+      this.fileListValidNoProduct=[]
+      this.fileSizeIsSatisfy=false;
+      this.$refs.uploadValidNoProduct.clearFiles();
       done();
     },
     handleCalNoProductClose(done) {
@@ -1459,6 +1581,8 @@ export default {
         this.dialogImportVisible = true;
       } else if(item === 'importDemo'){
         this.downImportDemo();
+      }else if(item === 'importValidNoProduct'){
+        this.dialogImportValidNoProductVisible=true;
       }
     },
 
