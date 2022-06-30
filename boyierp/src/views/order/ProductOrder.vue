@@ -439,21 +439,17 @@
               修改订单号
             </el-button>
 
-            <el-divider direction="vertical"
-                        v-if="hasAuth('order:productOrder:del') && scope.row.orderType !=2  "></el-divider>
 
+            <el-divider direction="vertical"></el-divider>
 
-
-            <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:del') && scope.row.orderType !=2 ">
-              <template>
-                <el-popconfirm @confirm="cancelOrder(scope.row.id)"
-                               title="确定订单取消吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">订单取消</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>
+            <el-dropdown  @command="handleCommand">
+             <span class="el-dropdown-link">
+              更多<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+              <el-dropdown-menu slot="dropdown" >
+                <el-dropdown-item   v-if="hasAuth('order:productOrder:del') && scope.row.orderType !=2 " :command="beforeHandleCommand(scope.$index, scope.row,'a')">订单取消</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
 
 
           </template>
@@ -705,13 +701,19 @@
             </el-button>
           </el-form-item>
 
+          <el-form-item style="margin-left: 100px">
+            <el-button v-if="this.tableDataValidNoProduct.needRepairLists.length > 0" type="primary"  @click="supOrderNumber()">
+              一键补充订单数量(目前只考虑加单)
+            </el-button>
+          </el-form-item>
+
         </el-form>
 
 
         <el-table
             ref="multipleTable2"
-            :data="tableDataValidNoProduct"
-            v-if="tableDataValidNoProduct.length>0"
+            :data="tableDataValidNoProduct.showContent"
+            v-if="tableDataValidNoProduct.showContent.length>0"
             border
             stripe
             size="mini"
@@ -987,7 +989,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="客户货号" align="center" prop="customerNum" width="100px">
+          <el-table-column label="客户货号" align="center" prop="customerNum" width="150px">
             <template slot-scope="scope">
               <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].customerNum}}</span>
             </template>
@@ -1017,7 +1019,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="品牌区域" align="center" prop="productRegion" width="100px">
+          <el-table-column label="品牌区域" align="center" prop="productRegion" width="150px">
             <template slot-scope="scope">
               <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].productRegion}}</span>
             </template>
@@ -1041,9 +1043,15 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="计算需要数量" align="center" prop="needNum" width="300px">
+          <el-table-column label="计算需要数量" align="center" prop="needNum" width="200px">
             <template slot-scope="scope">
               <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].needNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="及时库存数量" align="center" prop="stock_num" width="200px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].stockNum}}</span>
             </template>
           </el-table-column>
 
@@ -1103,7 +1111,7 @@ export default {
       tableData2: [],
       tableData3: [],
       tableDataNoProduct: [],
-      tableDataValidNoProduct: [],
+      tableDataValidNoProduct: {showContent:[],needRepairLists:[]},
 
       // 多个搜索输入框
       manySearchArr:[{
@@ -1181,7 +1189,40 @@ export default {
   },
 
   methods: {
-
+    supOrderNumber(){
+      request.post('/order/productOrder/supOrderNumber',this.tableDataValidNoProduct.needRepairLists).then(res => {
+        this.$message({
+          message:  '补充成功!',
+          type: 'success'
+        });
+        this.tableDataValidNoProduct={showContent:[],needRepairLists:[]}
+      })
+    },
+    beforeHandleCommand(index, row,command){
+      return {
+        'index': index,
+        'row': row,
+        'command':command
+      }
+    },handleCommand(command) {
+      switch (command.command) {
+        case "a"://订单取消
+          this.cancelOrder(command.row.id);
+          break;
+        case "b"://上传原件
+          // this.handleUpload (command.index,command.row);
+          break;
+        case "c"://原件整理
+          // this.handleSettle(command.index,command.row);
+          break;
+      }
+    },
+    handleAbandon(index, row) {
+      //todo
+    },
+    moreCommand(command) {
+      this.$message('click on item ' + command);
+    },
     calNoProductOrders(){
       request.post('/order/productOrder/calNoProductOrders').then(res => {
         this.tableDataNoProduct = res.data.data
@@ -1465,13 +1506,15 @@ export default {
         headers: {'Content-Type': 'multipart/form-data'},
         data: param
       }).then(res => {
-        let theData = res.data.data;
-        console.log("返回的内容:",theData)
         load.close()
-
-        if(theData instanceof Array && theData.length > 0){
-          this.tableDataValidNoProduct = theData
-        }
+        this.tableDataValidNoProduct = res.data.data;
+        // let theData = res.data.data;
+        // console.log("返回的内容:",theData)
+        //
+        //
+        // if(theData instanceof Array && theData.length > 0){
+        //   this.tableDataValidNoProduct.showContent = theData
+        // }
 
       }).catch(()=>{
         load.close()
@@ -1563,10 +1606,11 @@ export default {
     },
     handleImportValidNoProductClose(done) {
       this.$refs['editImportValidNoProductForm'].resetFields();
-      this.tableDataValidNoProduct = []
+      this.tableDataValidNoProduct = {showContent:[],needRepairLists:[]}
       this.fileListValidNoProduct=[]
       this.fileSizeIsSatisfy=false;
       this.$refs.uploadValidNoProduct.clearFiles();
+      this.getList()
       done();
     },
     handleCalNoProductClose(done) {
@@ -1908,6 +1952,16 @@ export default {
 </script>
 
 <style scoped>
+.el-dropdown-link {
+  cursor: pointer;
+  color: #409EFF;
+}
+.el-icon-arrow-down {
+  font-size: 12px;
+}
+.el-dropdown{
+  font-size: 12px;
+}
 
 .transfer-footer {
   margin-left: 20px;
