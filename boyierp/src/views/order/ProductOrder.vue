@@ -177,7 +177,7 @@
         <el-form-item v-if="hasAuth('order:productOrder:prepare')">
           <el-popconfirm @confirm="calNoProductOrders()" title="确定计算吗？">
             <el-button size="mini" icon="el-icon-data-analysis"  type="primary"
-                       slot="reference">计算未投订单所需皮尺
+                       slot="reference">计算未投订单所需物料
             </el-button>
           </el-popconfirm>
         </el-form-item>
@@ -186,7 +186,6 @@
 
       <el-table
           :row-style="rowClass"
-
           ref="multipleTable"
           :data="tableData"
           v-loading = "tableLoad"
@@ -364,10 +363,10 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   && scope.row.status ===0   "></el-divider>
+                        v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   &&scope.row.hasProductConstituent===true  && scope.row.status ===0   "></el-divider>
 
             <el-button style="padding: 0" type="text" size="small"
-                       v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   && scope.row.status ===0   " @click="prepare(scope.row)">
+                       v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone')) &&scope.row.hasProductConstituent===true   && scope.row.status ===0   " @click="prepare(scope.row)">
 
               查看备料
             </el-button>
@@ -375,10 +374,10 @@
 
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('order:productOrder:prepare') && scope.row.orderType !=2 && scope.row.status ===0  && scope.row.prepared ===1"></el-divider>
+                        v-if="hasAuth('order:productOrder:prepare') &&scope.row.hasProductConstituent===true && scope.row.orderType !=2 && scope.row.status ===0  && scope.row.prepared ===1"></el-divider>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('order:productOrder:prepare') && scope.row.orderType !=2 && scope.row.status ===0 && scope.row.prepared ===1   ">
+                       v-if="hasAuth('order:productOrder:prepare') &&scope.row.hasProductConstituent===true && scope.row.orderType !=2 && scope.row.status ===0 && scope.row.prepared ===1   ">
               <template>
                 <el-popconfirm @confirm="prepareSure(scope.row.id)"
                                title="确定确认吗？"
@@ -847,6 +846,10 @@
           <el-table-column label="新增备料数量" align="center" width="120" prop="addNum">
             <template slot-scope="scope">
               <el-input size="mini"
+                        :ref='"input_num_"+scope.row.seqNum'
+                        @keyup.up.native="numUp(scope.row.seqNum)"
+                        @keyup.down.native="numDown(scope.row.seqNum)"
+
                         oninput="value=value.replace(/[^0-9.-]/g,'')"
                         v-model="prepareList[scope.row.seqNum-1].addNum"/>
             </template>
@@ -925,7 +928,11 @@
 
           <el-table-column label="新增备料数量" align="center" width="120" prop="addNums">
             <template slot-scope="scope">
-              <el-input size="mini"   v-model="prepareBatchList[scope.row.seqNum-1].addNums"/>
+              <el-input size="mini"
+                        :ref='"input2_num_"+scope.row.seqNum'
+                        @keyup.up.native="numUp2(scope.row.seqNum)"
+                        @keyup.down.native="numDown2(scope.row.seqNum)"
+                        v-model="prepareBatchList[scope.row.seqNum-1].addNums"/>
             </template>
           </el-table-column>
 
@@ -972,7 +979,7 @@
       >
 
         <el-table
-            :data="tableDataNoProduct"
+            :data="tableDataNoProduct[0]"
             :row-class-name="rowClassName"
             ref="tbNoProduct"
             height="580"
@@ -985,78 +992,116 @@
 
           <el-table-column label="订单号" align="center" prop="orderNum" width="100px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].orderNum}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].orderNum}}</span>
             </template>
           </el-table-column>
 
           <el-table-column label="客户货号" align="center" prop="customerNum" width="150px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].customerNum}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].customerNum}}</span>
             </template>
           </el-table-column>
 
           <el-table-column label="公司货号" align="center" prop="productNum" width="100px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].productNum}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].productNum}}</span>
             </template>
           </el-table-column>
 
           <el-table-column label="产品品牌" align="center" prop="productBrand" width="100px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].productBrand}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].productBrand}}</span>
             </template>
           </el-table-column>
 
           <el-table-column label="产品颜色" align="center" prop="productColor" width="100px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].productColor}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].productColor}}</span>
             </template>
           </el-table-column>
 
           <el-table-column label="订单数目" align="center" prop="orderNumber" width="100px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].orderNumber}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].orderNumber}}</span>
             </template>
           </el-table-column>
 
           <el-table-column label="品牌区域" align="center" prop="productRegion" width="150px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].productRegion}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].productRegion}}</span>
             </template>
           </el-table-column>
 
           <el-table-column label="订单备注" align="center" prop="comment" width="100px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].comment}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].comment}}</span>
             </template>
           </el-table-column>
 
 
           <el-table-column label="物料编码" align="center" prop="materialId" width="100px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].materialId}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].materialId}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="物料名称" align="center" prop="materialName" width="300px">
+          <el-table-column label="物料名称" align="center" prop="materialName" width="200px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].materialName}}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="计算需要数量" align="center" prop="needNum" width="200px">
-            <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].needNum}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].materialName}}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="及时库存数量" align="center" prop="stock_num" width="200px">
+          <el-table-column label="计算需要数量" align="center" prop="needNum" width="150px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[scope.row.seqNum-1].stockNum}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].needNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="及时库存数量" align="center" prop="stock_num" width="150px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[0][scope.row.seqNum-1].stockNum}}</span>
             </template>
           </el-table-column>
 
         </el-table>
 
+        <el-divider content-position="left" > 分组求和</el-divider>
+        <el-table
+            :data="tableDataNoProduct[1]"
+            :row-class-name="tableRowClassName"
+            ref="tbNoProduct2"
+            height="580"
+            size="mini"
+            :cell-style="cellStyle"
+            fit
+        >
+
+          <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
+
+
+          <el-table-column label="物料编码" align="center" prop="materialId" width="100px" >
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].materialId}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="物料名称" align="center" prop="materialName" width="300px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].materialName}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="计算需要数量" align="center" prop="needNum" width="200px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].needNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="及时库存数量" align="center" prop="stock_num" width="200px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].stockNum}}</span>
+            </template>
+          </el-table-column>
+
+        </el-table>
 
       </el-dialog>
 
@@ -1189,6 +1234,29 @@ export default {
   },
 
   methods: {
+    // 数量的上下光标事件
+    numDown(seqNum){
+      if(this.$refs['input_num_'+(seqNum + 1)] != undefined){
+        this.$refs['input_num_'+(seqNum + 1)].focus()
+      }
+    },
+    numUp(seqNum){
+      if(this.$refs['input_num_'+(seqNum - 1)] != undefined){
+        this.$refs['input_num_'+(seqNum - 1)].focus()
+      }
+    },
+
+    numDown2(seqNum){
+      if(this.$refs['input2_num_'+(seqNum + 1)] != undefined){
+        this.$refs['input2_num_'+(seqNum + 1)].focus()
+      }
+    },
+    numUp2(seqNum){
+      if(this.$refs['input2_num_'+(seqNum - 1)] != undefined){
+        this.$refs['input2_num_'+(seqNum - 1)].focus()
+      }
+    },
+
     supOrderNumber(){
       request.post('/order/productOrder/supOrderNumber',this.tableDataValidNoProduct.needRepairLists).then(res => {
         this.$message({
@@ -1687,8 +1755,14 @@ export default {
         this.addOrUpdate = 'save';
       }
     },
+    tableRowClassName({row, rowIndex}) {
+      row.seqNum = rowIndex + 1;
 
-    // 设置每一行的seqNum = 游标+1
+      if(parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) >  parseFloat (this.tableDataNoProduct[1][row.seqNum-1].stockNum)){
+        return 'warning-row';
+      }
+      return '';
+    },
     rowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
     },
@@ -1950,6 +2024,13 @@ export default {
 }
 
 </script>
+
+<style>
+.el-table .warning-row {
+  background: RED;
+}
+
+</style>
 
 <style scoped>
 .el-dropdown-link {

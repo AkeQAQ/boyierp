@@ -79,6 +79,17 @@
           <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('repository:inOutDetail:list')" style="margin-left: 0">
+          <el-dropdown   @command="expChange">
+            <el-button  icon="el-icon-download" size="mini" >
+              导出<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -201,7 +212,9 @@
 </template>
 
 <script>
-import {request, request2} from "@/axios";
+import {request} from "@/axios";
+import {request2} from "@/axios";
+
 export default {
   name: "inOutDetail",
   data() {
@@ -232,6 +245,38 @@ export default {
     }
   },
   methods: {
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
+    exportAll() {
+      console.log("搜索字段："+this.searchStr+",searchStartDate"+this.searchStartDate+",searchEndDate"+this.searchEndDate)
+      let checkStr = this.checkedBox.join(",");
+      request2.post('/repository/inOutDetail/export?'+"searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField=" + this.select+
+          "&&searchStatus=" + checkStr
+          , {'searchStr':this.searchStr},{responseType:'arraybuffer'}).then(res => {
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'收发明细.xlsx')
+      }).catch(error=>{
+      })
+    },
+    expChange(item) {
+      if (item === 'all') {
+        this.exportAll()
+      }
+    },
     tableRowClassName({row, rowIndex}) {
       if (row.status === -1) {
         return 'start-row';
