@@ -311,6 +311,8 @@
         <el-table-column
             prop="specs"
             label="规格型号">
+          width="80px"
+
         </el-table-column>
 
         <el-table-column
@@ -331,6 +333,14 @@
         <el-table-column
             prop="num"
             label="数量"
+            width="100px"
+
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="reason"
+            label="退料原因"
             width="100px"
 
         >
@@ -1550,7 +1560,7 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 11) {
+      } else if (columnIndex === 12) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {

@@ -89,6 +89,20 @@
           </el-popconfirm>
         </el-form-item>
 
+        <el-form-item >
+          <el-dropdown   @command="otherBtn">
+            <el-button  icon="el-icon-more" size="mini" >
+              其他操作<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:valid')" command="batchValid">批量审核</el-dropdown-item>
+              <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:valid')" command="batchRevalid">批量反审核</el-dropdown-item>
+              <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:del')" command="batchDel">批量删除</el-dropdown-item>
+            </el-dropdown-menu>
+
+          </el-dropdown>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -625,6 +639,93 @@ export default {
   },
 
   methods: {
+    batchDel(){
+      // 引用确认消息弹窗api
+      this.$confirm(
+          '确定要批量删除吗?', // 第一个参数为弹窗消息内容
+          '提示', // 第二个参数为弹窗左上角标题title
+          // 第三个参数为弹窗项的options，应该为object对象
+          {
+            confirmButtonText: '确定',  // 确认按钮的文本，可省略，默认为确定
+            cancelButtonText: '取消',  // 取消按钮的文本，可省略，默认为取消
+            type: 'warning' // 弹窗的消息类型，比如为warning时弹窗左边图标为'!'感叹号，为success时图标为'√'的勾。
+          }
+      )
+          // then中填写点击确认按钮后执行的事件，例如执行删除该条数据的delect请求
+          .then(() => {
+            this.del(null)
+          })
+          // catch中填写点击取消按钮后执行的事件，例如消息提示“已取消删除”
+          .catch(() => {
+            this.$message.info(this.$t("lang.Deletecancelled")); // 使用i18n国际化表示的“已取消删除”
+          });
+    },
+    batchValid(){
+      // 引用确认消息弹窗api
+      this.$confirm(
+          '确定要批量审核吗?', // 第一个参数为弹窗消息内容
+          '提示', // 第二个参数为弹窗左上角标题title
+          // 第三个参数为弹窗项的options，应该为object对象
+          {
+            confirmButtonText: '确定',  // 确认按钮的文本，可省略，默认为确定
+            cancelButtonText: '取消',  // 取消按钮的文本，可省略，默认为取消
+            type: 'warning' // 弹窗的消息类型，比如为warning时弹窗左边图标为'!'感叹号，为success时图标为'√'的勾。
+          }
+      )
+          // then中填写点击确认按钮后执行的事件，例如执行删除该条数据的delect请求
+          .then(() => {
+            let ids = this.multipleSelection;
+            request.post('/produce/batch/statusPassBatch',ids).then(res => {
+              this.$message({
+                message: '批量审核通过!',
+                type: 'success'
+              });
+              this.getList()
+            })
+          })
+          // catch中填写点击取消按钮后执行的事件，例如消息提示“已取消删除”
+          .catch(() => {
+            this.$message.info(this.$t("lang.Deletecancelled")); // 使用i18n国际化表示的“已取消删除”
+          });
+    },
+    batchRevalid(){
+      // 引用确认消息弹窗api
+      this.$confirm(
+          '确定要批量反审核吗?', // 第一个参数为弹窗消息内容
+          '提示', // 第二个参数为弹窗左上角标题title
+          // 第三个参数为弹窗项的options，应该为object对象
+          {
+            confirmButtonText: '确定',  // 确认按钮的文本，可省略，默认为确定
+            cancelButtonText: '取消',  // 取消按钮的文本，可省略，默认为取消
+            type: 'warning' // 弹窗的消息类型，比如为warning时弹窗左边图标为'!'感叹号，为success时图标为'√'的勾。
+          }
+      )
+          // then中填写点击确认按钮后执行的事件，例如执行删除该条数据的delect请求
+          .then(() => {
+            let ids = this.multipleSelection;
+            request.post('/produce/batch/statusReturnPassBatch',ids).then(res => {
+              this.$message({
+                message: '批量反审核通过!',
+                type: 'success'
+              });
+              this.getList()
+            })
+          })
+          // catch中填写点击取消按钮后执行的事件，例如消息提示“已取消删除”
+          .catch(() => {
+            this.$message.info(this.$t("lang.Deletecancelled")); // 使用i18n国际化表示的“已取消删除”
+          });
+    },
+
+    otherBtn(item) {
+      if (item === 'batchRevalid') {
+        this.batchRevalid();
+      }else if(item === 'batchValid') {
+        this.batchValid();
+      }else if(item === 'batchDel') {
+        this.batchDel();
+      }
+    },
     importExcel() {
       console.log("this.fileList",this.fileList)
       console.log("this.fileSizeIsSatisfy",this.fileSizeIsSatisfy)

@@ -552,7 +552,7 @@
                  class="demo-editForm">
 
           <el-form-item label="单据编号" prop="id" style="margin-bottom: 0">
-            <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
+            <el-input style="width: 120px" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
 
             </el-input>
           </el-form-item>
@@ -569,7 +569,7 @@
           <el-form-item label="供应商" prop="supplierName" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
-                style="width: 250px"
+                style="width: 200px"
                 popper-class="my-autocomplete"
 
                 :disabled="this.hasPushed"
@@ -631,10 +631,11 @@
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="save" v-show="hasAuth('order:buyOrder:save') && this.editForm.status===1" >
                   保存单据</el-dropdown-item>
-                <el-dropdown-item command="addNew" v-show="hasAuth('order:buyOrder:save') ">
-                  新增</el-dropdown-item>
                 <el-dropdown-item command="copy" v-show="hasAuth('order:buyOrder:save') ">
                   复制</el-dropdown-item>
+                <el-dropdown-item command="addNew" v-show="hasAuth('order:buyOrder:save') ">
+                  新增</el-dropdown-item>
+
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
@@ -1150,28 +1151,41 @@ export default {
         this.submitForm('editForm',this.addOrUpdate)
       }
       else if(item === 'addNew'){
+
+
         if(this.editForm.id===''){
           this.$confirm('确认关闭？')
               .then(_ => {
                 this.closeBrowser();
                 this.addSupplierMaterial();
-                console.log("关闭窗口")
                 done();
               })
               .catch(_ => {});
         }else{
           this.closeBrowser();
           this.addSupplierMaterial();
-          console.log("关闭窗口")
         }
 
       }
       else if(item === 'copy'){
-        this.closeBrowser();
 
-        this.editForm.id = '';
-        this.editForm.status = 1;
-        this.addOrUpdate = 'save';
+
+        if(this.editForm.id===''){
+          this.$confirm('确认关闭？')
+              .then(_ => {
+                this.closeBrowser();
+                this.editForm.id = '';
+                this.editForm.status = 1;
+                this.addOrUpdate = 'save';
+                done();
+              })
+              .catch(_ => {});
+        }else{
+          this.closeBrowser();
+          this.editForm.id = '';
+          this.editForm.status = 1;
+          this.addOrUpdate = 'save';
+        }
       }
     },
 
