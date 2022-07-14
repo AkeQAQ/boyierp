@@ -905,16 +905,16 @@
             </template>
           </el-table-column>
 
+          <el-table-column label="应报备料数目(合计)" align="center" width="130" prop="calNums">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].calNums}}</span>
+            </template>
+          </el-table-column>
+
 
           <el-table-column label="库存单位" align="center" prop="materialUnit" width="80">
             <template slot-scope="scope">
               <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].materialUnit}}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="应报备料数目(合计)" align="center" width="130" prop="calNums">
-            <template slot-scope="scope">
-              <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].calNums}}</span>
             </template>
           </el-table-column>
 
@@ -1093,9 +1093,15 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="及时库存数量" align="center" prop="stock_num" width="200px">
+          <el-table-column label="及时库存数量" align="center" prop="stockNum" width="200px">
             <template slot-scope="scope">
               <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].stockNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="已报未入库数目" align="center" prop="noInNum" width="200px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].noInNum}}</span>
             </template>
           </el-table-column>
 
@@ -1836,7 +1842,8 @@ export default {
     tableRowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
 
-      if(parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) >  parseFloat (this.tableDataNoProduct[1][row.seqNum-1].stockNum)){
+      if(parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) >  (parseFloat (this.tableDataNoProduct[1][row.seqNum-1].stockNum) + parseFloat (this.tableDataNoProduct[1][row.seqNum-1].noInNum))){
+      // if(parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) >  parseFloat (this.tableDataNoProduct[1][row.seqNum-1].stockNum) ){
         return 'warning-row';
       }
       return '';
@@ -2105,7 +2112,7 @@ export default {
 
 <style>
 .el-table .warning-row {
-  background: RED;
+  background: #e6aaaa;
 }
 
 </style>

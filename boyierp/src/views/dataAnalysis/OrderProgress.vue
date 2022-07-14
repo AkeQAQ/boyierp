@@ -149,6 +149,14 @@
           <el-button size="mini" icon="el-icon-data-analysis"  v-if="hasAuth('order:productOrder:import')" @click="calOrderNeedMaterials()" type="primary">产品订单导入计算物料</el-button>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('order:productOrder:list')">
+          <el-popconfirm @confirm="groupView()" title="确定物料分组统计吗？">
+            <el-button size="mini" icon="el-icon-shopping-cart-full"  type="warning"
+                       slot="reference">物料分组统计
+            </el-button>
+          </el-popconfirm>
+        </el-form-item>
+
 
       </el-form>
 
@@ -449,6 +457,56 @@
 
       </el-dialog>
 
+      <el-dialog
+          :visible.sync="dialogGroupMaterials"
+          fullscreen
+          title="进度表物料分组统计"
+      >
+        <el-table
+            :data="groupMaterialsLists"
+            :row-class-name="tableRowClassName"
+            ref="groupMaterials"
+            height="500"
+            size="mini"
+            :cell-style="cellStyle"
+            fit
+        >
+
+          <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
+
+          <el-table-column label="物料编码" align="center" prop="materialId" width="100px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{groupMaterialsLists[scope.row.seqNum-1].materialId}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="物料名称" align="center" prop="materialName" width="300px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{groupMaterialsLists[scope.row.seqNum-1].materialName}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="应报备料数目" align="center" width="130" prop="calNum">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{groupMaterialsLists[scope.row.seqNum-1].calNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="已备料数量" align="center" width="140" prop="preparedNum">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{groupMaterialsLists[scope.row.seqNum-1].preparedNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="入库数量" align="center" width="140" prop="inNum">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{groupMaterialsLists[scope.row.seqNum-1].inNum}}</span>
+            </template>
+          </el-table-column>
+
+        </el-table>
+
+      </el-dialog>
+
 
       <!--价目列表 分页组件 -->
       <el-pagination
@@ -530,12 +588,28 @@ export default {
           [
 
           ],
+      groupMaterialsLists:[],
+      dialogGroupMaterials:false
 
     }
 
   },
 
   methods: {
+    tableRowClassName({row, rowIndex}) {
+      row.seqNum = rowIndex + 1;
+
+      if(parseFloat(this.groupMaterialsLists[row.seqNum-1].preparedNum) >  parseFloat (this.groupMaterialsLists[row.seqNum-1].inNum) ){
+        return 'warning-row';
+      }
+      return '';
+    },
+    groupView(){
+      request.post('/produce/orderMaterialProgress/groupMaterialView').then(res => {
+        this.groupMaterialsLists = res.data.data;
+        this.dialogGroupMaterials = true;
+      })
+    },
     rowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
     },
@@ -904,6 +978,12 @@ export default {
 }
 
 </script>
+<style>
+.el-table .warning-row {
+  background: #e6aaaa;
+}
+
+</style>
 
 <style scoped>
 

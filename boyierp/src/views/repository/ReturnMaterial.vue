@@ -310,8 +310,7 @@
 
         <el-table-column
             prop="specs"
-            label="规格型号">
-          width="80px"
+            label="规格型号" width="80px">
 
         </el-table-column>
 
