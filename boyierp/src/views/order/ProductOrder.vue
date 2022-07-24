@@ -145,6 +145,7 @@
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="import">导入</el-dropdown-item>
               <el-dropdown-item command="importValidNoProduct">导入生管未投EXCEL校验</el-dropdown-item>
+              <el-dropdown-item command="importValidOrderNum">导入EXCEL校验内容</el-dropdown-item>
               <el-dropdown-item command="importDemo">导入模板下载</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -184,6 +185,7 @@
 
       <el-table
           :row-style="rowClass"
+          :row-class-name="hasSameProductNumRowClassName"
           ref="multipleTable"
           :data="tableData"
           v-loading = "tableLoad"
@@ -307,6 +309,13 @@
             prop="comment"
             label="备注"
             width="150px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="endDate"
+            label="货期"
+            width="100px"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -728,6 +737,67 @@
 
 
       </el-dialog>
+
+      <el-dialog
+          title="导入生管EXCEL与系统校验订单号"
+          :visible.sync="dialogImportValidOrderNumVisible"
+          :before-close="handleImportValidOrderNumClose"
+          fullscreen
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 :inline="true"
+                 size="mini"
+                 label-width="100px"
+                 ref="editImportValidOrderNumForm"
+                 class="demo-editForm myFormClass">
+
+          <el-form-item label="上传文件:">
+            <el-upload
+                class="upload-demo"
+                ref="uploadValidOrderNum"
+                :file-list="fileListValidOrderNum"
+                :http-request="uploadRequestValidOrderNum"
+                action=""
+                :on-change="addFileValidOrderNum"
+                :on-remove="removeFileValidOrderNum"
+                :auto-upload="false"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div class="el-upload__tip" slot="tip">只能上传一个，且不超过5M</div>
+            </el-upload>
+          </el-form-item>
+
+          <el-form-item style="margin-left: 100px">
+            <el-button type="primary"  @click="importValidOrderNumExcel('editImportValidOrderNumForm')">
+              开始校验
+            </el-button>
+          </el-form-item>
+
+        </el-form>
+
+
+        <el-table
+            ref="multipleTable2"
+            :data="tableDataValidOrderNum.showContent"
+            v-if="tableDataValidOrderNum.showContent.length>0"
+            border
+            stripe
+            size="mini"
+            :cell-style="{padding:'0'}"
+            height="500px"
+            tooltip-effect="dark"
+            style="width: 100%;color:black;font-size: 20px">
+          <el-table-column
+              label="提示信息"
+              prop="content"
+          >
+          </el-table-column>
+
+        </el-table>
+
+
+      </el-dialog>
+
       <el-dialog
           :visible.sync="dialogCalNumVisible"
           fullscreen
@@ -910,7 +980,6 @@
               <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].calNums}}</span>
             </template>
           </el-table-column>
-
 
           <el-table-column label="库存单位" align="center" prop="materialUnit" width="80">
             <template slot-scope="scope">
@@ -1152,15 +1221,18 @@ export default {
       // 导入
       fileList: [],
       fileListValidNoProduct: [],
+      fileListValidOrderNum: [],
 
       fileSizeIsSatisfy: false,
       dialogImportVisible:false,
       dialogImportValidNoProductVisible:false,
+      dialogImportValidOrderNumVisible:false,
 
       tableData2: [],
       tableData3: [],
       tableDataNoProduct: [],
       tableDataValidNoProduct: {showContent:[],needRepairLists:[]},
+      tableDataValidOrderNum: {showContent:[],needRepairLists:[]},
 
       // 多个搜索输入框
       manySearchArr:[{
@@ -1630,6 +1702,18 @@ export default {
       }
       this.$refs.upload.submit();
     },
+    importValidOrderNumExcel() {
+
+      if(this.fileListValidOrderNum.length <= 0 || this.fileListValidOrderNum.length > 1){
+        this.$message.error("请上传一个文件！");
+        return;
+      }
+      if (!this.fileSizeIsSatisfy) {
+        this.$message.error("上传失败！存在文件大小超过5M！");
+        return;
+      }
+      this.$refs.uploadValidOrderNum.submit();
+    },
     importValidNoProductExcel() {
 
       if(this.fileListValidNoProduct.length <= 0 || this.fileListValidNoProduct.length > 1){
@@ -1641,6 +1725,29 @@ export default {
         return;
       }
       this.$refs.uploadValidNoProduct.submit();
+    },
+    uploadRequestValidOrderNum(fileobj) {
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      let param = new FormData()
+      param.append('files', fileobj.file)
+
+      request({
+        method: 'post',
+        url: '/order/productOrder/uploadValidOrderNum',
+        headers: {'Content-Type': 'multipart/form-data'},
+        data: param
+      }).then(res => {
+        load.close()
+        this.tableDataValidOrderNum = res.data.data;
+
+      }).catch(()=>{
+        load.close()
+      })
     },
     uploadRequestValidNoProduct(fileobj) {
       const load = this.$loading({
@@ -1719,8 +1826,14 @@ export default {
     // 文件上传功能
     uploadUrl: function () {
       return "#";
-    }
-    ,
+    },
+    addFileValidOrderNum(file, fileList) {
+      this.fileListValidOrderNum = fileList;
+      //限制上传文件为5M
+      console.log("文件大小", file.size)
+      this.fileSizeIsSatisfy = file.size < 5 * 1024 * 1024 ? true : false;
+      return this.fileSizeIsSatisfy
+    },
     addFileValidNoProduct(file, fileList) {
       this.fileListValidNoProduct = fileList;
       //限制上传文件为5M
@@ -1736,6 +1849,9 @@ export default {
       console.log("文件大小", file.size)
       this.fileSizeIsSatisfy = file.size < 5 * 1024 * 1024 ? true : false;
       return this.fileSizeIsSatisfy
+    },
+    removeFileValidOrderNum(file, fileList) {
+      this.fileListValidOrderNum = fileList;
     },
     // 判断文件大小
     removeFileValidNoProduct(file, fileList) {
@@ -1754,6 +1870,16 @@ export default {
       this.fileSizeIsSatisfy=false;
       this.$refs.upload.clearFiles();
       console.log("关闭窗口")
+      done();
+    },
+
+    handleImportValidOrderNumClose(done) {
+      this.$refs['editImportValidOrderNumForm'].resetFields();
+      this.tableDataValidOrderNum = {showContent:[],needRepairLists:[]}
+      this.fileListValidOrderNum=[]
+      this.fileSizeIsSatisfy=false;
+      this.$refs.uploadValidOrderNum.clearFiles();
+      this.getList()
       done();
     },
     handleImportValidNoProductClose(done) {
@@ -1779,7 +1905,10 @@ export default {
         this.downImportDemo();
       }else if(item === 'importValidNoProduct'){
         this.dialogImportValidNoProductVisible=true;
+      }else if(item === 'importValidOrderNum'){
+        this.dialogImportValidOrderNumVisible=true;
       }
+
     },
 
     rowClass({ row, rowIndex }) {
@@ -1838,6 +1967,13 @@ export default {
         this.editForm.status = 1;
         this.addOrUpdate = 'save';
       }
+    },
+    hasSameProductNumRowClassName({row, rowIndex}) {
+      row.seqNum = rowIndex + 1;
+      if(this.tableData[row.seqNum-1].hasProductNum && !this.tableData[row.seqNum-1].hasProductConstituent){
+        return 'needDoProductConstituent-row';
+      }
+      return '';
     },
     tableRowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
@@ -2113,6 +2249,9 @@ export default {
 <style>
 .el-table .warning-row {
   background: #e6aaaa;
+}
+.el-table .needDoProductConstituent-row {
+  background: #f1cec6;
 }
 
 </style>

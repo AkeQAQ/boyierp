@@ -21,6 +21,19 @@
             </input>
           </div>
 
+          <div v-if="selectedName === 'productNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
+
+          <div v-if="selectedName === 'productBrand'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
+
+
         </el-form-item>
 
         <el-popover
@@ -605,7 +618,10 @@ export default {
       // 搜索字段
       selectedName: 'batchId',// 搜索默认值
       options: [
-        {value: 'batchId', label: '生产序号'}
+        {value: 'batchId', label: '生产序号'},
+        {value: 'productNum', label: '工厂货号'},
+        {value: 'productBrand', label: '品牌'}
+
       ],
       select: 'batchId', // 搜索默认值
       searchStr: '',
