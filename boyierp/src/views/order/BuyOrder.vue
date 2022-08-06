@@ -702,6 +702,9 @@
               <el-autocomplete size="mini" clearable style="width: 250px"
                                popper-class="my-autocomplete"
                                class="inline-input"
+                               :ref='"input_materialId_"+scope.row.seqNum'
+                               @keyup.enter.native="orderMaterialDown(scope.row.seqNum)"
+
                                :disabled="editForm.rowList[scope.row.seqNum-1].status === 0"
                                v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
                                :fetch-suggestions="tableSearch"
@@ -1252,6 +1255,22 @@ export default {
         this.$refs['input_orderSeq_'+(seqNum - 1)].focus()
       }
     },
+
+
+    orderMaterialDown(seqNum){
+      if(this.$refs['input_materialId_'+(seqNum + 1)] != undefined){
+        this.$refs['input_materialId_'+(seqNum + 1)].focus()
+        this.editForm.rowList[seqNum].materialId=''
+
+      }
+    },
+    orderMaterialUp(seqNum){
+      if(this.$refs['input_materialId_'+(seqNum - 1)] != undefined){
+        this.$refs['input_materialId_'+(seqNum - 1)].focus()
+        this.editForm.rowList[seqNum-1-1].materialId=''
+      }
+    },
+
 
     // 数量的上下光标事件
     numEnter(seqNum){

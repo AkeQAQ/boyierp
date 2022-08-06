@@ -1156,12 +1156,6 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="计算需要数量" align="center" prop="needNum" width="200px">
-            <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].needNum}}</span>
-            </template>
-          </el-table-column>
-
           <el-table-column label="及时库存数量" align="center" prop="stockNum" width="200px">
             <template slot-scope="scope">
               <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].stockNum}}</span>
@@ -1173,6 +1167,20 @@
               <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].noInNum}}</span>
             </template>
           </el-table-column>
+
+
+          <el-table-column label="计算需要数量" align="center" prop="needNum" width="200px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].needNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="投产未领数量" align="center" prop="noPickNum" width="200px">
+            <template slot-scope="scope">
+              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].noPickNum}}</span>
+            </template>
+          </el-table-column>
+
 
         </el-table>
 
@@ -1488,7 +1496,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 6 ) {
+        if (index === 5 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1978,7 +1986,7 @@ export default {
     tableRowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
 
-      if(parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) >  (parseFloat (this.tableDataNoProduct[1][row.seqNum-1].stockNum) + parseFloat (this.tableDataNoProduct[1][row.seqNum-1].noInNum))){
+      if( (parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) +  parseFloat(this.tableDataNoProduct[1][row.seqNum-1].noPickNum) ) >  (parseFloat (this.tableDataNoProduct[1][row.seqNum-1].stockNum) + parseFloat (this.tableDataNoProduct[1][row.seqNum-1].noInNum))){
       // if(parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) >  parseFloat (this.tableDataNoProduct[1][row.seqNum-1].stockNum) ){
         return 'warning-row';
       }
