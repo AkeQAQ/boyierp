@@ -246,6 +246,19 @@
           </el-dropdown>
         </el-form-item>
 
+        <el-form-item >
+          <el-dropdown   @command="otherBtn">
+            <el-button  icon="el-icon-more" size="mini" >
+              其他操作<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item  v-if="hasAuth('order:buyOrder:export')" command="downImportBatchBuyOrders">批量导入模板下载</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('order:buyOrder:export')" command="importBatchBuyOrders">批量导入</el-dropdown-item>
+            </el-dropdown-menu>
+
+          </el-dropdown>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -796,6 +809,66 @@
 
       </el-dialog>
 
+      <el-dialog
+          title="导入信息"
+          :visible.sync="dialogImportVisible"
+          :before-close="handleImportClose"
+          fullscreen
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 :inline="true"
+                 size="mini"
+                 label-width="100px"
+                 ref="editImportForm"
+                 class="demo-editForm myFormClass">
+
+          <el-form-item label="上传文件:">
+            <el-upload
+                class="upload-demo"
+                ref="upload"
+                :file-list="fileList"
+                :http-request="uploadRequest"
+                action=""
+                :on-change="addFile"
+                :on-remove="removeFile"
+                :auto-upload="false"
+            >
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div class="el-upload__tip" slot="tip">只能上传一个，且不超过5M</div>
+            </el-upload>
+          </el-form-item>
+
+          <el-form-item style="margin-left: 100px">
+            <el-button type="primary"  @click="importExcel('editImportForm')">
+              保存
+            </el-button>
+          </el-form-item>
+
+        </el-form>
+
+
+        <el-table
+            ref="multipleTable2"
+            :data="tableData2"
+            v-if="tableData2.length>0"
+            border
+            stripe
+            size="mini"
+            :cell-style="{padding:'0'}"
+            height="500px"
+            tooltip-effect="dark"
+            style="width: 100%;color:black;font-size: 20px">
+          <el-table-column
+              label="提示信息"
+              prop="content"
+          >
+          </el-table-column>
+
+        </el-table>
+
+
+      </el-dialog>
+
       <!--价目列表 分页组件 -->
       <el-pagination
 
@@ -959,11 +1032,116 @@ export default {
       pos: '',
       multipleSelection: [], // 多选框数组
       allPageTotalAmount: '0.0',
-      allPageTotalSum: '0.0'
+      allPageTotalSum: '0.0',
+      dialogImportVisible:false,
+      tableData2: [],
+      fileList: [],
+      fileSizeIsSatisfy: false,
 
     }
   },
   methods: {
+    importExcel() {
+      console.log("this.fileList",this.fileList)
+      console.log("this.fileSizeIsSatisfy",this.fileSizeIsSatisfy)
+
+      if(this.fileList.length <= 0 || this.fileList.length > 1){
+        this.$message.error("请上传一个文件！");
+        return;
+      }
+      if (!this.fileSizeIsSatisfy) {
+        this.$message.error("上传失败！存在文件大小超过5M！");
+        return;
+      }
+      this.$refs.upload.submit();
+    },
+    // 判断文件大小
+    removeFile(file, fileList) {
+      this.fileList = fileList;
+    },
+    addFile(file, fileList) {
+      console.log("addFile")
+      this.fileList = fileList;
+      //限制上传文件为5M
+      console.log("文件大小", file.size)
+      this.fileSizeIsSatisfy = file.size < 5 * 1024 * 1024 ? true : false;
+      return this.fileSizeIsSatisfy
+    },
+
+    // 文件导入--------------------
+    uploadRequest(fileobj) {
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      let param = new FormData()
+      param.append('files', fileobj.file)
+
+      request({
+        method: 'post',
+        url: '/order/buyOrder/upload',
+        headers: {'Content-Type': 'multipart/form-data'},
+        data: param
+      }).then(res => {
+        let theData = res.data.data;
+        console.log("返回的内容:",theData)
+        load.close()
+
+        if(theData instanceof Array && theData.length > 0){
+          this.tableData2 = theData
+        }else {
+          // 成功
+          this.$message({
+            message: '导入成功!',
+            type: 'success'
+          });
+          // 关闭弹窗并且重置内容
+          this.$refs['editImportForm'].resetFields();
+          this.tableData2 = []
+          this.fileList=[]
+          this.fileSizeIsSatisfy=false;
+          this.$refs.upload.clearFiles();
+          this.dialogImportVisible = false;
+          this.getBuyOrderDocumentList()
+        }
+
+      }).catch(()=>{
+        load.close()
+      })
+    },
+
+    // 文件上传功能
+    uploadUrl: function () {
+      return "#";
+    },
+    // 关闭弹窗处理动作
+    handleImportClose(done) {
+      this.$refs['editImportForm'].resetFields();
+      this.tableData2 = []
+      this.fileList=[]
+      this.fileSizeIsSatisfy=false;
+      this.$refs.upload.clearFiles();
+      done();
+    },
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    downImportBatchBuyOrders() {
+
+      request2.post('/order/buyOrder/down',null,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'采购订单模板.xlsx')
+      }).catch()
+    },
+    otherBtn(item) {
+      if (item === 'importBatchBuyOrders') {
+        this.dialogImportVisible = true;
+      }else if(item === 'downImportBatchBuyOrders'){
+        this.downImportBatchBuyOrders();
+      }
+    },
     filterChange(filters){
       console.log("搜索条件变动",filters.priceKey)
       if(filters.priceKey != undefined){

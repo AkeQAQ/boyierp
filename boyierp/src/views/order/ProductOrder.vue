@@ -1496,7 +1496,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 5 ) {
+        if (index === 6 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {

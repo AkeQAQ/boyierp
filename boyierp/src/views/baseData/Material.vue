@@ -107,6 +107,17 @@
                 </el-popconfirm>
               </el-form-item>
 
+              <el-form-item v-if="hasAuth('baseData:material:list')" style="margin-left: 0">
+                <el-dropdown   @command="expChange">
+                  <el-button  icon="el-icon-download" size="mini" >
+                    导出<i class="el-icon-arrow-down el-icon--right"></i>
+                  </el-button>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </el-form-item>
+
             </el-form>
 
             <el-table
@@ -397,7 +408,7 @@
 </template>
 
 <script>
-import {request, sysbaseUrl} from "@/axios";
+import {request, request2, sysbaseUrl} from "@/axios";
 
 export default {
   name: "Material",
@@ -495,6 +506,39 @@ export default {
     }
   },
   methods: {
+    expChange(item) {
+      console.log("导出:",item)
+      if(item === 'all'){
+        this.exportAll()
+      }
+    },
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportAll() {
+      request2.post('/baseData/material/export?'+
+          "searchField="+this.select+
+          "&&searchStr="+this.searchStr
+          ,null
+          ,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'物料全部列表.xlsx')
+      }).catch()
+    },
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
+
     // 图片放大预览。
     handlePictureCardPreview(file) {
       console.log("文件:",file)
