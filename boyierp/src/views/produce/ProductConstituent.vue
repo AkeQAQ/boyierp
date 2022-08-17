@@ -516,7 +516,6 @@
           </el-table-column>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-<!--          :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.seqNum > specialAddOldSeq)"-->
           <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="320" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete
@@ -599,6 +598,21 @@
 
           </el-table-column>
 
+          <el-table-column label="显示打印开关" align="center" width="120">
+            <template slot-scope="scope">
+              <el-switch
+                  @change="changeCanShowPrint(scope.row.seqNum)"
+
+                  v-model=editForm.rowList[scope.row.seqNum-1].canShowPrint
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                  active-value="0"
+                  inactive-value="1">
+              </el-switch>
+            </template>
+
+          </el-table-column>
+
         </el-table>
 
       </el-dialog>
@@ -641,7 +655,6 @@ export default {
       oneMaterialPrices:[],
       specialAddFlag:false,
       specialAddOldSeq:99999,
-
       dialogImageUrl :'',
       dialogPicVisible:false,
 
@@ -688,6 +701,7 @@ export default {
         productBrand: '',
         productColor:'',
         rowList: [{
+          id:'',
           materialName:'',
           unit:'',
           materialId:'',
@@ -695,7 +709,9 @@ export default {
           specs:'',
           dosage:'',
           picUrl:'',
-          picUrls:''
+          picUrls:'',
+          canChange:true,
+          canShowPrint:"0"
         }]
       },
       dialogVisible: false,
@@ -709,6 +725,13 @@ export default {
     }
   },
   methods: {
+    changeCanShowPrint(seqNum){
+      console.log("当前value:",this.editForm.rowList[seqNum-1].canShowPrint)
+      request.get('/produce/productConstituentDetail/changeShowPrint?id=' + this.editForm.rowList[seqNum-1].id).then(res => {
+          this.$message.success(res.data.data);
+      })
+    },
+
     // 导出列表数据- 服务端写出字节流到浏览器，进行保存
     exportAll() {
       request2.post('/produce/productConstituent/exportAllRealDosage',null
@@ -865,7 +888,11 @@ export default {
       else if(item === 'copy'){
         this.editForm.id = '';
         this.editForm.status = 1;
+        for (let i = 0; i < this.editForm.rowList.length; i++) {
+          this.editForm.rowList[i].canChange = true;
+        }
         this.addOrUpdate = 'save';
+
       }
     },
 
@@ -897,6 +924,7 @@ export default {
       obj.specs = ''
       obj.dosage=''
       obj.canChange = true;
+      obj.canShowPrint = "0"
 
       this.editForm.rowList.push(obj);
     },
@@ -1041,7 +1069,8 @@ export default {
           materialId:'',
           num:'',
           specs:'',
-          dosage:''
+          dosage:'',
+          canChange: true
         }]
       }
       this.dialogVisible = true
