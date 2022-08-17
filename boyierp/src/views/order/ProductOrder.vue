@@ -124,6 +124,23 @@
           </el-select>
         </el-form-item>
 
+        <el-form-item >
+          <el-select
+              size ="mini"
+              v-model="checkedBox3"
+              multiple
+              collapse-tags
+              style="margin-left: 0;width: 130px"
+              placeholder="请选择状态">
+            <el-option
+                v-for="item in status3Arr"
+                :key="item.val"
+                :label="item.name"
+                :value="item.val">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item>
           <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
@@ -201,8 +218,11 @@
           style="width: 100%;color:black"
           :cell-style="{padding:'0',borderColor:'black'}"
           :header-cell-style="{borderColor:'black'}"
-          :default-sort="{prop:'id',order:'descending'}"
-          @selection-change="handleSelectionChange">
+          @selection-change="handleSelectionChange"
+          @row-click="rowClick"
+          @select="pinSelect"
+
+      >
         <el-table-column
             type="selection"
             width="50">
@@ -960,6 +980,7 @@
             size="mini"
             :cell-style="cellStyle"
             fit
+
         >
 
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
@@ -1255,6 +1276,9 @@ export default {
       status2Arr : [{'name':'备料已确认','val':2},{'name':'备料未确认','val':1},{'name':'备料完成(已报)','val':0}],
       checkedBox2:[2,1,0],
 
+      status3Arr : [{'name':'取消','val':2},{'name':'回单','val':1},{'name':'订单','val':0}],
+      checkedBox3:[2,1,0],
+
       // 搜索字段
       selectedName: 'productNum',// 搜索默认值
       options: [
@@ -1312,12 +1336,42 @@ export default {
       dialogUpdateOrderNumVisible: false,
       tableData: [],
       spanArr: [],
-      multipleSelection: [] // 多选框数组
+      multipleSelection: [], // 多选框数组
+
+      // shift 多选
+      origin:-1,  // 变量起点
+      pin:false, // 默认不按住
 
     }
   },
 
   methods: {
+    // 行点击事件
+    rowClick(row,column,event){
+      console.log("某行单击,",row,column,event)
+      this.$refs.multipleTable.toggleRowSelection(row);
+    },
+    //shift 批量选择
+    pinSelect(item, index){
+      console.log("index",index)
+      const data = this.$refs.multipleTable.tableData; // 获取所以数据
+      console.log("data:",data)
+      const origin = this.origin; // 起点数 从-1开始
+      const endIdx = index.index; // 终点数
+      console.log("pin:"+this.pin+",isClude:"+item.includes(data[origin])+"item:"+item +",data:"+data[origin])
+      if (this.pin && item.includes(data[origin])) { // 判断按住
+        const sum = Math.abs(origin - endIdx) + 1;// 这里记录终点
+        const min = Math.min(origin, endIdx);// 这里记录起点
+        let i = 0;
+        while (i < sum) {
+          const index = min + i;
+          this.$refs.multipleTable.toggleRowSelection(data[index], true); // 通过ref打点调用toggleRowSelection方法，第二个必须为true
+          i++;
+        }
+      } else {
+        this.origin = index.index; // 没按住记录起点
+      }
+    },
     batchSurePrepare(){
       // 引用确认消息弹窗api
       this.$confirm(
@@ -2086,16 +2140,23 @@ export default {
       this.tableLoad = true;
       let checkStr = this.checkedBox.join(",");
       let check2Str = this.checkedBox2.join(",");
+      let check3Str = this.checkedBox3.join(",");
 
       let url = '/order/productOrder/list?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&searchField="+this.select+
           "&&searchStatus="+checkStr+
-          "&&searchStatus2="+check2Str;
+          "&&searchStatus2="+check2Str+
+          "&&searchStatus3="+check3Str;
       request.post(url,
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
           this.tableData = res.data.data.records
+
+        this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
+          item.index = index;
+        })
+
           this.total = res.data.data.total
           this.tableLoad = false;
           this.$nextTick(() => {
@@ -2247,6 +2308,22 @@ export default {
   },
   created() {
     this.getList()
+
+  },
+  mounted() {
+    // shift 按住
+    window.addEventListener('keydown',code=>{
+      console.log("shift按住：")
+      if(code.keyCode === 16 && code.shiftKey){
+        this.pin = true
+      }
+    })
+    // shift 松开
+    window.addEventListener('keyup',code=>{
+      if(code.keyCode === 16 ){
+        this.pin = false
+      }
+    })
 
   }
 

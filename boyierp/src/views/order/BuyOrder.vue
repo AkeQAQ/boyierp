@@ -1402,7 +1402,7 @@ export default {
 
     },
     pinSelect(item, index){
-      console.log("pinselect")
+      console.log("index",index)
       const data = this.$refs.multipleTable.tableData; // 获取所以数据
       console.log("data:",data)
       const origin = this.origin; // 起点数 从-1开始

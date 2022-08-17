@@ -134,8 +134,10 @@
           style="width: 100%;color:black"
           :cell-style="{padding:'0',borderColor:'black'}"
           :header-cell-style="{borderColor:'black'}"
-          :default-sort="{prop:'id',order:'descending'}"
-          @selection-change="handleSelectionChange">
+          @selection-change="handleSelectionChange"
+          @select="pinSelect"
+
+      >
 
         <el-table-column
             type="selection"
@@ -649,12 +651,35 @@ export default {
       dialogVisible: false,
       tableData: [],
       spanArr: [],
-      multipleSelection: [] // 多选框数组
+      multipleSelection: [] ,// 多选框数组
 
+      // shift 多选
+      origin:-1,  // 变量起点
+      pin:false, // 默认不按住
     }
   },
 
   methods: {
+    pinSelect(item, index){
+      console.log("index",index)
+      const data = this.$refs.multipleTable.tableData; // 获取所以数据
+      console.log("data:",data)
+      const origin = this.origin; // 起点数 从-1开始
+      const endIdx = index.index; // 终点数
+      console.log("pin:"+this.pin+",isClude:"+item.includes(data[origin])+"item:"+item +",data:"+data[origin])
+      if (this.pin && item.includes(data[origin])) { // 判断按住
+        const sum = Math.abs(origin - endIdx) + 1;// 这里记录终点
+        const min = Math.min(origin, endIdx);// 这里记录起点
+        let i = 0;
+        while (i < sum) {
+          const index = min + i;
+          this.$refs.multipleTable.toggleRowSelection(data[index], true); // 通过ref打点调用toggleRowSelection方法，第二个必须为true
+          i++;
+        }
+      } else {
+        this.origin = index.index; // 没按住记录起点
+      }
+    },
     batchDel(){
       // 引用确认消息弹窗api
       this.$confirm(
@@ -1055,6 +1080,11 @@ export default {
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
           this.tableData = res.data.data.records
+
+        this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
+          item.index = index;
+        })
+
           this.total = res.data.data.total
           this.tableLoad = false;
           this.$nextTick(() => {
@@ -1165,7 +1195,24 @@ export default {
     this.getList()
 
   }// 自定义指令，，insert在DOM加入的时候才生效
-  , directives: {
+  ,
+  mounted() {
+    // shift 按住
+    window.addEventListener('keydown',code=>{
+      console.log("shift按住：")
+      if(code.keyCode === 16 && code.shiftKey){
+        this.pin = true
+      }
+    })
+    // shift 松开
+    window.addEventListener('keyup',code=>{
+      if(code.keyCode === 16 ){
+        this.pin = false
+      }
+    })
+
+  },
+  directives: {
     // 声明自定义指令v-focus
     focus: {
       // v-foucs指令的钩子函数
