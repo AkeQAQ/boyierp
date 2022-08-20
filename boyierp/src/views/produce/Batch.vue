@@ -1020,15 +1020,27 @@ export default {
 
     },
     handleSelectionChange(val) {
-      console.log("多选框 val ", val)
-      this.multipleSelection = []
 
-      val.forEach(theId => {
-        if(!this.multipleSelection.some(item=>item==theId.id)){
-          this.multipleSelection.push(theId.id)
-        }
-      })
-      console.log("多选框 选中的 ", this.multipleSelection)
+      // 等于true的时候，shift 多选，则不清空老的数组，
+      if(this.pin){
+        val.forEach(theId => {
+          if(!this.multipleSelection.some(item=>item==theId.id)){
+            this.multipleSelection.push(theId.id)
+          }
+        })
+        console.log("handleSelectionChange 多选框 选中的 ", this.multipleSelection)
+      }else{
+        console.log("多选框 val ", val)
+        this.multipleSelection = []
+
+        val.forEach(theId => {
+          if(!this.multipleSelection.some(item=>item==theId.id)){
+            this.multipleSelection.push(theId.id)
+          }
+        })
+        console.log("多选框 选中的 ", this.multipleSelection)
+      }
+
     },
     // 表单提交
     submitForm(formName, methodName) {

@@ -219,7 +219,6 @@
           :cell-style="{padding:'0',borderColor:'black'}"
           :header-cell-style="{borderColor:'black'}"
           @selection-change="handleSelectionChange"
-          @row-click="rowClick"
           @select="pinSelect"
 
       >
@@ -1352,7 +1351,7 @@ export default {
       this.$refs.multipleTable.toggleRowSelection(row);
     },
     //shift 批量选择
-    pinSelect(item, index){
+    async pinSelect(item, index){
       console.log("index",index)
       const data = this.$refs.multipleTable.tableData; // 获取所以数据
       console.log("data:",data)
@@ -2080,15 +2079,27 @@ export default {
 
     },
     handleSelectionChange(val) {
-      console.log("多选框 val ", val)
-      this.multipleSelection = []
+      // 等于true的时候，shift 多选，则不清空老的数组，
+      if(this.pin){
+        val.forEach(theId => {
+          if(!this.multipleSelection.some(item=>item==theId.id)){
+            this.multipleSelection.push(theId.id)
+          }
+        })
+        console.log("handleSelectionChange 多选框 选中的 ", this.multipleSelection)
 
-      val.forEach(theId => {
-        if(!this.multipleSelection.some(item=>item==theId.id)){
-          this.multipleSelection.push(theId.id)
-        }
-      })
-      console.log("多选框 选中的 ", this.multipleSelection)
+      }else{
+        console.log(" handleSelectionChange多选框 val ", val)
+        this.multipleSelection = []
+
+        val.forEach(theId => {
+          if(!this.multipleSelection.some(item=>item==theId.id)){
+            this.multipleSelection.push(theId.id)
+          }
+        })
+        console.log("handleSelectionChange 多选框 选中的 ", this.multipleSelection)
+      }
+
     },
     // 表单提交
     submitForm(formName, methodName) {
