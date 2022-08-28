@@ -1178,7 +1178,7 @@
 
           <el-table-column label="及时库存数量" align="center" prop="stockNum" width="200px">
             <template slot-scope="scope">
-              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].stockNum}}</span>
+              <span style="text-align: left" >{{tableDataNoProduct[1][scope.row.seqNum-1].stockNum==null?0:tableDataNoProduct[1][scope.row.seqNum-1].stockNum}}</span>
             </template>
           </el-table-column>
 
@@ -2039,7 +2039,8 @@ export default {
     tableRowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
 
-      if( (parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) +  parseFloat(this.tableDataNoProduct[1][row.seqNum-1].noPickNum) ) >  (parseFloat (this.tableDataNoProduct[1][row.seqNum-1].stockNum) + parseFloat (this.tableDataNoProduct[1][row.seqNum-1].noInNum))){
+      let stockNum = this.tableDataNoProduct[1][row.seqNum-1].stockNum ==null?0:this.tableDataNoProduct[1][row.seqNum-1].stockNum;
+      if( (parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) +  parseFloat(this.tableDataNoProduct[1][row.seqNum-1].noPickNum) ) >  (parseFloat (stockNum) + parseFloat (this.tableDataNoProduct[1][row.seqNum-1].noInNum))){
       // if(parseFloat(this.tableDataNoProduct[1][row.seqNum-1].needNum) >  parseFloat (this.tableDataNoProduct[1][row.seqNum-1].stockNum) ){
         return 'warning-row';
       }

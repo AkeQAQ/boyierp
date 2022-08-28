@@ -252,8 +252,8 @@
               其他操作<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item  v-if="hasAuth('order:buyOrder:export')" command="downImportBatchBuyOrders">批量导入模板下载</el-dropdown-item>
-              <el-dropdown-item  v-if="hasAuth('order:buyOrder:export')" command="importBatchBuyOrders">批量导入</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('order:buyOrder:import')" command="downImportBatchBuyOrders">批量导入模板下载</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('order:buyOrder:import')" command="importBatchBuyOrders">批量导入</el-dropdown-item>
             </el-dropdown-menu>
 
           </el-dropdown>

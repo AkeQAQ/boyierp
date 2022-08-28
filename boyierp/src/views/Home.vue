@@ -152,6 +152,7 @@ Date.prototype.format = function(fmt) {
 .my-autocomplete .highlighted .unit {
   color: #ddd;
 }
+
 </style>
 
 <style scoped>
