@@ -177,6 +177,7 @@
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('order:productOrder:valid')" command="batchValid">批量审核</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('order:productOrder:prepare')" command="batchSurePrepare">批量确认</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('order:productOrder:prepare')" command="batchNotSurePrepare">批量取消确认</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('order:productOrder:prepare')" command="mergeOrders">合并订单</el-dropdown-item>
             </el-dropdown-menu>
 
           </el-dropdown>
@@ -481,6 +482,45 @@
         </el-table-column>
 
       </el-table>
+
+      <el-dialog
+          title="订单合并"
+          :visible.sync="dialogMergeOrdersVisible"
+          :before-close="handleMergeOrdersClose"
+          width="35%"
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 size="mini" :inline="true"
+                 label-width="100px"
+                 :model="editMergeOrdersForm"  ref="editMergeOrdersForm"
+                 class="demo-editForm">
+
+          <el-form-item label="合并来源订单号(,分割)" label-width="200px"  style="margin-bottom: 20px">
+            <el-input
+                type="textarea"
+                :rows="2"
+                placeholder="请输入内容"
+                v-model="editMergeOrdersForm.orders">
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="合并目标订单号" label-width="200px">
+            <div :class="'el-input el-input--mini'">
+              <input  class="el-input__inner" style="width: 150px"
+                      v-model.lazy="editMergeOrdersForm.toMergeOrder" >
+              </input>
+            </div>
+          </el-form-item>
+
+          <el-form-item v-if="hasAuth('order:productOrder:save')">
+            <el-button type="primary"  @click="mergerOrdersSubmit()">
+              合并提交
+            </el-button>
+          </el-form-item>
+
+        </el-form>
+
+      </el-dialog>
 
       <el-dialog
           title="产品订单信息"
@@ -1237,6 +1277,8 @@ export default {
   name: 'ProductOrder',
   data() {
     return {
+      dialogMergeOrdersVisible:false,
+
       dialogCalMaterials:false,
       prepareCheckVal:[],
 
@@ -1313,6 +1355,10 @@ export default {
       editOrderNumForm: {
         id: '',
         orderNum:'',
+      },
+      editMergeOrdersForm: {
+        orders: '',
+        toMergeOrder:'',
       },
 
 
@@ -1449,6 +1495,12 @@ export default {
         this.batchSurePrepare();
       }else if(item === 'batchNotSurePrepare'){
         this.batchNotSurePrepare();
+      }else if(item === 'mergeOrders'){
+        this.editMergeOrdersForm={
+          orders:'',
+          toMergeOrder: ''
+        }
+        this.dialogMergeOrdersVisible = true;
       }
     },
     // 数量的上下光标事件
@@ -1515,6 +1567,41 @@ export default {
       })
     },
 
+    mergerOrdersSubmit(){
+
+      if(this.editMergeOrdersForm.orders==='' ){
+        this.$message({
+          message: '合并来源订单不能为空',
+          type: 'error'
+        });
+        return
+      }
+      if(this.editMergeOrdersForm.toMergeOrder==='' ){
+        this.$message({
+          message: '合并目标订单不能为空',
+          type: 'error'
+        });
+        return
+      }
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      request.post('/order/productOrder/mergerOrders', this.editMergeOrdersForm).then(res => {
+        load.close()
+        this.$message({
+          message:  '合并成功!',
+          type: 'success'
+        });
+        this.dialogMergeOrdersVisible=false;
+
+        this.getList()
+      }).catch(()=>{
+        load.close()
+      })
+    },
     updateOrderNumSubmit(){
 
         if(this.editOrderNumForm.orderNum==='' ){
@@ -2293,6 +2380,11 @@ export default {
         this.closeMethod();
         done();
       }
+    },
+    handleMergeOrdersClose(done) {
+      this.$refs['editMergeOrdersForm'].resetFields();
+      this.getList()
+      done();
     },
     handleOrderNumClose(done) {
       this.$refs['editOrderNumForm'].resetFields();
