@@ -140,6 +140,16 @@
             </el-option>
           </el-select>
         </el-form-item>
+        <el-form-item>
+          <el-switch
+              style="display: block"
+              v-model="searchNoPropread"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-text="筛选没有备料"
+              inactive-text="筛选有备料">
+          </el-switch>
+        </el-form-item>
 
         <el-form-item>
           <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
@@ -555,6 +565,7 @@ export default {
 
       status2Arr : [{'name':'备料已确认','val':2},{'name':'备料未确认','val':1},{'name':'备料完成(已报)','val':0}],
       checkedBox2:[2,1,0],
+      searchNoPropread:true,
 
       // 搜索字段
       selectedName: 'materialName',// 搜索默认值
@@ -940,7 +951,8 @@ export default {
           "&&pageSize="+this.pageSize+
           "&&searchField="+this.select+
           "&&searchStatus="+checkStr+
-          "&&searchStatus2="+check2Str;
+          "&&searchStatus2="+check2Str+
+          "&searchNoPropread="+this.searchNoPropread;
       request.post(url,
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
