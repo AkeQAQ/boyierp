@@ -246,7 +246,9 @@
           :cell-style="{padding:'0',borderColor:'black'}"
           :header-cell-style="{borderColor:'black'}"
           :default-sort="{prop:'id',order:'descending'}"
-          @selection-change="handleSelectionChange">
+          @select="handleSelectionChange"
+          @select-all="selectAll"
+      >
         <el-table-column
             type="selection"
             width="50">
@@ -1205,16 +1207,59 @@ export default {
         this.$refs.multipleTable.clearSelection();
       }
     },
-    handleSelectionChange(val) {
-      console.log("多选框 val ", val)
-      this.multipleSelection = []
+    selectAll(val){
+      this.multipleSelection= [];
 
       val.forEach(theId => {
         if(!this.multipleSelection.some(item=>item==theId.id)){
           this.multipleSelection.push(theId.id)
         }
       })
+      console.log("全选，多选框 val ", val)
+      console.log("全选，多选框 选中的 ", this.multipleSelection)
+    },
+    handleSelectionChange(val,row) {
+      if (!row||row===undefined) { // 没有row则是全选的情况
+
+        return
+      }
+      this.multipleSelection= []
+      console.log("val:",val)
+      // 选中的数值全加进去
+      val.forEach(theId => {
+        if(!this.multipleSelection.some(item=>item==theId.id)){
+          this.multipleSelection.push(theId.id)
+        }
+      })
+
+
+      // 找出没选中的，把前面的数组等值的去掉
+      this.multipleSelection.forEach((item,index,arr) => {
+        console.log("判断:item{},row:{},val.indexOfrow:",item,row,val.indexOf(row))
+        if(item === row.id  && val.indexOf(row) === -1){
+          console.log("val:"+val+"不存在row:"+row);
+          this.multipleSelection.splice(index,1)
+          console.log("执行删除")
+
+          this.tableData.forEach(item => {
+            if (this.isCouple(item, row)) {
+              this.$nextTick(() => {
+                this.$refs.multipleTable.toggleRowSelection(item, false)
+                console.log("消除ID："+row.id+",的选中状态")
+
+                // 该处也会触发checkSelection方法，因为触发了selection-change
+                // 类似于递归了，这就解决了第一个方案的问题
+              })
+            }
+          })
+        }
+      });
       console.log("多选框 选中的 ", this.multipleSelection)
+
+    },
+    // 是否是成对的记录，也就是合并在一起的记录
+    isCouple (row1, row2) {
+      return row1.id === row2.id
     },
     // 表单提交
     submitForm(formName, methodName) {
@@ -1319,6 +1364,7 @@ export default {
     },
     // 查询价目表单列表数据
     getBuyOutDocumentList() {
+      this.multipleSelection=[];
       this.tableLoad = true;
       let checkStr = this.checkedBox.join(",");
       console.log("搜索字段:", this.select)
