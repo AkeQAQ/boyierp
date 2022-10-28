@@ -87,7 +87,10 @@ export default {
         customer: '',
         price:'',
         dealPrice:'',
-        excelJson:[]
+        excelJson:[],
+        caiduanPrice:'',
+        zhenchePrice:'',
+        cxPrice:''
       },
       rules: {
         companyNum: [
@@ -205,6 +208,18 @@ export default {
       let cellValue = luckysheet.getCellValue(59, 8);
       console.log("60行，9列的内容：",cellValue)
       this.editForm2.price = cellValue;
+
+      let caiduanVal = luckysheet.getCellValue(57, 3);
+      console.log("58行，4列的内容：",caiduanVal)
+      this.editForm2.caiduanPrice =caiduanVal
+
+      let zhencheVal = luckysheet.getCellValue(57, 5);
+      console.log("58行，6列的内容：",zhencheVal)
+      this.editForm2.zhenchePrice =zhencheVal
+
+      let cxVal = luckysheet.getCellValue(58, 3);
+      console.log("59行，4列的内容：",cxVal)
+      this.editForm2.cxPrice =cxVal
 
       this.$refs[formName].validate((valid) => {
 

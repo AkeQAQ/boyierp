@@ -5,7 +5,7 @@
       <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
-          <el-select size="mini" style="width: 120px" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
+          <el-select size="mini" style="width: 150px" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
             <el-option
                 v-for="item in options"
                 :key="item.value"
@@ -18,10 +18,11 @@
 
         <el-form-item>
           <!-- 列表界面-工厂型号搜索 -->
-          <el-autocomplete size="mini" v-if="selectedName==='productNum'"
+          <el-autocomplete size="mini" v-if="selectedName==='produceProductConstituentId'"
                            style="width: 200px"
                            clearable
                            class="inline-input"
+                           @clear="clearProductNunAndBrand()"
                            v-model="searchStr"
                            :fetch-suggestions="querySearch"
                            placeholder="请输入搜索内容"
@@ -34,7 +35,7 @@
 
         </el-form-item>
 
-        <el-popover
+<!--        <el-popover
             placement="left"
             width="410"
             trigger="click">
@@ -49,7 +50,7 @@
                 >
                 </el-option>
               </el-select>
-              <el-autocomplete size="mini" v-if="item.selectField==='productNum'"
+              <el-autocomplete size="mini" v-if="item.selectField==='produceProductConstituentId'"
                                style="width: 200px"
                                popper-class="my-autocomplete"
                                clearable
@@ -75,7 +76,7 @@
 
           <el-button slot="reference" type="info" style="padding: 0 0 ;margin-top: 20px;margin-left: -10px" size="mini" icon="el-icon-arrow-down" circle></el-button>
 
-        </el-popover>
+        </el-popover>-->
 
         <el-form-item>
 
@@ -184,7 +185,7 @@
             width="50">
         </el-table-column>
         <el-table-column
-            label="单据编号"
+            label="编号"
 
             prop="id" width="90px "
         >
@@ -197,20 +198,36 @@
         </el-table-column>
 
         <el-table-column
+            label="工价类型"
+            prop="costOfLabourTypeName"
+            width="110px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+
+        <el-table-column
             prop="priceDate"
-            label="退料日期"
+            label="价格日期"
             width="90px"
         >
         </el-table-column>
 
-
         <el-table-column
-            label="退料工厂型号"
+            label="工厂型号"
             prop="productNum"
             width="110px"
             show-overflow-tooltip
         >
         </el-table-column>
+
+        <el-table-column
+            label="品牌"
+            prop="productBrand"
+            width="110px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+
 
         <el-table-column
             prop="status"
@@ -226,52 +243,60 @@
 
 
         <el-table-column
-            prop="materialId"
-            label="物料编码"
+            label="总和价格"
+            prop="totalPrice"
+            width="110px"
+            show-overflow-tooltip
         >
         </el-table-column>
 
-
         <el-table-column
-            prop="materialName"
-            label="物料名称"
-            show-overflow-tooltip>
-        </el-table-column>
-
-        <el-table-column
-            prop="pieces"
-            label="规格型号" width="80px">
-
-        </el-table-column>
-
-        <el-table-column
-            prop="unit"
-            label="基本单位"
-            width="80px"
+            label="核算价格"
+            prop="prePrice"
+            width="110px"
+            show-overflow-tooltip
         >
         </el-table-column>
 
-
         <el-table-column
-            prop="batchId"
-            width="80px"
-            label="生产序号">
-        </el-table-column>
-
-
-        <el-table-column
-            prop="num"
-            label="数量"
+            label="盈亏"
             width="100px"
+        >
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.totalPrice === scope.row.prePrice" type="warning">正常</el-tag>
+            <el-tag size="small" v-else-if="scope.row.totalPrice ==='' || scope.row.prePrice === '' || scope.row.totalPrice ===null || scope.row.prePrice === null" type="danger">无法计算</el-tag>
+            <el-tag size="small" v-else-if="scope.row.totalPrice*1 < scope.row.prePrice*1  " type="success">盈利</el-tag>
+            <el-tag size="small" v-else-if="scope.row.totalPrice*1 > scope.row.prePrice *1" type="info">亏损</el-tag>
 
+          </template>
+        </el-table-column>
+
+        <el-table-column
+            label="计算的片数价格"
+            prop="calPiecesPrice"
+            width="110px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+
+        <el-table-column
+            label="保底价格"
+            prop="lowPrice"
+            width="110px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+        <el-table-column
+            label="实际价格"
+            prop="realPrice"
+            width="110px"
+            show-overflow-tooltip
         >
         </el-table-column>
 
         <el-table-column
             prop="reason"
-            label="退料原因"
-            width="100px"
-
+            label="备注"
         >
         </el-table-column>
 
@@ -286,33 +311,6 @@
                        v-if="hasAuth('costOfLabour:costOfLabour:update') || (hasAuth('costOfLabour:costOfLabour:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
             </el-button>
 
-<!--            <el-divider direction="vertical"
-                        v-if="hasAuth('costOfLabour:costOfLabour:save') && scope.row.status ===1   "></el-divider>
-
-            <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('costOfLabour:costOfLabour:save')  && scope.row.status ===1   ">
-              <template>
-                <el-popconfirm @confirm="statusSubmit(scope.row.id)"
-                               title="确定提交吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">提交</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>
-
-            <el-divider direction="vertical"
-                        v-if="hasAuth('costOfLabour:costOfLabour:save') && (scope.row.status === 2 || scope.row.status === 3 )   "></el-divider>
-
-            <el-button class="elInput_action_my" type="text" style="padding: 0"
-                       v-if="hasAuth('costOfLabour:costOfLabour:save')  && (scope.row.status === 2 || scope.row.status === 3)   ">
-              <template>
-                <el-popconfirm @confirm="statusSubReturn(scope.row.id)"
-                               title="确定撤销吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">撤销</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>-->
 
             <el-button style="padding: 0" type="text"
                        v-if="hasAuth('costOfLabour:costOfLabour:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
@@ -358,7 +356,7 @@
       </el-table>
 
       <!-- 打印弹窗 -->
-      <el-dialog
+<!--      <el-dialog
           title=""
           :visible.sync="dialogVisiblePrint"
           width="55%"
@@ -376,12 +374,12 @@
           </template>
         </vue-easy-print>
 
-      </el-dialog>
+      </el-dialog>-->
 
       <!-- 退料弹窗 -->
 
       <el-dialog
-          title="退料信息"
+          title="工价信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"
           fullscreen
@@ -399,18 +397,18 @@
           </el-form-item>
 
 
-          <el-form-item v-if="false" prop="departmentId" style="margin-bottom: 0">
-            <el-input v-model="editForm.departmentId"></el-input>
+          <el-form-item v-if="false" prop="produceProductConstituentId" style="margin-bottom: 0">
+            <el-input v-model="editForm.produceProductConstituentId"></el-input>
           </el-form-item>
-          <el-form-item label="退料工厂型号" prop="productNum" style="margin-bottom: 10px">
+          <el-form-item label="型号品牌" prop="productNum" style="margin-bottom: 10px">
             <!-- 搜索框 -->
             <el-autocomplete
                 :disabled="this.editForm.status!=1"
-                style="width: 150px"
+                style="width: 250px"
                 class="inline-input"
                 v-model="editForm.productNum"
                 :fetch-suggestions="querySearch"
-                placeholder="请输入工厂型号"
+                placeholder="请输入工厂型号品牌"
                 @select="handleSelect"
                 @change="moveMouse"
                 @focus="searchProductNumFocus()"
@@ -419,12 +417,27 @@
             </el-autocomplete>
           </el-form-item>
 
-          <el-form-item  label="退料人" prop="returnUser" style="padding: -20px 0 ;margin-bottom: -20px">
-            <el-input :disabled="this.editForm.status!=1"  size="mini" clearable style="width: 150px" v-model="editForm.returnUser">
-            </el-input>
+          <el-form-item v-if="false" prop="costOfLabourTypeId" style="margin-bottom: 0">
+            <el-input v-model="editForm.costOfLabourTypeId"></el-input>
+          </el-form-item>
+          <el-form-item label="工价类型" prop="costOfLabourTypeName" style="margin-bottom: 10px">
+            <!-- 搜索框 -->
+            <el-autocomplete
+                :disabled="this.editForm.status!=1"
+                style="width: 150px"
+                class="inline-input"
+                v-model="editForm.costOfLabourTypeName"
+                :fetch-suggestions="querySearch2"
+                placeholder="请选择工价类型"
+                @select="handleSelect2"
+                @change="moveMouse2"
+                @focus="searchCostOfLabourTypeFocus()"
+                clearable
+            >
+            </el-autocomplete>
           </el-form-item>
 
-          <el-form-item label="退料日期" prop="priceDate">
+          <el-form-item label="工价日期" prop="priceDate">
             <el-date-picker :disabled="this.editForm.status!=1" style="width: 150px"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.priceDate"
@@ -434,12 +447,9 @@
             </el-date-picker>
           </el-form-item>
 
-          <el-form-item  label="生产序号" prop="batchId" style="padding: -20px 0 ;margin-bottom: -20px">
-            <div style="width: 70px;padding-left: -30px" :class=" [(this.editForm.status!=1)? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']">
-              <input  class="el-input__inner"
-                      v-model.lazy="editForm.batchId">
-              </input>
-            </div>
+          <el-form-item  label="备注" prop="comment" style="padding: -20px 0 ;margin-bottom: -20px">
+            <el-input :disabled="this.editForm.status!=1"  size="mini" clearable style="width: 150px" v-model="editForm.comment">
+            </el-input>
           </el-form-item>
 
           <el-form-item v-if="hasAuth('costOfLabour:costOfLabour:save')">
@@ -460,21 +470,18 @@
             </el-dropdown>
           </el-form-item>
 
-          <el-form-item >
+<!--          <el-form-item >
             <el-button size="mini" @click="preViewPrint()" icon="el-icon-printer" type="primary"
             >打印预览
             </el-button>
 
-          </el-form-item>
+          </el-form-item>-->
 
         </el-form>
         <el-divider content-position="left">明细信息</el-divider>
 
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails"
-                   v-show="this.editForm.status===1">添加
-        </el-button>
-        <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
-                   v-show="this.editForm.status===1">删除
+                   v-show="this.editForm.status===1">获取工序
         </el-button>
 
         <el-table
@@ -492,61 +499,56 @@
           <el-table-column type="selection" width="80" align="center"/>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="320" prop="materialId">
+          <el-table-column v-show="true" label="工价外键ID" align="center" prop="foreignId" width="100">
             <template slot-scope="scope">
-              <el-autocomplete
-                                style="width: 300px"
-                                popper-class="my-autocomplete"
-
-                                size="mini" clearable
-                               :disabled="editForm.status!=1"
-                               class="inline-input"
-                               v-model="editForm.rowList[scope.row.seqNum - 1].materialId"
-                               :fetch-suggestions="tableSearch"
-                               placeholder="请输入内容"
-                                :trigger-on-focus="false"
-
-                                @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
-                               @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
-                                @focus="searchMaterialAllFocus();addNext(scope.row.seqNum)"
-
-              >
-              </el-autocomplete>
-            </template>
-
-          </el-table-column>
-
-          <el-table-column label="物料名称" align="center" prop="materialName" width="250">
-            <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" style="width: 240px"
-                        v-model="editForm.rowList[scope.row.seqNum-1].materialName"></el-input>
-            </template>
-          </el-table-column>
-          <el-table-column label="规格型号" align="center" prop="pieces" width="100">
-            <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].pieces"></el-input>
-            </template>
-          </el-table-column>
-          <el-table-column label="物料单位" align="center" prop="unit" width="100">
-            <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].unit"></el-input>
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].foreignId"></el-input>
             </template>
           </el-table-column>
 
-          <el-table-column label="退料数量" align="center" width="100" prop="num">
+          <el-table-column v-show="true" label="工序ID" align="center" prop="costOfLabourProcessesId" width="100">
             <template slot-scope="scope">
-              <el-input  :ref='"input_num_"+scope.row.seqNum'
-                         onkeyup="value=value.replace(/[^0-9.]/g,'')"
-                         @keyup.up.native="numUp(scope.row.seqNum)"
-                         @keyup.down.native="numDown(scope.row.seqNum)"
-                         @focus="addNext(scope.row.seqNum)"
-
-                         :disabled="editForm.status!=1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].num"/>
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].costOfLabourProcessesId"></el-input>
             </template>
           </el-table-column>
 
+          <el-table-column label="工序名称" align="center" prop="processesName" width="100">
+            <template slot-scope="scope">
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].processesName"></el-input>
+            </template>
+          </el-table-column>
+          <el-table-column label="保底价格" align="center" prop="lowPrice" width="100">
+            <template slot-scope="scope">
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].lowPrice"></el-input>
+            </template>
+          </el-table-column>
 
-          <el-table-column label="退料原因" align="center" width="150" prop="reason">
+          <el-table-column label="片数价格" align="center" prop="piecesPrice" width="100">
+            <template slot-scope="scope">
+              <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].piecesPrice"></el-input>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="片数" align="center" width="150" prop="pieces">
+            <template slot-scope="scope">
+              <el-input
+                  @input="changeNum(scope.row.seqNum)"
+                  :disabled="editForm.status!=1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].pieces"/>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="计算价格(保底/片数选最大)" align="center" width="250" prop="calPrice">
+            <template slot-scope="scope">
+              <el-input  :disabled="true" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].calPrice"/>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="实际价格" align="center" width="150" prop="realPrice">
+            <template slot-scope="scope">
+              <el-input  :disabled="editForm.status!=1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].realPrice"/>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="原因备注" align="center" width="150" prop="reason">
             <template slot-scope="scope">
               <el-input  :disabled="editForm.status!=1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].reason"/>
             </template>
@@ -601,7 +603,7 @@ export default {
     return {
       // 多个搜索输入框
       manySearchArr:[{
-        selectField:'productNum',
+        selectField:'produceProductConstituentId',
         searchStr:'',
       }],
 
@@ -678,12 +680,13 @@ export default {
       checkedDetail: [],
 
       // 搜索字段
-      selectedName: 'productNum',// 搜索默认值
+      selectedName: 'produceProductConstituentId',// 搜索默认值
       options: [
-        {value: 'productNum', label: '工厂型号'}
+        {value: 'produceProductConstituentId', label: '工厂型号_品牌'}
       ],
-      select: 'productNum', // 搜索默认值
+      select: 'produceProductConstituentId', // 搜索默认值
       searchStr: '',
+      searchStrId: '',
       searchStartDate: '',
       searchEndDate: '',
       searchStrList: [],
@@ -702,32 +705,26 @@ export default {
       editForm: {
         status: 1, // 编辑表单初始默认值
         id: '',
-        departmentId: '',
-        productNum: '',
-        materialName: '',
-        materialId: '',
+        produceProductConstituentId: '',
+        costOfLabourTypeId: '',
+        costOfLabourTypeName:'',
         priceDate: '',
-        returnUser:'',
-        reason:'',
-        endDate: '',
-        totalAmount:'',
-        batchId:'',
-
+        productNum: '',
+        comment:'',
         rowList: [{
-          materialName:'',
-          unit:'',
-          materialId:'',
-          num:'',
+          foreignId:'',
+          costOfLabourProcessesId:'',
           pieces:'',
+          realPrice:'',
           reason:''
         }]
       },
       rules: {
         productNum: [
-          {required: true, message: '请输入退料工厂型号', change: 'blur'}
+          {required: true, message: '请选择工厂型号-品牌', change: 'blur'}
         ],
         priceDate: [
-          {required: true, message: '请输入退料日期', trigger: 'blur'}
+          {required: true, message: '请输入工价日期', trigger: 'blur'}
         ]
       }
       ,
@@ -740,6 +737,11 @@ export default {
     }
   },
   methods: {
+    changeNum(seq){
+      let theCurrent = this.editForm.rowList[seq-1];
+      let p = theCurrent.piecesPrice * theCurrent.pieces;
+      this.editForm.rowList[seq-1].calPrice = p > theCurrent.lowPrice? p : theCurrent.lowPrice
+    },
     rowClass({ row, rowIndex }) {
       if (this.multipleSelection.includes(row.id)) {
         return { "background-color": "rgba(255,235,205, 0.75)" };
@@ -752,7 +754,7 @@ export default {
           message: '审核通过!',
           type: 'success'
         });
-        this.getReturnDocumentList()
+        this.getList()
       })
     },
     searchManySelect(item,index) {
@@ -769,73 +771,6 @@ export default {
         searchStr:'',
       }
       this.manySearchArr.push(obj)
-    },
-
-    chooseTag(tag){
-      this.select = tag.searchField
-      this.searchStr = tag.searchStr;
-      this.searchStartDate = tag.searchStartDate;
-      this.searchEndDate = tag.searchEndDate;
-      let arr = tag.searchStatus.split(",");
-      let tmpArr = [];
-      for (let i = 0; i < arr.length; i++) {
-        tmpArr.push(parseInt(arr[i]));
-      }
-      this.checkedBox=tmpArr
-
-      //
-      let obj = JSON.parse(tag.searchOther);
-      console.log("解析json:",obj)
-      if(obj === null){
-        this.manySearchArr = [];
-      }else{
-        this.manySearchArr = obj;
-      }
-      this.getReturnDocumentList();
-    },
-    async loadTags(){
-      await request.get('/tag/list?type='+4).then(res => {
-        this.dynamicTags = res.data.data;
-
-      })
-    },
-    showInput() {
-      this.inputVisible = true;
-      this.$nextTick(_ => {
-        this.$refs.saveTagInput.$refs.input.focus();
-      });
-    },
-
-    async handleInputConfirm() {
-
-      let inputValue = this.inputValue;
-      // 添加到数据库
-      let checkStr = this.checkedBox.join(",");
-      await request.post('/tag/save?tagName='+inputValue+'&&type='+4+
-          "&&searchStartDate="+this.searchStartDate+
-          "&&searchEndDate="+this.searchEndDate+
-          "&&searchField="+this.select+
-          "&&searchStatus="+checkStr+
-          '&&searchStr='+this.searchStr,
-          this.manySearchArr,null).then(res => {
-        this.$message({
-          message: res.data.data,
-          type: 'success'
-        });
-      })
-      this.inputVisible = false;
-      this.inputValue = '';
-      await this.loadTags()
-    },
-    async tagClose(tag) {
-      // 删除到数据库
-      await request.get('/tag/del?tagName='+tag.tagName+'&&type='+4).then(res => {
-        this.$message({
-          message: res.data.data,
-          type: 'success'
-        });
-      })
-      await this.loadTags()
     },
 
 
@@ -960,22 +895,27 @@ export default {
       })
       console.log("多选框 选中的 ", this.checkedDetail)
     },
-    // 退料详细信息-添加
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
         this.editForm.rowList = [];
       }
-      let obj = {};
-      obj.materialName = "";
-      obj.unit = "";
-      obj.materialId = '';
-      obj.num = ''
-      obj.pieces = ''
-      obj.reason=''
+      if(this.editForm.costOfLabourTypeId ==='' || this.editForm.priceDate===''){
+        this.$message({
+          message: '工价类型和工价日期不能为空!',
+          type: 'error'
+        });
+        return;
+      }
+      request.post('/costOfLabour/processes/getLists?labourTypeId='+this.editForm.costOfLabourTypeId
+      +"&&priceDate="+this.editForm.priceDate).then(res => {
+        this.editForm.rowList = res.data.data;
+        for (let i = 0; i < this.editForm.rowList.length; i++) {
+          this.editForm.rowList[i].costOfLabourProcessesId = this.editForm.rowList[i].id;
+        }
+        console.log("现有的数据:", this.editForm.rowList)
 
-      this.editForm.rowList.push(obj);
-      console.log("现有的数据:", this.editForm.rowList)
+      })
     },
     // 退料详细信息-删除
     handleDeleteDetails() {
@@ -1006,7 +946,7 @@ export default {
     },
 
     loadProductNumAll() {
-      request.post('/baseData/department/getSearchAllData').then(res => {
+      request.post('/produce/productConstituent/getSearchAllData').then(res => {
         this.restaurants = res.data.data
       })
     },
@@ -1016,8 +956,8 @@ export default {
         this.restaurants3 = res.data.data
       })
     },
-    loadMaterialAll() {
-      request.post('/baseData/material/getSearchAllData').then(res => {
+    loadCostOfLabourTypeAll() {
+      request.post('/costOfLabour/costOfLabourType/getSearchAllData').then(res => {
         this.restaurants2 = res.data.data
       })
     },
@@ -1053,30 +993,50 @@ export default {
       };
     },
     handleSelect(item) {
-      this.editForm.departmentId = item.id
+      this.editForm.produceProductConstituentId = item.id
       this.editForm.productNum = item.name
       console.log("选中：", item);
     },
     handleSelect2(item) {
-      this.editForm.materialId = item.id
-      this.editForm.materialName = item.name
+      this.editForm.costOfLabourTypeId = item.id
+      this.editForm.costOfLabourTypeName = item.name
       console.log("选中：", item);
+    },
+    clearProductNunAndBrand(item){
+      this.searchStrId = ''
     },
     searchSelect(item) {
       this.searchStr = item.name
+      this.searchStrId = item.id
       console.log("选中：", item);
+    },
+    moveMouse2(text) {
+      try {
+        // foreach 只能抛出异常结束
+        this.restaurants2.forEach(item => {
+          if (text === item.name) {
+            this.editForm.costOfLabourTypeId = item.id
+            this.editForm.costOfLabourTypeName = item.name
+            throw new Error();
+          } else {
+            this.editForm.costOfLabourTypeId = ''
+            console.log("没有匹配到", text, item.name)
+            this.editForm.costOfLabourTypeName = ''
+          }
+        })
+      } catch (err) {
+      }
     },
     moveMouse(text) {
       try {
         // foreach 只能抛出异常结束
         this.restaurants.forEach(item => {
           if (text === item.name) {
-            console.log("匹配到:", text, item.name, this.editForm.departmentId, item.id)
-            this.editForm.departmentId = item.id
+            this.editForm.produceProductConstituentId = item.id
             this.editForm.productNum = item.name
             throw new Error();
           } else {
-            this.editForm.departmentId = ''
+            this.editForm.produceProductConstituentId = ''
             console.log("没有匹配到", text, item.name)
             this.editForm.productNum = ''
           }
@@ -1128,7 +1088,7 @@ export default {
       this.editForm = {
         status: 1, // 编辑表单初始默认值
         id: '',
-        produceConsitituentId: '',
+        produceConstituentId: '',
         costOfLabourTypeId:'',
         priceDate: new Date().format("yyyy-MM-dd"),
         rowList: [{
@@ -1146,13 +1106,13 @@ export default {
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`);
       this.pageSize = val
-      this.getReturnDocumentList()
+      this.getList()
 
     },
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`);
       this.currentPage = val
-      this.getReturnDocumentList()
+      this.getList()
 
     },
     // 多选框方法
@@ -1226,54 +1186,24 @@ export default {
         if (valid) {
           if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
             this.$message({
-              message: '请录入至少一个退料物料信息',
+              message: '没有详情信息',
               type: 'error'
             });
             return
           }
 
           let validateFlag = true;
-          let validateMaterial = true;
           console.log(this.editForm.rowList)
-          let emptyArr = []; // 存放空内容 的 下标。
           for (let i = 0; i < this.editForm.rowList.length; i++) {
             let obj = this.editForm.rowList[i];
-
-            if((obj.num === undefined || obj.num === '') && (obj.materialId === '')){
-              emptyArr.push(i+1);
-              continue;
-            }
-            if (obj.num === undefined || obj.num === '') {
+            if (obj.realPrice === undefined || obj.realPrice === '') {
               validateFlag = false
             }
-            if (obj.materialId === '') {
-              validateMaterial = false
-            }
-          }
-          // 移除空的数组内容
-          console.log("移除前的内容:",this.editForm.rowList)
-          this.editForm.rowList = this.getNewArr(this.editForm.rowList,emptyArr);
-          console.log("移除后的内容:",this.editForm.rowList)
-
-          if (validateMaterial === false) {
-            this.$message({
-              message: '物料不能为空!',
-              type: 'error'
-            });
-            return
           }
 
           if (validateFlag === false) {
             this.$message({
-              message: '退料数量不能为空!',
-              type: 'error'
-            });
-            return
-          }
-
-          if(this.editForm.rowList.length === 0){
-            this.$message({
-              message: '详情内容不能为空!',
+              message: '价格不能为空!',
               type: 'error'
             });
             return
@@ -1310,10 +1240,10 @@ export default {
 
     search(){
       this.currentPage = 1
-      this.getReturnDocumentList()
+      this.getList()
     },
     // 查询价目表单列表数据
-    getReturnDocumentList() {
+    getList() {
       this.multipleSelection=[]
       this.tableLoad = true;
       let checkStr = this.checkedBox.join(",");
@@ -1326,7 +1256,7 @@ export default {
           "&&searchStatus="+checkStr;
       console.log("url:",url)
       request.post(url,
-          {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
+          {'manySearchArr':this.manySearchArr,'searchStr':this.select==='produceProductConstituentId' ?this.searchStrId :this.searchStr},
           null).then(res => {
           this.tableData = res.data.data.records
           this.total = res.data.data.total
@@ -1350,13 +1280,6 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          this.restaurants3.forEach(obj => {
-            console.log("obj:", obj, result.rowList.materialId)
-
-            if (obj.id === result.materialId) {
-              console.log("obj:", obj, result.materialId)
-            }
-          })
         })
 
       })
@@ -1387,7 +1310,7 @@ export default {
           message: '删除成功!',
           type: 'success'
         });
-        this.getReturnDocumentList()
+        this.getList()
         console.log("删除后重新加载页面")
 
       }).catch(()=>{
@@ -1403,7 +1326,7 @@ export default {
           type: 'success'
         });
         this.editForm.status = 1;
-        this.getReturnDocumentList()
+        this.getList()
       })
     },
     // 状态提交
@@ -1413,7 +1336,7 @@ export default {
           message: '已提交!',
           type: 'success'
         });
-        this.getReturnDocumentList()
+        this.getList()
       })
     },
     // 状态待审核
@@ -1423,7 +1346,7 @@ export default {
           message: '审核通过!',
           type: 'success'
         });
-        this.getReturnDocumentList()
+        this.getList()
       })
     },
     // 状态反审核
@@ -1433,7 +1356,7 @@ export default {
           message: '反审核完成!',
           type: 'success'
         });
-        this.getReturnDocumentList()
+        this.getList()
       })
     },
     // 关闭弹窗处理动作
@@ -1457,7 +1380,7 @@ export default {
       }
       this.$refs['editForm'].resetFields();
       this.handleDeleteAllDetails()
-      this.getReturnDocumentList()
+      this.getList()
     },
     // 重置表单
     resetForm(formName) {
@@ -1524,7 +1447,47 @@ export default {
           rowspan: _row,
           colspan: _col
         }
-      } else if (columnIndex === 12) {
+      } else if (columnIndex === 5) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      else if (columnIndex === 6) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      else if (columnIndex === 7) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      else if (columnIndex === 8) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      else if (columnIndex === 9) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      else if (columnIndex === 14) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1542,7 +1505,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 6 ) {
+        if (index === 9 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1622,7 +1585,7 @@ export default {
 
     // el-table 单元格样式修改
     cellStyle() {
-      return 'padding:0 0'
+      return 'padding:10 0'
     },
     // 关闭打印弹窗弹窗处理动作
     printClose(done) {
@@ -1641,8 +1604,8 @@ export default {
         await request.get('/costOfLabour/lockOpenById?id=' + this.editForm.id)
       }
     },
-    searchMmaterialFocus(){
-      this.loadMaterialAll()
+    searchCostOfLabourTypeFocus(){
+      this.loadCostOfLabourTypeAll()
     },
     searchProductNumFocus(){
       this.loadProductNumAll()
@@ -1670,9 +1633,8 @@ export default {
 
   },
   created() {
-    this.getReturnDocumentList()
+    this.getList()
     this.loadProductNumAll()
-    this.loadTableSearchMaterialDetailAll()
 
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
