@@ -116,6 +116,17 @@
           </el-dropdown>
         </el-form-item>
 
+        <el-form-item>
+          <el-switch
+              style="display: block"
+              v-model="showDetailNum"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-text="显示码数"
+              inactive-text="不显示码数">
+          </el-switch>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -128,6 +139,7 @@
           border
           fit
           height="520px"
+          :span-method="objectSpanMethod"
 
           size="mini"
           tooltip-effect="dark"
@@ -151,19 +163,10 @@
             show-overflow-tooltip>
         </el-table-column>
 
-
-
         <el-table-column
             prop="orderNum"
             label="订单号"
             width="70px"
-            show-overflow-tooltip>
-        </el-table-column>
-
-        <el-table-column
-            prop="batchId"
-            label="生产序号"
-            width="90px"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -182,95 +185,332 @@
         </el-table-column>
 
         <el-table-column
+            prop="mergeBatchNumber"
+            label="批次号总数量"
+            width="100px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="batchId"
+            label="生产序号"
+            width="90px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+
+            v-if="showDetailNum"
             prop="size34"
             label="34"
             width="37px"
             >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size35"
             label="35"
             width="37px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size36"
             label="36"
             width="37px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size37"
             label="37码"
             width="50px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size38"
             label="38码"
             width="50px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size39"
             label="39码"
             width="50px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size40"
             label="40码"
             width="50px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size41"
             label="41码"
             width="50px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size42"
             label="42码"
             width="50px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size43"
             label="43码"
             width="50px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size44"
             label="44码"
             width="50px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size45"
             label="45码"
             width="50px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size46"
             label="46"
             width="37px"
         >
         </el-table-column>
         <el-table-column
+            v-if="showDetailNum"
+
             prop="size47"
             label="47"
             width="37px"
         >
         </el-table-column>
 
+        <el-table-column label="进度表信息">
+
+          <el-table-column
+              label="操作"
+              width="100px"
+          >
+
+            <template slot-scope="scope">
+              <div v-if="scope.row.progresses.length===0 && scope.row.status ===0 && hasAuth('produce:progress:update')" style="height: 40px;line-height: 40px;" @dblclick="addProgress(scope.row)" >双击这里新增</div>
+              <div  v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;">
+                <el-button style="padding: 0" type="text"
+                           v-if="hasAuth('produce:progress:update') &&item.id!=null  ">
+                  <template>
+                    <el-popconfirm @confirm="delProgress(item)"
+                                   title="确定删除吗？"
+                    >
+                      <el-button type="text" size="small" slot="reference" @click.stop="">删除</el-button>
+                    </el-popconfirm>
+                  </template>
+                </el-button>
+              </div>
+
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="typeName"
+              label="工序部门"
+              width="120px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') && dbClickMethod(item)">
+
+                <span  v-if="!item.isOpenEdit">{{item.costOfLabourTypeName}}</span>
+                <el-autocomplete v-if="item.isOpenEdit"  size="mini"
+
+                                 style="width: 100px"
+                                 popper-class="my-autocomplete"
+                                 clearable
+                                 class="inline-input"
+                                 v-model="item.costOfLabourTypeName"
+                                 :fetch-suggestions="querySearch3"
+                                 placeholder="请输入搜索内容"
+                                 :trigger-on-focus="false"
+                                 :popper-append-to-body="true"
+                                 :ref='"el_auto_type_"+item.produceBatchId'
+                                 @focus="searchCostOfLabourTypeFocus()"
+                                 @select="searchTypeNameSelect($event,item)"
+                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.esc="escEdit(item,scope.row,index)"
+                                 @keyup.native.down="addProgress(scope.row)"
+                >
+                </el-autocomplete>
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="foreignProduction"
+              label="外加工"
+              width="140px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') &&  dbClickMethod(item)">
+                <span  v-if="!item.isOpenEdit">{{item.supplierName}}</span>
+                <el-autocomplete v-if="item.isOpenEdit"  size="mini"
+
+                                 style="width: 130px"
+                                 popper-class="my-autocomplete"
+                                 clearable
+                                 class="inline-input"
+                                 v-model="item.supplierName"
+                                 :fetch-suggestions="querySearch"
+                                 placeholder="请输入搜索内容"
+                                 :trigger-on-focus="false"
+                                 :popper-append-to-body="true"
+                                 :ref='"el_auto_"+item.produceBatchId'
+                                 @focus="searchSupplierFocus()"
+                                 @select="searchSupplierSelect($event,item)"
+                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.esc="escEdit(item,scope.row,index)"
+                                 @keyup.native.down="addProgress(scope.row)"
+                >
+                </el-autocomplete>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column
+              prop="materialId"
+              label="外加工工序物料"
+              width="200px"
+              show-overflow-tooltip
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick=" hasAuth('produce:progress:update') &&  dbClickMethod(item)">
+                <span  v-if="!item.isOpenEdit">{{item.materialName}}</span>
+                <el-autocomplete v-if="item.isOpenEdit"  size="mini"
+
+                                 style="width: 180px"
+                                 popper-class="my-autocomplete"
+                                 clearable
+                                 class="inline-input"
+                                 v-model="item.materialName"
+                                 :fetch-suggestions="querySearch2"
+                                 placeholder="请输入搜索内容"
+                                 :trigger-on-focus="false"
+                                 :popper-append-to-body="true"
+                                 :ref='"el_auto_m_"+item.produceBatchId'
+                                 @focus="searchMmaterialFocus()"
+                                 @select="searchMaterialSelect($event,item)"
+                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.esc="escEdit(item,scope.row,index)"
+                                 @keyup.native.down="addProgress(scope.row)"
+                >
+                </el-autocomplete>
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="sendForeignProductDate"
+              label="外发(外加工)时间"
+              width="200px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') &&  dbClickMethod(item)">
+                <span  v-if="!item.isOpenEdit">{{item.sendForeignProductDate}}</span>
+                <el-date-picker  v-if="item.isOpenEdit" style="width: 180px"
+                                 size="mini"
+                                 value-format="yyyy-MM-dd HH:mm:ss"
+                                 v-model="item.sendForeignProductDate"
+                                 type="datetime"
+                                 clearable
+                                 placeholder="开始日期"
+                                 @change="searchSendDate($event,item)"
+                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.esc="escEdit(item,scope.row,index)"
+                                 @keyup.native.down="addProgress(scope.row)"
+                >
+                </el-date-picker>
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="backForeignProductDate"
+              label="收回(外加工)时间"
+              width="200px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') && dbClickMethod(item)">
+                <span  v-if="!item.isOpenEdit">{{item.backForeignProductDate}}</span>
+                <el-date-picker  v-if="item.isOpenEdit" style="width: 180px"
+                                 size="mini"
+                                 value-format="yyyy-MM-dd HH:mm:ss"
+                                 v-model="item.backForeignProductDate"
+                                 type="datetime"
+                                 clearable
+                                 placeholder="开始日期"
+                                 @change="searchBackDate($event,item)"
+                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.esc="escEdit(item,scope.row,index)"
+                                 @keyup.native.down="addProgress(scope.row)"
+                >
+                </el-date-picker>
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="outDate"
+              label="出库时间"
+              width="200px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') && dbClickMethod(item)">
+                <span  v-if="!item.isOpenEdit">{{item.outDate}}</span>
+                <el-date-picker  v-if="item.isOpenEdit" style="width: 180px"
+                                 size="mini"
+                                 value-format="yyyy-MM-dd HH:mm:ss"
+                                 v-model="item.outDate"
+                                 type="datetime"
+                                 clearable
+                                 placeholder="开始日期"
+                                 @change="searchOutDate($event,item)"
+                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.esc="escEdit(item,scope.row,index)"
+                                 @keyup.native.down="addProgress(scope.row)"
+                >
+                </el-date-picker>
+              </div>
+            </template>
+          </el-table-column>
+
+        </el-table-column>
 
         <el-table-column
             prop="action"
             label="操作"
-            fixed="right"
+            width="200px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id) "
@@ -569,6 +809,9 @@ export default {
   },
   data() {
     return {
+      showDetailNum:false,
+      editSupplierName:'',
+
       dialogVisiblePrint: false,
       printCaiDuanDataList:
           {rowList:[
@@ -656,10 +899,142 @@ export default {
       // shift 多选
       origin:-1,  // 变量起点
       pin:false, // 默认不按住
+
+      restaurants: [],// 搜索框列表数据存放
+      restaurants2: [],// 搜索框列表数据存放
+      restaurants3: [],// 搜索框列表数据存放
+
     }
   },
 
   methods: {
+    addProgress(row){
+      console.log("当前行:",row)
+      row.progresses.push({produceBatchId:row.id,costOfLabourTypeId:'空值',costOfLabourTypeName:'空值',supplierId:'空值',supplierName:'空值',materialId:'空值',materialName:'初始'})
+    },
+    dbClickMethod(row){
+      row.oldCostOfLabourTypeName = row.costOfLabourTypeName
+      row.oldCostOfLabourTypeId = row.costOfLabourTypeId
+      row.oldSupplierName = row.supplierName
+      row.oldSupplierId = row.supplierId
+      row.oldMaterialId = row.materialId
+      row.oldMaterialName = row.materialName
+      row.oldSendForignProductDate = row.sendForeignProductDate
+      row.oldBackForignProductDate = row.backForeignProductDate
+      row.oldOutDate = row.outDate
+
+      console.log("双击row 之前：flag :",row.isOpenEdit)
+      row.isOpenEdit=true;
+      console.log("双击row 之后：flag :",row.isOpenEdit)
+      this.$refs.multipleTable.doLayout()
+    },
+    loadMaterialAll() {
+      request.post('/baseData/material/getSearchAllData').then(res => {
+        this.restaurants2 = res.data.data
+      })
+    },
+    loadSupplierAll() {
+      request.post('/baseData/supplier/getSearchAllData').then(res => {
+        this.restaurants = res.data.data
+      })
+    },
+
+    searchMmaterialFocus(){
+      console.log("物料搜索框聚焦")
+      this.loadMaterialAll()
+    },
+    searchSupplierFocus(){
+      console.log("供应商搜索框聚焦")
+      this.loadSupplierAll()
+    },
+    searchCostOfLabourTypeFocus(){
+      this.loadCostOfLabourTypeAll()
+    },
+    loadCostOfLabourTypeAll() {
+      request.post('/costOfLabour/costOfLabourType/getSearchAllData').then(res => {
+        this.restaurants3 = res.data.data
+      })
+    },
+    querySearch3(queryString, cb) {
+      var restaurants = this.restaurants3;
+      var results = queryString ? restaurants.filter(this.createFilter2(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    // 查询搜索框列表数据
+    querySearch2(queryString, cb) {
+      var restaurants = this.restaurants2;
+      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    querySearch(queryString, cb) {
+      var restaurants = this.restaurants;
+      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createFilter2(queryString) {
+      return (restaurant) => {
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) ;
+      };
+    },
+    createFilter(queryString) {
+      return (restaurant) => {
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+      };
+    },
+
+    // 同ID的，单元格合并，数据库配合返回根据ID排序
+    getSpanArr(data) {
+      this.spanArr = []
+      for (var i = 0; i < data.length; i++) {
+        if (i === 0) {
+          this.spanArr.push(1);
+          this.pos = 0
+        } else {
+          // 判断这一条和上一条id是否相同
+          if (data[i].mergeBatchId === data[i - 1].mergeBatchId) {
+            this.spanArr[this.pos] += 1;
+            this.spanArr.push(0);
+          } else {
+            this.spanArr.push(1);
+            this.pos = i;
+          }
+        }
+      }
+    },
+    // 同ID的，单元格合并，数据库配合返回根据ID排序
+    objectSpanMethod({row, column, rowIndex, columnIndex}) {
+      if (columnIndex === 2 || columnIndex === 3|| columnIndex === 4 || columnIndex === 5) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      else if ( columnIndex === 21 || columnIndex === 22 || columnIndex === 23 || columnIndex === 24 ||
+          columnIndex === 25 || columnIndex === 26 || columnIndex === 27 ) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      if(!this.showDetailNum && (columnIndex === 7 || columnIndex === 8 ||columnIndex === 9 || columnIndex === 10 ||
+          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 )){
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+
+    },
+
     pinSelect(item, index){
       console.log("index",index)
       const data = this.$refs.multipleTable.tableData; // 获取所以数据
@@ -907,7 +1282,78 @@ export default {
         return Y + M + D;
       }
     },
+    reDolayout(row){
+      row.isOpenEdit = false
+      this.$refs.multipleTable.doLayout()
+    },
+    escEdit(progress,row,index){
+      console.log("escEdit-progress:,progress.id ===undefined",progress,progress.id ===undefined)
+      if(progress.id ===null || progress.id===undefined){
+        row.progresses.splice(index,1);
+      }else{
+        progress.costOfLabourTypeName = progress.oldCostOfLabourTypeName
+        progress.typeId = progress.oldCostOfLabourTypeId
+        progress.supplierName = progress.oldSupplierName;
+        progress.supplierId = progress.oldSupplierId;
+        progress.materialId = progress.oldMaterialId
+        progress.materialName = progress.oldMaterialName
+        progress.sendForeignProductDate = progress.oldSendForignProductDate
+        progress.backForeignProductDate = progress.oldBackForignProductDate
+        progress.outDate = progress.oldOutDate
 
+        this.reDolayout(progress)
+      }
+
+    },
+    enterEdit(row){
+      if(row.costOfLabourTypeId ==='空值'|| row.supplierId==='空值'||row.materialId==='空值'){
+        this.$message({
+          message: '请选择正确的数据!',
+          type: 'error'
+        });
+        return;
+      }
+        // 选择就修改供应商名称
+        request.post('/produce/batchProgress/updateProgress',row).then(res => {
+          this.$message({
+            message: '修改成功!',
+            type: 'success'
+          });
+          this.getList()
+        })
+
+
+    },
+    searchTypeNameSelect(item,row) {
+      console.log("下拉框选中：item,row:",item,row)
+      row.costOfLabourTypeName = item.name
+      row.costOfLabourTypeId = item.id
+      this.$refs['el_auto_type_'+row.produceBatchId].focus()
+    },
+    searchSupplierSelect(item,row) {
+      console.log("下拉框选中：",item)
+      row.supplierName = item.name
+      row.supplierId = item.id
+      this.$refs['el_auto_'+row.produceBatchId].focus()
+    },
+    searchMaterialSelect(item,row) {
+      console.log("下拉框选中：",item)
+      row.materialName = item.name
+      row.materialId = item.id
+      this.$refs['el_auto_m_'+row.produceBatchId].focus()
+    },
+    searchSendDate(item,row) {
+      console.log("日期下拉框选中：",item)
+      row.sendForeignProductDate = item
+    },
+    searchBackDate(item,row) {
+      console.log("日期下拉框选中：",item)
+      row.backForeignProductDate = item
+    },
+    searchOutDate(item,row) {
+      console.log("日期下拉框选中：",item)
+      row.outDate = item
+    },
     searchSelect(item) {
       this.searchStr = item.name
     },
@@ -1095,7 +1541,14 @@ export default {
 
         this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
           item.index = index;
+          if(item.progresses!=null && item.progresses!=undefined){
+            item.progresses.forEach((progress,index)=>{
+              progress.isOpenEdit = false
+            })
+          }
+
         })
+        this.getSpanArr(this.tableData)
 
           this.total = res.data.data.total
           this.tableLoad = false;
@@ -1121,7 +1574,17 @@ export default {
 
       })
     },
+    delProgress(item) {
+      console.log("del obj:",item)
+      request.post('/produce/batchProgress/del', item.id).then(res => {
+        this.$message({
+          message: '删除成功!',
+          type: 'success'
+        });
+        this.getList()
 
+      })
+    },
     // 删除
     del(id) {
       let ids = []
@@ -1205,6 +1668,9 @@ export default {
   },
   created() {
     this.getList()
+    this.loadCostOfLabourTypeAll()
+    this.loadSupplierAll()
+    this.loadMaterialAll()
 
   }// 自定义指令，，insert在DOM加入的时候才生效
   ,

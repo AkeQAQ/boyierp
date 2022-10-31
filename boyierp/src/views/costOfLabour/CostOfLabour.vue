@@ -187,7 +187,7 @@
         <el-table-column
             label="编号"
 
-            prop="id" width="90px "
+            prop="id" width="70px "
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
@@ -200,7 +200,7 @@
         <el-table-column
             label="工价类型"
             prop="costOfLabourTypeName"
-            width="110px"
+            width="100px"
             show-overflow-tooltip
         >
         </el-table-column>
@@ -231,7 +231,7 @@
 
         <el-table-column
             prop="status"
-            width="110px"
+            width="100px"
             label="状态">
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.status === 0" type="success">已审核</el-tag>
@@ -511,7 +511,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="工序名称" align="center" prop="processesName" width="100">
+          <el-table-column label="工序名称" align="center" prop="processesName" width="300">
             <template slot-scope="scope">
               <el-input size="mini" :disabled="true" v-model="editForm.rowList[scope.row.seqNum-1].processesName"></el-input>
             </template>
@@ -528,7 +528,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="片数" align="center" width="150" prop="pieces">
+          <el-table-column label="片数" align="center" width="100" prop="pieces">
             <template slot-scope="scope">
               <el-input
                   @input="changeNum(scope.row.seqNum)"
@@ -548,7 +548,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="原因备注" align="center" width="150" prop="reason">
+          <el-table-column label="原因备注" align="center" width="200" prop="reason">
             <template slot-scope="scope">
               <el-input  :disabled="editForm.status!=1" size="mini" v-model="editForm.rowList[scope.row.seqNum-1].reason"/>
             </template>
@@ -1635,6 +1635,7 @@ export default {
   created() {
     this.getList()
     this.loadProductNumAll()
+    this.loadCostOfLabourTypeAll()
 
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
