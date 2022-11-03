@@ -359,7 +359,7 @@
                                  :ref='"el_auto_type_"+item.produceBatchId'
                                  @focus="searchCostOfLabourTypeFocus()"
                                  @select="searchTypeNameSelect($event,item)"
-                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
                 >
@@ -390,7 +390,7 @@
                                  :ref='"el_auto_"+item.produceBatchId'
                                  @focus="searchSupplierFocus()"
                                  @select="searchSupplierSelect($event,item)"
-                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
                 >
@@ -421,7 +421,7 @@
                                  :ref='"el_auto_m_"+item.produceBatchId'
                                  @focus="searchMmaterialFocus()"
                                  @select="searchMaterialSelect($event,item)"
-                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
                 >
@@ -446,7 +446,7 @@
                                  clearable
                                  placeholder="开始日期"
                                  @change="searchSendDate($event,item)"
-                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
                 >
@@ -471,7 +471,7 @@
                                  clearable
                                  placeholder="开始日期"
                                  @change="searchBackDate($event,item)"
-                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
                 >
@@ -496,9 +496,92 @@
                                  clearable
                                  placeholder="开始日期"
                                  @change="searchOutDate($event,item)"
-                                 @keyup.native.enter="enterEdit(item)"
+                                 @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
+                >
+                </el-date-picker>
+              </div>
+            </template>
+          </el-table-column>
+
+        </el-table-column>
+
+        <el-table-column label="延期原因">
+
+          <el-table-column
+              label="操作"
+              width="100px"
+          >
+
+            <template slot-scope="scope">
+              <div v-if="scope.row.delays.length===0 && scope.row.status ===0 && hasAuth('produce:progress:update')" style="height: 40px;line-height: 40px;" @dblclick="addDelay(scope.row)" >双击这里新增</div>
+              <div  v-for="(item,index) in scope.row.delays" style="height: 40px;line-height: 40px;">
+                <el-button style="padding: 0" type="text"
+                           v-if="hasAuth('produce:progress:update') &&item.id!=null  ">
+                  <template>
+                    <el-popconfirm @confirm="delDelay(item)"
+                                   title="确定删除吗？"
+                    >
+                      <el-button type="text" size="small" slot="reference" @click.stop="">删除</el-button>
+                    </el-popconfirm>
+                  </template>
+                </el-button>
+              </div>
+
+            </template>
+          </el-table-column>
+          <el-table-column
+              prop="materialId"
+              label="欠料物料"
+              width="200px"
+              show-overflow-tooltip
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.delays" style="height: 40px;line-height: 40px;" @dblclick=" hasAuth('produce:progress:update') &&  dbClickMethodDelay(item)">
+                <span  v-if="!item.isOpenEdit">{{item.materialName}}</span>
+                <el-autocomplete v-if="item.isOpenEdit"  size="mini"
+
+                                 style="width: 180px"
+                                 popper-class="my-autocomplete"
+                                 clearable
+                                 class="inline-input"
+                                 v-model="item.materialName"
+                                 :fetch-suggestions="querySearch2"
+                                 placeholder="请输入搜索内容"
+                                 :trigger-on-focus="false"
+                                 :popper-append-to-body="true"
+                                 :ref='"el_auto_m_delay_"+item.produceBatchId'
+                                 @focus="searchMmaterialFocus()"
+                                 @select="searchMaterialSelectDelay($event,item)"
+                                 @keyup.native.enter="enterEditDelay(item,scope.row)"
+                                 @keyup.native.esc="escEditDelay(item,scope.row,index)"
+                                 @keyup.native.down="addDelay(scope.row)"
+                >
+                </el-autocomplete>
+              </div>
+            </template>
+          </el-table-column >
+
+          <el-table-column
+              prop="date"
+              label="到达时间"
+              width="200px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.delays" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') && dbClickMethodDelay(item)">
+                <span  v-if="!item.isOpenEdit">{{item.date}}</span>
+                <el-date-picker  v-if="item.isOpenEdit" style="width: 180px"
+                                 size="mini"
+                                 value-format="yyyy-MM-dd HH:mm:ss"
+                                 v-model="item.date"
+                                 type="datetime"
+                                 clearable
+                                 placeholder="开始日期"
+                                 @change="searchDate($event,item)"
+                                 @keyup.native.enter="enterEditDelay(item,scope.row)"
+                                 @keyup.native.esc="escEditDelay(item,scope.row,index)"
+                                 @keyup.native.down="addDelay(scope.row)"
                 >
                 </el-date-picker>
               </div>
@@ -908,9 +991,25 @@ export default {
   },
 
   methods: {
+    addDelay(row){
+      row.delays.push({isOpenEdit:true,produceBatchId:row.id,
+       materialId:'空值',materialName:'初始',date:''})
+    },
     addProgress(row){
-      console.log("当前行:",row)
-      row.progresses.push({produceBatchId:row.id,costOfLabourTypeId:'空值',costOfLabourTypeName:'空值',supplierId:'空值',supplierName:'空值',materialId:'空值',materialName:'初始'})
+      console.log("当前行:,当前用户：",row,this.$store.state.user_info)
+      row.progresses.push({isOpenEdit:true,produceBatchId:row.id,
+        costOfLabourTypeId:this.$store.state.user_info.defaultTypeObj != null ? this.$store.state.user_info.defaultTypeObj[0].id : '',
+        costOfLabourTypeName:this.$store.state.user_info.defaultTypeObj != null ?  this.$store.state.user_info.defaultTypeObj[0].typeName :'空值',
+        supplierId:'空值',supplierName:'空值',materialId:'空值',materialName:'初始'})
+    },
+    dbClickMethodDelay(row){
+      row.oldMaterialName = row.materialName
+      row.oldDate = row.date
+
+      console.log("双击row 之前：flag :",row.isOpenEdit)
+      row.isOpenEdit=true;
+      console.log("双击row 之后：flag :",row.isOpenEdit)
+      this.$refs.multipleTable.doLayout()
     },
     dbClickMethod(row){
       row.oldCostOfLabourTypeName = row.costOfLabourTypeName
@@ -1015,7 +1114,7 @@ export default {
         }
       }
       else if ( columnIndex === 21 || columnIndex === 22 || columnIndex === 23 || columnIndex === 24 ||
-          columnIndex === 25 || columnIndex === 26 || columnIndex === 27 ) {
+          columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30 ) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1024,7 +1123,7 @@ export default {
         }
       }
       if(!this.showDetailNum && (columnIndex === 7 || columnIndex === 8 ||columnIndex === 9 || columnIndex === 10 ||
-          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 )){
+          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16 )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1286,6 +1385,18 @@ export default {
       row.isOpenEdit = false
       this.$refs.multipleTable.doLayout()
     },
+    escEditDelay(progress,row,index){
+      if(progress.id ===null || progress.id===undefined){
+        row.delays.splice(index,1);
+      }else{
+        progress.materialId = progress.oldMaterialId
+        progress.materialName = progress.oldMaterialName
+        progress.date = progress.oldDate
+
+        this.reDolayout(progress)
+      }
+
+    },
     escEdit(progress,row,index){
       console.log("escEdit-progress:,progress.id ===undefined",progress,progress.id ===undefined)
       if(progress.id ===null || progress.id===undefined){
@@ -1305,8 +1416,29 @@ export default {
       }
 
     },
-    enterEdit(row){
-      if(row.costOfLabourTypeId ==='空值'|| row.supplierId==='空值'||row.materialId==='空值'){
+    enterEditDelay(item,row){
+      console.log("提交item:,row:",item,row)
+      if(item.materialId==='空值'){
+        this.$message({
+          message: '请选择正确的数据!',
+          type: 'error'
+        });
+        return;
+      }
+      // 选择就修改供应商名称
+      request.post('/produce/batchDelay/updateDelay',row.delays).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
+
+
+    },
+    enterEdit(item,row){
+      console.log("提交item:,row:",item,row)
+      if(item.costOfLabourTypeId ==='空值'|| item.supplierId==='空值'||item.materialId==='空值'){
         this.$message({
           message: '请选择正确的数据!',
           type: 'error'
@@ -1314,7 +1446,7 @@ export default {
         return;
       }
         // 选择就修改供应商名称
-        request.post('/produce/batchProgress/updateProgress',row).then(res => {
+        request.post('/produce/batchProgress/updateProgress',row.progresses).then(res => {
           this.$message({
             message: '修改成功!',
             type: 'success'
@@ -1342,6 +1474,12 @@ export default {
       row.materialId = item.id
       this.$refs['el_auto_m_'+row.produceBatchId].focus()
     },
+    searchMaterialSelectDelay(item,row) {
+      console.log("下拉框选中：",item)
+      row.materialName = item.name
+      row.materialId = item.id
+      this.$refs['el_auto_m_delay_'+row.produceBatchId].focus()
+    },
     searchSendDate(item,row) {
       console.log("日期下拉框选中：",item)
       row.sendForeignProductDate = item
@@ -1353,6 +1491,10 @@ export default {
     searchOutDate(item,row) {
       console.log("日期下拉框选中：",item)
       row.outDate = item
+    },
+    searchDate(item,row) {
+      console.log("日期下拉框选中：",item)
+      row.date = item
     },
     searchSelect(item) {
       this.searchStr = item.name
@@ -1571,6 +1713,17 @@ export default {
           // 赋值到编辑表单
           this.editForm = result
         })
+
+      })
+    },
+    delDelay(item) {
+      console.log("del obj:",item)
+      request.post('/produce/batchDelay/del', item.id).then(res => {
+        this.$message({
+          message: '删除成功!',
+          type: 'success'
+        });
+        this.getList()
 
       })
     },
