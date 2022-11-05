@@ -129,6 +129,17 @@
           </el-switch>
         </el-form-item>
 
+        <el-form-item>
+          <el-switch
+              style="display: block"
+              v-model="showProgress"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-text="显示进度表"
+              inactive-text="不显示进度表">
+          </el-switch>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -140,7 +151,7 @@
           element-loading-text = "加载中，请稍后..."
           border
           fit
-          height="520px"
+          height="820px"
           :span-method="objectSpanMethod"
 
           size="mini"
@@ -159,6 +170,7 @@
         </el-table-column>
 
         <el-table-column
+            v-if="false"
             prop="id"
             label="唯一编码"
             width="70px"
@@ -168,35 +180,35 @@
         <el-table-column
             prop="orderNum"
             label="订单号"
-            width="70px"
+            width="80px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="productNum"
             label="公司货号"
-            width="100px"
+            width="90px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="productBrand"
             label="品牌"
-            width="100px"
+            width="90px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="mergeBatchNumber"
-            label="批次号总数量"
-            width="100px"
+            label="数量"
+            width="50px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="push"
             label="是否下推"
-            width="100px"
+            width="80px"
             show-overflow-tooltip>
           <template slot-scope="scope">
             <el-tag size="small" v-if="scope.row.push === 0" type="success">已下推</el-tag>
@@ -324,15 +336,15 @@
         >
         </el-table-column>
 
-        <el-table-column label="进度表信息">
+        <el-table-column label="进度表信息" v-if="showProgress">
 
           <el-table-column
               label="操作"
-              width="100px"
+              width="70px"
           >
 
             <template slot-scope="scope">
-              <div v-if="scope.row.progresses.length===0  && scope.row.status ===0  && hasAuth('produce:progress:update')" style="height: 40px;line-height: 40px;" @dblclick="addProgress(scope.row)" >双击这里新增</div>
+              <div v-if="scope.row.progresses.length===0  && scope.row.status ===0  && hasAuth('produce:progress:update')" style="height: 40px;line-height: 40px;" @dblclick="addProgress(scope.row)" >双击新增</div>
               <div  v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;">
                 <el-button style="padding: 0" type="text"
                            v-if="hasAuth('produce:progress:update') &&item.id!=null && item.isAccept!=0  && (item.outDate==null || item.outDate==undefined || item.outDate =='')  ">
@@ -352,15 +364,15 @@
           <el-table-column
               prop="typeName"
               label="工序部门"
-              width="120px"
+              width="100px"
           >
             <template slot-scope="scope">
-              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') && dbClickMethod(item)">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="item.isAccept===1&& hasAuth('produce:progress:update') && dbClickMethod(item)">
 
                 <span  v-if="!item.isOpenEdit">{{item.costOfLabourTypeName}}</span>
                 <el-autocomplete v-if="item.isOpenEdit"  size="mini"
 
-                                 style="width: 100px"
+                                 style="width: 80px"
                                  popper-class="my-autocomplete"
                                  clearable
                                  class="inline-input"
@@ -387,7 +399,7 @@
               width="140px"
           >
             <template slot-scope="scope">
-              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') &&  dbClickMethod(item)">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="item.isAccept===1&& hasAuth('produce:progress:update') &&  dbClickMethod(item)">
                 <span  v-if="!item.isOpenEdit">{{item.supplierName}}</span>
                 <el-autocomplete v-if="item.isOpenEdit"  size="mini"
 
@@ -418,7 +430,7 @@
               show-overflow-tooltip
           >
             <template slot-scope="scope">
-              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick=" hasAuth('produce:progress:update') &&  dbClickMethod(item)">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick=" item.isAccept===1&& hasAuth('produce:progress:update') &&  dbClickMethod(item)">
                 <span  v-if="!item.isOpenEdit">{{item.materialName}}</span>
                 <el-autocomplete v-if="item.isOpenEdit"  size="mini"
 
@@ -449,7 +461,7 @@
               width="200px"
           >
             <template slot-scope="scope">
-              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') &&  dbClickMethod(item)">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="item.isAccept===1&& hasAuth('produce:progress:update') &&  dbClickMethod(item)">
                 <span  v-if="!item.isOpenEdit">{{item.sendForeignProductDate}}</span>
                 <el-date-picker  v-if="item.isOpenEdit" style="width: 180px"
                                  size="mini"
@@ -474,7 +486,7 @@
               width="200px"
           >
             <template slot-scope="scope">
-              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') && dbClickMethod(item)">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="item.isAccept===1&& hasAuth('produce:progress:update') && dbClickMethod(item)">
                 <span  v-if="!item.isOpenEdit">{{item.backForeignProductDate}}</span>
                 <el-date-picker  v-if="item.isOpenEdit" style="width: 180px"
                                  size="mini"
@@ -499,7 +511,7 @@
               width="200px"
           >
             <template slot-scope="scope">
-              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') && dbClickMethod(item)">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" @dblclick="item.isAccept===1&& hasAuth('produce:progress:update') && dbClickMethod(item)">
                 <span  v-if="!item.isOpenEdit">{{item.outDate}}</span>
                 <el-date-picker  v-if="item.isOpenEdit" style="width: 180px"
                                  size="mini"
@@ -538,11 +550,11 @@
 
           <el-table-column
               label="操作"
-              width="100px"
+              width="70px"
           >
 
             <template slot-scope="scope">
-              <div v-if="scope.row.delays.length===0 && scope.row.status ===0 && hasAuth('produce:progress:update')" style="height: 40px;line-height: 40px;" @dblclick="addDelay(scope.row)" >双击这里新增</div>
+              <div v-if="scope.row.delays.length===0 && scope.row.status ===0 && hasAuth('produce:progress:update')" style="height: 40px;line-height: 40px;" @dblclick="addDelay(scope.row)" >双击新增</div>
               <div  v-for="(item,index) in scope.row.delays" style="height: 40px;line-height: 40px;">
                 <el-button style="padding: 0" type="text"
                            v-if="hasAuth('produce:progress:update') &&item.id!=null  ">
@@ -733,25 +745,19 @@
                             placeholder="出库日期">
             </el-date-picker>
 
-            <el-autocomplete  v-if="false" size="mini"
-
-                             style="width: 180px"
-                             popper-class="my-autocomplete"
-                             clearable
-                             class="inline-input"
-                             v-model="searchQueryMaterialName"
-                             :fetch-suggestions="querySearch2"
-                             placeholder="欠料物料"
-                             :trigger-on-focus="false"
-                             :popper-append-to-body="true"
-                             @focus="searchMmaterialFocus()"
-                             @select="searchQueryMaterialSelect($event)"
-            >
-            </el-autocomplete>
+            <!-- 列表界面-日期搜索 -->
+            <el-date-picker style="width: 125px;"
+                            size="mini"
+                            value-format="yyyy-MM-dd"
+                            v-model="searchQueryStartDateStr"
+                            type="date"
+                            clearable
+                            placeholder="起始日期">
+            </el-date-picker>
           </el-form-item>
 
           <el-form-item>
-            <el-button size="mini" icon="el-icon-search" @click="searchQuery()" type="success">搜索</el-button>
+            <el-button size="mini" icon="el-icon-search" @click="searchQuery()" type="success">查询</el-button>
           </el-form-item>
 
         </el-form>
@@ -889,7 +895,7 @@
           <el-table-column
               prop="materialName"
               label="欠料物料"
-              width="200px"
+              width="300px"
               show-overflow-tooltip>
           </el-table-column>
 
@@ -1138,6 +1144,8 @@ export default {
   data() {
     return {
       showDetailNum:false,
+      showProgress:false,
+
       editSupplierName:'',
 
       dialogVisiblePrint: false,
@@ -1224,6 +1232,8 @@ export default {
       dialogQueryVisible: false,
       searchQueryOutDateStr:'',
       searchQueryMaterialName:'',
+      searchQueryStartDateStr:new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 60).format("yyyy-MM-dd"),
+
 
       tableData: [],
       tableQueryData: [],
@@ -1276,6 +1286,7 @@ export default {
       this.$refs.multipleTable.doLayout()
     },
     dbClickMethod(row){
+      console.log("dbClick:",row)
       row.oldCostOfLabourTypeName = row.costOfLabourTypeName
       row.oldCostOfLabourTypeId = row.costOfLabourTypeId
       row.oldSupplierName = row.supplierName
@@ -1369,7 +1380,7 @@ export default {
     },
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
-      if (columnIndex === 2 || columnIndex === 3|| columnIndex === 4 || columnIndex === 5 || columnIndex === 6) {
+      if (columnIndex === 1 || columnIndex === 2|| columnIndex === 3 || columnIndex === 4 || columnIndex === 5) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1377,9 +1388,9 @@ export default {
           colspan: _col
         }
       }
-      else if (  columnIndex === 22 || columnIndex === 23 || columnIndex === 24 ||
-          columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30
-          || columnIndex === 31 || columnIndex === 32 || columnIndex === 33) {
+      else if (  columnIndex === 21 || columnIndex === 22 || columnIndex === 23 ||
+          columnIndex === 24 || columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30
+          || columnIndex === 31 || columnIndex === 32 ) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1387,8 +1398,17 @@ export default {
           colspan: _col
         }
       }
-      if(!this.showDetailNum && (  columnIndex === 8 ||columnIndex === 9 || columnIndex === 10 ||
-          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18 ||columnIndex === 19)){
+      if((!this.showDetailNum && this.showProgress)&& (  columnIndex === 7 || columnIndex === 8 ||columnIndex === 9 || columnIndex === 10 ||
+          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18 )){
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      if((!this.showDetailNum && !this.showProgress)&& ( columnIndex === 7|| columnIndex === 8 || columnIndex === 9 ||
+          columnIndex === 10 )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1982,7 +2002,7 @@ export default {
     },
     getQueryList() {
       let url = '/produce/batch/progressList'
-      request.post(url,{searchQueryMaterialName:this.searchQueryMaterialName
+      request.post(url,{searchQueryStartDateStr:this.searchQueryStartDateStr
       ,searchQueryOutDateStr:this.searchQueryOutDateStr},null).then(res => {
         this.tableQueryData = res.data.data['progressData']
         this.tableDelayData = res.data.data['delayData']
