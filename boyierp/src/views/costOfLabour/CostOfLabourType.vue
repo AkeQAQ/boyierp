@@ -37,6 +37,11 @@
           width="200">
       </el-table-column>
       <el-table-column
+          label="部门流程顺序（0：不参与顺序）"
+          prop="seq"
+          width="200">
+      </el-table-column>
+      <el-table-column
           prop="roles"
           label="所属角色"
           width="200">
@@ -93,6 +98,10 @@
 
         <el-form-item label="工价类别" prop="typeName">
           <el-input v-model="editForm.typeName"></el-input>
+        </el-form-item>
+
+        <el-form-item label="顺序" prop="seq">
+          <el-input v-model="editForm.seq"></el-input>
         </el-form-item>
 
         <el-form-item>

@@ -111,6 +111,8 @@
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:valid')" command="batchValid">批量审核</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:valid')" command="batchRevalid">批量反审核</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:del')" command="batchDel">批量删除</el-dropdown-item>
+              <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:push')" command="pushOrder">下推采购订单</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('produce:batch:list')" command="queryProgress">查询进度表</el-dropdown-item>
             </el-dropdown-menu>
 
           </el-dropdown>
@@ -189,6 +191,17 @@
             label="批次号总数量"
             width="100px"
             show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="push"
+            label="是否下推"
+            width="100px"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.push === 0" type="success">已下推</el-tag>
+            <el-tag size="small" v-else-if="scope.row.push===1" type="warning">未下推</el-tag>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -319,10 +332,10 @@
           >
 
             <template slot-scope="scope">
-              <div v-if="scope.row.progresses.length===0 && scope.row.status ===0 && hasAuth('produce:progress:update')" style="height: 40px;line-height: 40px;" @dblclick="addProgress(scope.row)" >双击这里新增</div>
+              <div v-if="scope.row.progresses.length===0  && scope.row.status ===0  && hasAuth('produce:progress:update')" style="height: 40px;line-height: 40px;" @dblclick="addProgress(scope.row)" >双击这里新增</div>
               <div  v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;">
                 <el-button style="padding: 0" type="text"
-                           v-if="hasAuth('produce:progress:update') &&item.id!=null  ">
+                           v-if="hasAuth('produce:progress:update') &&item.id!=null && item.isAccept!=0  && (item.outDate==null || item.outDate==undefined || item.outDate =='')  ">
                   <template>
                     <el-popconfirm @confirm="delProgress(item)"
                                    title="确定删除吗？"
@@ -505,6 +518,20 @@
             </template>
           </el-table-column>
 
+
+          <el-table-column
+              prop="isAccept"
+              label="是否被接收"
+              width="100px">
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;" >
+                <el-tag size="small" v-if=" (item.outDate !=null && item.outDate!='' && item.outDate!=undefined) && item.isAccept === 0" type="success">已接收</el-tag>
+                <el-tag size="small" v-else-if="(item.outDate !=null && item.outDate!='' && item.outDate!=undefined) && item.isAccept===1" type="danger">未接收</el-tag>
+              </div>
+            </template>
+          </el-table-column>
+
+
         </el-table-column>
 
         <el-table-column label="延期原因">
@@ -531,6 +558,39 @@
 
             </template>
           </el-table-column>
+
+          <el-table-column
+              prop="typeName"
+              label="工序部门"
+              width="120px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.delays" style="height: 40px;line-height: 40px;" @dblclick="hasAuth('produce:progress:update') && dbClickMethodDelay(item)">
+
+                <span  v-if="!item.isOpenEdit">{{item.costOfLabourTypeName}}</span>
+                <el-autocomplete v-if="item.isOpenEdit"  size="mini"
+
+                                 style="width: 100px"
+                                 popper-class="my-autocomplete"
+                                 clearable
+                                 class="inline-input"
+                                 v-model="item.costOfLabourTypeName"
+                                 :fetch-suggestions="querySearch3"
+                                 placeholder="请输入搜索内容"
+                                 :trigger-on-focus="false"
+                                 :popper-append-to-body="true"
+                                 :ref='"el_auto_type_delay_"+item.produceBatchId'
+                                 @focus="searchCostOfLabourTypeFocus()"
+                                 @select="searchTypeNameDelaySelect($event,item)"
+                                 @keyup.native.enter="enterEditDelay(item,scope.row)"
+                                 @keyup.native.esc="escEditDelay(item,scope.row,index)"
+                                 @keyup.native.down="addDelay(scope.row)"
+                >
+                </el-autocomplete>
+              </div>
+            </template>
+          </el-table-column>
+
           <el-table-column
               prop="materialId"
               label="欠料物料"
@@ -587,6 +647,7 @@
               </div>
             </template>
           </el-table-column>
+
 
         </el-table-column>
 
@@ -651,6 +712,190 @@
         </el-table-column>
 
       </el-table>
+
+      <el-dialog
+          :visible.sync="dialogQueryVisible"
+          width="60%"
+          title="查询进度表"
+          top="0vh"
+          :before-close="handleCloseQuery"
+      >
+        <el-form :inline="true" class="demo-form-inline elForm_my" style="padding: 0 0" >
+
+          <el-form-item>
+            <!-- 列表界面-日期搜索 -->
+            <el-date-picker style="width: 125px;"
+                            size="mini"
+                            value-format="yyyy-MM-dd"
+                            v-model="searchQueryOutDateStr"
+                            type="date"
+                            clearable
+                            placeholder="出库日期">
+            </el-date-picker>
+
+            <el-autocomplete  v-if="false" size="mini"
+
+                             style="width: 180px"
+                             popper-class="my-autocomplete"
+                             clearable
+                             class="inline-input"
+                             v-model="searchQueryMaterialName"
+                             :fetch-suggestions="querySearch2"
+                             placeholder="欠料物料"
+                             :trigger-on-focus="false"
+                             :popper-append-to-body="true"
+                             @focus="searchMmaterialFocus()"
+                             @select="searchQueryMaterialSelect($event)"
+            >
+            </el-autocomplete>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button size="mini" icon="el-icon-search" @click="searchQuery()" type="success">搜索</el-button>
+          </el-form-item>
+
+        </el-form>
+
+        <el-divider> 进度表 </el-divider>
+        <el-table
+            :row-style="rowClass"
+            ref="multipleQueryTable"
+            :data="tableQueryData"
+            element-loading-background = "rgba(255, 255, 255, .5)"
+            element-loading-text = "加载中，请稍后..."
+            border
+            fit
+            height="520px"
+            size="mini"
+            tooltip-effect="dark"
+            style="width: 100%;color:black"
+            :cell-style="{padding:'0',borderColor:'black'}"
+            :header-cell-style="{borderColor:'black'}"
+
+        >
+          <el-table-column
+              prop="orderNum"
+              label="订单号"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+          <el-table-column
+              prop="batchId"
+              label="生产序号"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="costOfLabourTypeName"
+              label="部门"
+              width="70px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="productNum"
+              label="公司货号"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="productBrand"
+              label="品牌"
+              width="150px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="outDate"
+              label="出库日期"
+              width="150px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="isAccept"
+              label="是否被接收"
+              width="200px">
+            <template slot-scope="scope">
+                <el-tag size="small" v-if=" (scope.row.outDate !=null && scope.row.outDate!='' && scope.row.outDate!=undefined) && scope.row.isAccept === 0" type="success">已接收</el-tag>
+                <el-tag size="small" v-else-if="(scope.row.outDate !=null && scope.row.outDate!='' && scope.row.outDate!=undefined) && scope.row.isAccept===1" type="danger">未接收</el-tag>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="action"
+              label="操作"
+              width="120px"
+          >
+            <template slot-scope="scope">
+              <el-button class="elInput_action_my" type="text" size="small" @click="accept(scope.row)"  style="padding: 0"
+                         v-if="hasAuth('produce:progress:update') && $store.state.user_info.defaultTypeObj != null &&
+                          $store.state.user_info.defaultTypeObj[0].seq===scope.row.seq+1
+                          && (scope.row.outDate !=null && scope.row.outDate!='' && scope.row.outDate!=undefined)
+                          && scope.row.isAccept===1">
+                接收
+              </el-button>
+            </template>
+          </el-table-column>
+
+        </el-table>
+        <el-divider> 欠料明细 </el-divider>
+
+        <el-table
+            :row-style="rowClass"
+            ref="multipleQueryTable"
+            :data="tableDelayData"
+            element-loading-background = "rgba(255, 255, 255, .5)"
+            element-loading-text = "加载中，请稍后..."
+            border
+            fit
+            height="520px"
+            size="mini"
+            tooltip-effect="dark"
+            style="width: 100%;color:black"
+            :cell-style="{padding:'0',borderColor:'black'}"
+            :header-cell-style="{borderColor:'black'}"
+        >
+          <el-table-column
+              prop="orderNum"
+              label="订单号"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+          <el-table-column
+              prop="batchId"
+              label="生产序号"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="productNum"
+              label="公司货号"
+              width="200px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="productBrand"
+              label="品牌"
+              width="200px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="materialName"
+              label="欠料物料"
+              width="200px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+        </el-table>
+      </el-dialog>
 
       <el-dialog
           :visible.sync="dialogCalNumVisible"
@@ -975,7 +1220,15 @@ export default {
       theCurrentOrderMsg:{id:'',orderNum:'',customerNum:'',productNum:'',productBrand:'',productColor:'',productRegion:''},
       prepareList:[{preparedNum:'',addNum:''}],
       dialogVisible: false,
+
+      dialogQueryVisible: false,
+      searchQueryOutDateStr:'',
+      searchQueryMaterialName:'',
+
       tableData: [],
+      tableQueryData: [],
+      tableDelayData: [],
+
       spanArr: [],
       multipleSelection: [] ,// 多选框数组
 
@@ -991,16 +1244,27 @@ export default {
   },
 
   methods: {
+    accept(row){
+      console.log("accept:row",row)
+      request.post('/produce/batchProgress/accept?id='+row.id).then(res => {
+        this.$message.info("接收成功");
+        this.getQueryList()
+      })
+    },
     addDelay(row){
       row.delays.push({isOpenEdit:true,produceBatchId:row.id,
+        costOfLabourTypeId:this.$store.state.user_info.defaultTypeObj != null ? this.$store.state.user_info.defaultTypeObj[0].id : '',
+        costOfLabourTypeName:this.$store.state.user_info.defaultTypeObj != null ?  this.$store.state.user_info.defaultTypeObj[0].typeName :'空值',
        materialId:'空值',materialName:'初始',date:''})
     },
     addProgress(row){
+
       console.log("当前行:,当前用户：",row,this.$store.state.user_info)
       row.progresses.push({isOpenEdit:true,produceBatchId:row.id,
         costOfLabourTypeId:this.$store.state.user_info.defaultTypeObj != null ? this.$store.state.user_info.defaultTypeObj[0].id : '',
-        costOfLabourTypeName:this.$store.state.user_info.defaultTypeObj != null ?  this.$store.state.user_info.defaultTypeObj[0].typeName :'空值',
-        supplierId:'空值',supplierName:'空值',materialId:'空值',materialName:'初始'})
+        costOfLabourTypeName:this.$store.state.user_info.defaultTypeObj != null ?  this.$store.state.user_info.defaultTypeObj[0].typeName :'空值'
+      })
+
     },
     dbClickMethodDelay(row){
       row.oldMaterialName = row.materialName
@@ -1105,7 +1369,7 @@ export default {
     },
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
-      if (columnIndex === 2 || columnIndex === 3|| columnIndex === 4 || columnIndex === 5) {
+      if (columnIndex === 2 || columnIndex === 3|| columnIndex === 4 || columnIndex === 5 || columnIndex === 6) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1113,8 +1377,9 @@ export default {
           colspan: _col
         }
       }
-      else if ( columnIndex === 21 || columnIndex === 22 || columnIndex === 23 || columnIndex === 24 ||
-          columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30 ) {
+      else if (  columnIndex === 22 || columnIndex === 23 || columnIndex === 24 ||
+          columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30
+          || columnIndex === 31 || columnIndex === 32 || columnIndex === 33) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1122,8 +1387,8 @@ export default {
           colspan: _col
         }
       }
-      if(!this.showDetailNum && (columnIndex === 7 || columnIndex === 8 ||columnIndex === 9 || columnIndex === 10 ||
-          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16 )){
+      if(!this.showDetailNum && (  columnIndex === 8 ||columnIndex === 9 || columnIndex === 10 ||
+          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18 ||columnIndex === 19)){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1153,6 +1418,36 @@ export default {
       } else {
         this.origin = index.index; // 没按住记录起点
       }
+    },
+    queryProgress(){
+      this.dialogQueryVisible = true;
+    },
+    pushOrder(){
+      this.$confirm(
+          '确定要批量下推吗?', // 第一个参数为弹窗消息内容
+          '提示', // 第二个参数为弹窗左上角标题title
+          // 第三个参数为弹窗项的options，应该为object对象
+          {
+            confirmButtonText: '确定',  // 确认按钮的文本，可省略，默认为确定
+            cancelButtonText: '取消',  // 取消按钮的文本，可省略，默认为取消
+            type: 'warning' // 弹窗的消息类型，比如为warning时弹窗左边图标为'!'感叹号，为success时图标为'√'的勾。
+          }
+      )
+          // then中填写点击确认按钮后执行的事件，例如执行删除该条数据的delect请求
+          .then(() => {
+            let ids = this.multipleSelection;
+            request.post('/produce/batch/push',ids).then(res => {
+              this.$message({
+                message: '批量下推成功!',
+                type: 'success'
+              });
+              this.getList()
+            })
+          })
+          // catch中填写点击取消按钮后执行的事件，例如消息提示“已取消删除”
+          .catch(() => {
+            this.$message.info(this.$t("lang.Deletecancelled")); // 使用i18n国际化表示的“已取消删除”
+          });
     },
     batchDel(){
       // 引用确认消息弹窗api
@@ -1239,6 +1534,11 @@ export default {
         this.batchValid();
       }else if(item === 'batchDel') {
         this.batchDel();
+      }else if(item === 'pushOrder') {
+        this.pushOrder();
+      }
+      else if(item ==='queryProgress'){
+        this.queryProgress();
       }
     },
     importExcel() {
@@ -1434,13 +1734,12 @@ export default {
         this.getList()
       })
 
-
     },
     enterEdit(item,row){
       console.log("提交item:,row:",item,row)
-      if(item.costOfLabourTypeId ==='空值'|| item.supplierId==='空值'||item.materialId==='空值'){
+      if(item.costOfLabourTypeId ==='空值'){
         this.$message({
-          message: '请选择正确的数据!',
+          message: '工序部门有误!',
           type: 'error'
         });
         return;
@@ -1456,6 +1755,11 @@ export default {
 
 
     },
+    searchTypeNameDelaySelect(item,row) {
+      row.costOfLabourTypeName = item.name
+      row.costOfLabourTypeId = item.id
+      this.$refs['el_auto_type_delay_'+row.produceBatchId].focus()
+    },
     searchTypeNameSelect(item,row) {
       console.log("下拉框选中：item,row:",item,row)
       row.costOfLabourTypeName = item.name
@@ -1467,6 +1771,10 @@ export default {
       row.supplierName = item.name
       row.supplierId = item.id
       this.$refs['el_auto_'+row.produceBatchId].focus()
+    },
+    searchQueryMaterialSelect(item) {
+      console.log("下拉框选中：",item)
+      this.searchQueryMaterialName = item.name
     },
     searchMaterialSelect(item,row) {
       console.log("下拉框选中：",item)
@@ -1664,10 +1972,23 @@ export default {
         }
       });
     },
+    searchQuery(){
+      this.getQueryList()
+    },
 
     search(){
       this.currentPage = 1
       this.getList()
+    },
+    getQueryList() {
+      let url = '/produce/batch/progressList'
+      request.post(url,{searchQueryMaterialName:this.searchQueryMaterialName
+      ,searchQueryOutDateStr:this.searchQueryOutDateStr},null).then(res => {
+        this.tableQueryData = res.data.data['progressData']
+        this.tableDelayData = res.data.data['delayData']
+      }).catch(error=>{
+        console.log("error:",error)
+      })
     },
     // 查询价目表单列表数据
     getList() {
@@ -1781,6 +2102,11 @@ export default {
         });
         this.getList()
       })
+    },
+    handleCloseQuery(done) {
+      this.dialogQueryVisible=false;
+      this.tableDelayData = ''
+      this.tableQueryData = ''
     },
     handleClosePrepare(done) {
       this.dialogCalNumVisible=false;
