@@ -144,6 +144,7 @@
 
       <el-table
           :row-style="rowClass"
+          :cell-style="cellClass"
           ref="multipleTable"
           :data="tableData"
           v-loading = "tableLoad"
@@ -157,7 +158,6 @@
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
-          :cell-style="{padding:'0',borderColor:'black'}"
           :header-cell-style="{borderColor:'black'}"
           @selection-change="handleSelectionChange"
           @select="pinSelect"
@@ -347,7 +347,7 @@
               <div v-if="scope.row.progresses.length===0  && scope.row.status ===0  && hasAuth('produce:progress:update')" style="height: 40px;line-height: 40px;" @dblclick="addProgress(scope.row)" >双击新增</div>
               <div  v-for="(item,index) in scope.row.progresses" style="height: 40px;line-height: 40px;">
                 <el-button style="padding: 0" type="text"
-                           v-if="hasAuth('produce:progress:update') &&item.id!=null && item.isAccept!=0  && (item.outDate==null || item.outDate==undefined || item.outDate =='')  ">
+                           v-if="hasAuth('produce:progress:update') &&item.id!=null && item.isAccept!=0   ">
                   <template>
                     <el-popconfirm @confirm="delProgress(item)"
                                    title="确定删除吗？"
@@ -1875,7 +1875,93 @@ export default {
         alert('保存文件出错')
       }
     },
+    cellClass({ row, column,rowIndex,columnIndex }) {
 
+      if(this.showProgress && columnIndex === 12  ){
+        // 1. 收回时间是空，并且当天>外发时间+2
+        let progresses = row.progresses;
+
+        if(progresses!=null && progresses!=undefined && progresses.length > 0){
+
+          for (let i = 0; i < progresses.length; i++) {
+            let progress = progresses[i];
+            if(progress.id ===undefined){
+              continue;
+            }
+            let backDate = progress.backForeignProductDate;
+            let sendDate = progress.sendForeignProductDate;
+
+            // console.log("row ,backDate:{},flag",rowIndex,backDate,backDate===null);
+
+            if((backDate===null || backDate ==='' || backDate === undefined) && (sendDate!=null && sendDate !='' && sendDate!=undefined) ){
+
+              let sendDateStr = sendDate.split(" ")[0];
+              let yyMMddArr = sendDateStr.split("-");
+              let sendDateTimeStamp = new Date(yyMMddArr[0],yyMMddArr[1]-1,yyMMddArr[2]).getTime();
+
+              let nowDateTimeStamp = new Date().getTime()
+              // console.log("cell:sendDate,sendDateType,new Date(),nowDateTimeStamp,",sendDate,sendDateTimeStamp,new Date(),nowDateTimeStamp)
+
+              if((nowDateTimeStamp - sendDateTimeStamp) >= (24*60*60*1000 * 2)){
+                return {padding:'0',"background-color": "#e6a23c" }
+              }
+            }
+          }
+        }
+      }
+      if(this.showProgress && columnIndex === 13 ){
+
+        // 1. 出库时间是空，并且当天>批次号+5
+        let progresses = row.progresses;
+
+        let created = row.created;
+        let createdStr = created.split("T")[0];
+        let yyMMddArr = createdStr.split("-");
+        let createdDate = new Date(yyMMddArr[0],yyMMddArr[1]-1,yyMMddArr[2]).getTime();
+        let nowDateTimeStamp = new Date().getTime()
+
+        if(progresses==null || progresses.length==0){
+          // console.log("row,cell,progresses is null..cell:created,createdDate,new Date(),nowDateTimeStamp,",rowIndex,columnIndex,created,createdDate,new Date(),nowDateTimeStamp)
+          if((nowDateTimeStamp - createdDate) >= (24*60*60*1000 * 4)){
+            return {padding:'0',"background-color": "red" }
+          }
+        }
+        let batchIdWithOutDate = [];
+        if(progresses!=null && progresses!=undefined && progresses.length > 0){
+
+          for (let i = 0; i < progresses.length; i++) {
+            let progress = progresses[i];
+            if(progress.id ===undefined){
+              continue;
+            }
+            let outDate = progress.outDate;
+            let created = row.created;
+            let batchIdStrTemp = progress.batchIdStr.split("-")[0];
+
+            // console.log("row ,rowIndex,columnIndex,outDate:{},flag,created:{},progress",row,rowIndex,columnIndex,outDate,outDate===null,created,progress);
+
+            if((outDate===null || outDate ==='' || outDate === undefined) ){
+
+              console.log("rowIndex,column,cell:created,createdDate,new Date(),nowDateTimeStamp,",rowIndex,columnIndex,progress.batchIdStr,created,createdDate,new Date(),nowDateTimeStamp)
+
+              if((nowDateTimeStamp - createdDate) >= (24*60*60*1000 * 5)){
+                batchIdWithOutDate.push(batchIdStrTemp);
+              }
+            }
+          }
+          console.log("batchIdStr,batchIdWithOutDate size,progressSize",batchIdWithOutDate.length,progresses.length)
+          // 预警有，但是个数要等于进度表长度（只有一个）才能生效
+          if(batchIdWithOutDate.length > 0 && (batchIdWithOutDate.length===progresses.length)){
+            return {padding:'0',"background-color": "red" }
+          }
+
+        }
+      }
+
+      return {padding:'0',borderColor:'black'}
+
+
+    },
     rowClass({ row, rowIndex }) {
       if (this.multipleSelection.includes(row.id)) {
         return { "background-color": "rgba(255,235,205, 0.75)" };
