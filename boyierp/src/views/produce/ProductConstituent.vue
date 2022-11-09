@@ -230,6 +230,16 @@
         </el-table-column>
 
         <el-table-column
+            prop="status"
+            width="150px"
+            label="加工计划物料-价目情况">
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.caiduanForeignPriceStatus === 0" type="danger">无价格</el-tag>
+            <el-tag size="small" v-else-if="scope.row.caiduanForeignPriceStatus!=0" type="success">有价格</el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             prop="action"
             label="操作"
             fixed="right"
@@ -278,10 +288,10 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('produce:productConstituent:del')  && scope.row.status ===0  "></el-divider>
+                        v-if="hasAuth('produce:productConstituent:save')  && scope.row.status ===0  "></el-divider>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('produce:productConstituent:del') && scope.row.status ===0   ">
+                       v-if="hasAuth('produce:productConstituent:save') && scope.row.status ===0   ">
               <template>
                 <el-popconfirm @confirm="addSpecialMaterial(scope.row.id)"
                                title="确定补充物料组成吗？"
@@ -676,7 +686,7 @@ export default {
       options: [
         {value: 'productNum', label: '公司货号'},
         {value: 'productBrand', label: '品牌'},
-        {value: 'materialName', label: '物料名称'}
+        {value: 'materialName', label: '物料名称'},
 
       ],
       select: 'productNum', // 搜索默认值
