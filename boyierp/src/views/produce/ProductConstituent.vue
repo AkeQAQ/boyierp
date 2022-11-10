@@ -898,9 +898,20 @@ export default {
       else if(item === 'copy'){
         this.editForm.id = '';
         this.editForm.status = 1;
+
         for (let i = 0; i < this.editForm.rowList.length; i++) {
           this.editForm.rowList[i].canChange = true;
+          if(this.editForm.rowList[i].materialId.startsWith("11.01")){
+            this.editForm.rowList.splice(i,1);
+            console.log("当前i:，移除",i)
+            i--;
+          }
         }
+        /*if(removeIndex.length > 0){
+          for (let i = 0; i < removeIndex.length; i++) {
+            this.editForm.rowList.splice(removeIndex[i],1);
+          }
+        }*/
         this.addOrUpdate = 'save';
 
       }

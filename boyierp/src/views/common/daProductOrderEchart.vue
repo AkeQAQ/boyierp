@@ -314,6 +314,7 @@ export default {
         },
         yAxis: {
           type: 'value',
+          max:'dataMax',
           boundaryGap: [0, '100%']
         },
         dataZoom: [

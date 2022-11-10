@@ -777,6 +777,8 @@
             style="width: 100%;color:black"
             :cell-style="{padding:'0',borderColor:'black'}"
             :header-cell-style="{borderColor:'black'}"
+            show-summary
+            :summary-method="getSummaries"
 
         >
           <el-table-column
@@ -810,6 +812,13 @@
               prop="productBrand"
               label="品牌"
               width="150px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="mergeBatchNumber"
+              label="批次号数量"
+              width="100px"
               show-overflow-tooltip>
           </el-table-column>
 
@@ -852,7 +861,7 @@
 
         <el-table
             :row-style="rowClass"
-            ref="multipleQueryTable"
+            ref="multipleQueryTable2"
             :data="tableDelayData"
             element-loading-background = "rgba(255, 255, 255, .5)"
             element-loading-text = "加载中，请稍后..."
@@ -1254,6 +1263,37 @@ export default {
   },
 
   methods: {
+    getSummaries(param) {
+      console.log("param:",param)
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0 ) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 5 ) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+
+        }
+
+      });
+
+      return sums;
+    },
     accept(row){
       console.log("accept:row",row)
       request.post('/produce/batchProgress/accept?id='+row.id).then(res => {
@@ -2092,6 +2132,9 @@ export default {
       ,searchQueryOutDateStr:this.searchQueryOutDateStr},null).then(res => {
         this.tableQueryData = res.data.data['progressData']
         this.tableDelayData = res.data.data['delayData']
+        this.$nextTick(() => {
+          this.$refs['multipleQueryTable'].doLayout();
+        })
       }).catch(error=>{
         console.log("error:",error)
       })

@@ -36,7 +36,7 @@
       </el-main>
     </el-container>
 
-    <div  id="line" style="height: 600px; width: 1000px;">
+    <div  id="line" style="height: 600px; width: 1300px;">
 
     </div>
   </div>
