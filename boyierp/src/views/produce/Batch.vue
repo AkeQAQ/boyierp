@@ -736,7 +736,7 @@
 
           <el-form-item>
             <!-- 列表界面-日期搜索 -->
-            <el-date-picker style="width: 125px;"
+            <el-date-picker style="width: 160px;"
                             size="mini"
                             value-format="yyyy-MM-dd"
                             v-model="searchQueryOutDateStr"
@@ -746,7 +746,7 @@
             </el-date-picker>
 
             <!-- 列表界面-日期搜索 -->
-            <el-date-picker style="width: 125px;"
+            <el-date-picker style="width: 160px;"
                             size="mini"
                             value-format="yyyy-MM-dd"
                             v-model="searchQueryStartDateStr"

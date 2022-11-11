@@ -474,6 +474,8 @@
             </span>
               <el-dropdown-menu slot="dropdown" >
                 <el-dropdown-item   v-if="hasAuth('order:productOrder:del') && scope.row.orderType !=2 " :command="beforeHandleCommand(scope.$index, scope.row,'a')">订单取消</el-dropdown-item>
+                <el-dropdown-item   v-if="hasAuth('order:productOrder:del') && scope.row.orderType ===2 " :command="beforeHandleCommand(scope.$index, scope.row,'b')">订单还原</el-dropdown-item>
+
               </el-dropdown-menu>
             </el-dropdown>
 
@@ -1546,8 +1548,8 @@ export default {
         case "a"://订单取消
           this.cancelOrder(command.row.id);
           break;
-        case "b"://上传原件
-          // this.handleUpload (command.index,command.row);
+        case "b"://订单还原
+          this.noCancelOrder(command.row.id);
           break;
         case "c"://原件整理
           // this.handleSettle(command.index,command.row);
@@ -1657,7 +1659,17 @@ export default {
 
       return sums;
     },
+    noCancelOrder(id){
+      request.post('/order/productOrder/noCancelOrder?id='+id)
+          .then(res => {
+            this.$message({
+              message: "订单还原完成",
+              type: 'success'
+            });
+            this.getList()
+          })
 
+    },
     cancelOrder(id){
       request.post('/order/productOrder/cancelOrder?id='+id)
           .then(res => {

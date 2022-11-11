@@ -229,15 +229,6 @@
           </template>
         </el-table-column>
 
-        <el-table-column
-            prop="status"
-            width="150px"
-            label="加工计划物料-价目情况">
-          <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.caiduanForeignPriceStatus === 0" type="danger">无价格</el-tag>
-            <el-tag size="small" v-else-if="scope.row.caiduanForeignPriceStatus!=0" type="success">有价格</el-tag>
-          </template>
-        </el-table-column>
 
         <el-table-column
             prop="action"
