@@ -198,6 +198,19 @@
             show-overflow-tooltip>
         </el-table-column>
 
+
+        <el-table-column
+            prop="orderType"
+            label="订单类型"
+            width="70px"
+        >
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.orderType === 0" type="success">订单</el-tag>
+            <el-tag size="small" v-else-if="scope.row.orderType===1" type="warning">回单</el-tag>
+            <el-tag size="small" v-else-if="scope.row.orderType===2" type="danger">取消</el-tag>
+          </template>
+        </el-table-column>
+
         <el-table-column
             prop="mergeBatchNumber"
             label="数量"
@@ -1305,7 +1318,7 @@ export default {
       row.delays.push({isOpenEdit:true,produceBatchId:row.id,
         costOfLabourTypeId:this.$store.state.user_info.defaultTypeObj != null ? this.$store.state.user_info.defaultTypeObj[0].id : '',
         costOfLabourTypeName:this.$store.state.user_info.defaultTypeObj != null ?  this.$store.state.user_info.defaultTypeObj[0].typeName :'空值',
-       materialId:'空值',materialName:'初始',date:''})
+       date:''})
     },
     addProgress(row){
 
@@ -1420,7 +1433,7 @@ export default {
     },
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
-      if (columnIndex === 1 || columnIndex === 2|| columnIndex === 3 || columnIndex === 4 || columnIndex === 5) {
+      if (columnIndex === 1 || columnIndex === 2|| columnIndex === 3 || columnIndex === 4 || columnIndex === 5||columnIndex === 6) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1428,9 +1441,9 @@ export default {
           colspan: _col
         }
       }
-      else if (  columnIndex === 21 || columnIndex === 22 || columnIndex === 23 ||
+      else if (   columnIndex === 22 || columnIndex === 23 ||
           columnIndex === 24 || columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30
-          || columnIndex === 31 || columnIndex === 32 ) {
+          || columnIndex === 31 || columnIndex === 32 || columnIndex === 33  ) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1438,8 +1451,9 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && this.showProgress)&& (  columnIndex === 7 || columnIndex === 8 ||columnIndex === 9 || columnIndex === 10 ||
-          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18 )){
+      if((!this.showDetailNum && this.showProgress)&& (   columnIndex === 8 ||columnIndex === 9 || columnIndex === 10 ||
+          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18
+          ||columnIndex === 19 )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1447,8 +1461,8 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && !this.showProgress)&& ( columnIndex === 7|| columnIndex === 8 || columnIndex === 9 ||
-          columnIndex === 10 )){
+      if((!this.showDetailNum && !this.showProgress)&& (  columnIndex === 8 || columnIndex === 9 ||
+          columnIndex === 10 ||columnIndex === 11 )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1465,7 +1479,6 @@ export default {
       console.log("data:",data)
       const origin = this.origin; // 起点数 从-1开始
       const endIdx = index.index; // 终点数
-      console.log("pin:"+this.pin+",isClude:"+item.includes(data[origin])+"item:"+item +",data:"+data[origin])
       if (this.pin && item.includes(data[origin])) { // 判断按住
         const sum = Math.abs(origin - endIdx) + 1;// 这里记录终点
         const min = Math.min(origin, endIdx);// 这里记录起点
@@ -2070,7 +2083,8 @@ export default {
             this.multipleSelection.push(theId.id)
           }
         })
-        console.log("handleSelectionChange 多选框 选中的 ", this.multipleSelection)
+        console.log("shift 多选框 选中的 ", this.multipleSelection)
+        return;
       }else{
         console.log("多选框 val ", val)
         this.multipleSelection = []

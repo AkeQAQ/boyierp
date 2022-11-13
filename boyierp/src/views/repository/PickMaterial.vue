@@ -297,20 +297,21 @@
           v-loading = "tableLoad"
           element-loading-background = "rgba(255, 255, 255, .5)"
           element-loading-text = "加载中，请稍后..."
-          :span-method="objectSpanMethod"
+
           border
           fit
           height="520px"
           :summary-method="getSummaries"
           show-summary
+          :span-method="objectSpanMethod"
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
           :cell-style="{padding:'0',borderColor:'black'}"
           :header-cell-style="{borderColor:'black'}"
-          :default-sort="{prop:'id',order:'descending'}"
-          @select="handleSelectionChange"
-          @select-all="selectAll"
+          @selection-change="handleSelectionChange"
+          @select="pinSelect"
+
       >
         <el-table-column
             type="selection"
@@ -1050,10 +1051,36 @@ export default {
       pos: '',
       multipleSelection: [], // 多选框数组
       editBatchForm:{'content':[]},
-      dialogVisibleBatchPrint:false
+      dialogVisibleBatchPrint:false,
+
+      // shift 多选
+      origin:-1,  // 变量起点
+      pin:false, // 默认不按住
     }
   },
   methods: {
+    pinSelect(item, index){
+      console.log("index",index)
+      const data = this.$refs.multipleTable.tableData; // 获取所以数据
+      console.log("data:",data)
+      const origin = this.origin; // 起点数 从-1开始
+      const endIdx = index.index; // 终点数
+      if (this.pin && item.includes(data[origin])) { // 判断按住
+        const sum = Math.abs(origin - endIdx) + 1;// 这里记录终点
+        const min = Math.min(origin, endIdx);// 这里记录起点
+        let i = 0;
+        while (i < sum) {
+          const index = min + i;
+
+          this.$refs.multipleTable.toggleRowSelection(data[index], true); // 通过ref打点调用toggleRowSelection方法，第二个必须为true
+          i++;
+        }
+      } else {
+        console.log("设置起点:",index.index)
+        this.origin = index.index; // 没按住记录起点
+      }
+    },
+
     printBatchDemo() {
       this.$refs.easyBatchPrint.print()
     },
@@ -1656,11 +1683,17 @@ export default {
       console.log("全选，多选框 val ", val)
       console.log("全选，多选框 选中的 ", this.multipleSelection)
     },
-    handleSelectionChange(val,row) {
-      if (!row||row===undefined) { // 没有row则是全选的情况
-
-        return
+    handleSelectionChange(val) {
+      if(this.pin){
+        val.forEach(theId => {
+          if(!this.multipleSelection.some(item=>item==theId.id)){
+            this.multipleSelection.push(theId.id)
+          }
+        })
+        console.log("shift 多选框 选中的 ", this.multipleSelection)
+        return;
       }
+
       this.multipleSelection= []
       console.log("val:",val)
       // 选中的数值全加进去
@@ -1669,8 +1702,7 @@ export default {
           this.multipleSelection.push(theId.id)
         }
       })
-
-
+/*
       // 找出没选中的，把前面的数组等值的去掉
       this.multipleSelection.forEach((item,index,arr) => {
         console.log("判断:item{},row:{},val.indexOfrow:",item,row,val.indexOf(row))
@@ -1691,7 +1723,7 @@ export default {
             }
           })
         }
-      });
+      });*/
       console.log("多选框 选中的 ", this.multipleSelection)
 
     },
@@ -1809,6 +1841,12 @@ export default {
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
         this.tableData = res.data.data.records
+
+        // shift多选
+        this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
+          item.index = index;
+        })
+
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
         this.tableLoad = false;
@@ -2203,6 +2241,19 @@ export default {
 
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
+
+    // shift 按住
+    window.addEventListener('keydown',code=>{
+      if(code.keyCode === 16 && code.shiftKey){
+        this.pin = true
+      }
+    })
+    // shift 松开
+    window.addEventListener('keyup',code=>{
+      if(code.keyCode === 16 ){
+        this.pin = false
+      }
+    })
   }
   ,
   // 每次页面切换进入则激活

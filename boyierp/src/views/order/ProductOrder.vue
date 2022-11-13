@@ -1405,7 +1405,6 @@ export default {
       console.log("data:",data)
       const origin = this.origin; // 起点数 从-1开始
       const endIdx = index.index; // 终点数
-      console.log("pin:"+this.pin+",isClude:"+item.includes(data[origin])+"item:"+item +",data:"+data[origin])
       if (this.pin && item.includes(data[origin])) { // 判断按住
         const sum = Math.abs(origin - endIdx) + 1;// 这里记录终点
         const min = Math.min(origin, endIdx);// 这里记录起点
@@ -2179,7 +2178,6 @@ export default {
 
     },
     handleSelectionChange(val) {
-      // 等于true的时候，shift 多选，则不清空老的数组，
       if(this.pin){
         val.forEach(theId => {
           if(!this.multipleSelection.some(item=>item==theId.id)){
@@ -2187,6 +2185,7 @@ export default {
           }
         })
         console.log("handleSelectionChange 多选框 选中的 ", this.multipleSelection)
+        return;
 
       }else{
         console.log(" handleSelectionChange多选框 val ", val)

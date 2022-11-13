@@ -162,7 +162,7 @@
         <el-form-item>
 
           <div :class="'el-input el-input--mini'">
-            <input  class="el-input__inner" style="width: 150px"  placeholder="请输入搜索单号(,分割)"
+            <input  class="el-input__inner" style="width: 140px"  placeholder="搜索单号(,分割)"
                     v-model.lazy="searchDocNum">
             </input>
           </div>
@@ -280,7 +280,6 @@
           style="width: 100%;color:black"
           :cell-style="{padding:'0',borderColor:'black'}"
           :header-cell-style="{borderColor:'black'}"
-          :default-sort="{prop:'id',order:'descending'}"
           @selection-change="handleSelectionChange"
           @row-click="rowClick"
           @select="pinSelect"
@@ -1820,6 +1819,16 @@ export default {
       }
     },
     handleSelectionChange(val) {
+      if(this.pin === true){
+
+        val.forEach(theId => {
+          if(!this.multipleSelection.some(item=>item==theId.detailId)){
+            this.multipleSelection.push(theId.detailId)
+          }
+        })
+        console.log("shift 多选框 选中的 ", this.multipleSelection)
+        return;
+      }
       console.log("多选框 val ", val)
       this.multipleSelection = []
 
@@ -1847,7 +1856,8 @@ export default {
             // this.$refs.multipleTable.clearSelection();
             this.getBuyOrderDocumentList();
 
-            this.$router.push({name:'repository:buyIn:list',params:{refresh:'true'}});
+            // 取消跳转
+            // this.$router.push({name:'repository:buyIn:list',params:{refresh:'true'}});
           })
         } else {
           console.log('error submit!!');
@@ -2339,7 +2349,7 @@ export default {
   },
   mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
-  // shift 按住
+    // shift 按住
     window.addEventListener('keydown',code=>{
       if(code.keyCode === 16 && code.shiftKey){
         this.pin = true
