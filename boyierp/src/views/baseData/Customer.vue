@@ -2,18 +2,18 @@
   <div>
     <el-form :inline="true" class="demo-form-inline">
       <el-form-item>
-        <el-input size="mini" icon="" v-model="searchName" placeholder="部门名称" clearable></el-input>
+        <el-input size="mini" icon="" v-model="searchName" placeholder="客户名称" clearable></el-input>
       </el-form-item>
 
       <el-form-item>
         <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
       </el-form-item>
 
-      <el-form-item v-if="hasAuth('baseData:department:save')">
-        <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('baseData:department:save')"  @click="dialogVisible = true">新增</el-button>
+      <el-form-item v-if="hasAuth('baseData:customer:save')">
+        <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('baseData:customer:save')"  @click="dialogVisible = true">新增</el-button>
       </el-form-item>
 
-      <el-form-item v-if="hasAuth('baseData:department:del')">
+      <el-form-item v-if="hasAuth('baseData:customer:del')">
         <!-- 气泡确认框 -->
         <el-popconfirm @confirm="del(null)" title="确定删除吗？" >
           <el-button size="mini" icon="el-icon-delete" :disabled="this.multipleSelection.length === 0 " type="danger" slot="reference">批量删除</el-button>
@@ -45,7 +45,7 @@
       >
       </el-table-column>
       <el-table-column
-          label="部门名称"
+          label="客户名称"
           prop="name">
       </el-table-column>
 
@@ -58,10 +58,10 @@
       >
         <template slot-scope="scope">
 
-          <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('baseData:department:update')  ">编辑</el-button>
-          <el-divider direction="vertical" v-if="hasAuth('baseData:department:del')  "></el-divider>
+          <el-button type="text" size="small" @click="edit(scope.row.id)" v-if="hasAuth('baseData:customer:update')  ">编辑</el-button>
+          <el-divider direction="vertical" v-if="hasAuth('baseData:customer:del')  "></el-divider>
 
-          <el-button type="text" style="padding: 0" v-if="hasAuth('baseData:department:del')  ">
+          <el-button type="text" style="padding: 0" v-if="hasAuth('baseData:customer:del')  ">
             <!-- 气泡确认框 -->
             <template>
               <el-popconfirm @confirm="del(scope.row.id)"
@@ -80,7 +80,7 @@
 
     <!-- 弹窗 -->
     <el-dialog
-        title="部门信息"
+        title="客户信息"
         :visible.sync="dialogVisible"
         width="30%"
         :before-close="handleClose"
@@ -92,7 +92,7 @@
           <el-input v-model="editForm.id" ></el-input>
         </el-form-item>
 
-        <el-form-item label="部门名称" prop="name">
+        <el-form-item label="客户名称" prop="name">
           <el-input v-model="editForm.name"></el-input>
         </el-form-item>
 
@@ -110,7 +110,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="this.currentPage"
-        :page-sizes="[10, 20, 30, 40]"
+        :page-sizes="[50, 100, 200, 1000]"
         :page-size="this.pageSize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="this.total">
@@ -122,11 +122,11 @@
 import {request} from "@/axios";
 
 export default {
-  name: "Deparment",
+  name: "Customer",
   data() {
     return {
       currentPage: 1 // 当前页
-      , pageSize: 10 // 一页多少条
+      , pageSize: 50 // 一页多少条
       , total: 0 // 总共多少数据
       ,searchName:'',
       // batchDelDisable: true,
@@ -136,7 +136,7 @@ export default {
       },
       rules: {
         name: [
-          {required: true, message: '请输入部门名称', trigger: 'blur'}
+          {required: true, message: '请输入客户名称', trigger: 'blur'}
         ]
       }
       ,
@@ -174,12 +174,8 @@ export default {
       this.multipleSelection = []
 
       val.forEach(theId => {
-        if(theId.id === 1){
-          // 是超级管理员部门，不能删除
-        }else {
-          if(!this.multipleSelection.some(item=>item==theId.id)){
+        if(!this.multipleSelection.some(item=>item==theId.id)){
           this.multipleSelection.push(theId.id)
-        }
         }
       })
       console.log("多选框 选中的 ", this.multipleSelection)
@@ -188,7 +184,7 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          request.post('/baseData/department/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
+          request.post('/baseData/customer/' + (this.editForm.id ? 'update' : 'save'), this.editForm).then(res => {
             this.$message({
               message: (this.editForm.id ? '编辑' : '新增') + '成功!',
               type: 'success'
@@ -210,9 +206,9 @@ export default {
       this.currentPage = 1
       this.getList()
     },
-    // 查询部门表单列表数据
+    // 查询客户表单列表数据
     getList() {
-      request.get('/baseData/department/list', {
+      request.get('/baseData/customer/list', {
         params:{
           currentPage: this.currentPage
           , pageSize: this.pageSize
@@ -221,7 +217,7 @@ export default {
         }}).then(res => {
         this.tableData = res.data.data.records
         this.total = res.data.data.total
-        console.log("获取部门表单数据", res.data.data.records)
+        console.log("获取客户表单数据", res.data.data.records)
         this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
         })
@@ -229,7 +225,7 @@ export default {
     },
     // 编辑页面
     edit(id) {
-      request.get('/baseData/department/queryById?id=' + id).then(res => {
+      request.get('/baseData/customer/queryById?id=' + id).then(res => {
         let result = res.data.data
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
@@ -254,7 +250,7 @@ export default {
         ids = this.multipleSelection
         console.log("批量删除:id",ids)
       }
-      request.post('/baseData/department/del', ids).then(res => {
+      request.post('/baseData/customer/del', ids).then(res => {
         this.$message({
           message: '删除成功!',
           type: 'success'

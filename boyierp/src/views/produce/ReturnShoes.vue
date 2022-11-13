@@ -14,7 +14,36 @@
       </el-form-item>
 
       <el-form-item>
-        <el-input size="mini" v-model="searchStr" clearable></el-input>
+
+        <!-- userArtNo -->
+        <div v-if="selectedName === 'userArtNo'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+          <input  @keyup.enter="getList()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                  v-model.lazy="searchStr">
+          </input>
+        </div>
+
+        <!-- 快递号 -->
+        <div v-if="selectedName === 'packageNo'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+          <input  @keyup.enter="getList()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                  v-model.lazy="searchStr">
+          </input>
+        </div>
+
+        <!-- 品牌 -->
+        <el-autocomplete size="mini" v-if="selectedName === 'userName'" clearable
+                         style="width: 200px"
+                         popper-class="my-autocomplete"
+                         class="inline-input"
+                         v-model="searchStr"
+                         :fetch-suggestions="querySearchWithName"
+                         :trigger-on-focus="false"
+                         placeholder="请输入搜索内容"
+                         @select="searchSelect"
+                         @focus="loadCustomerAll()"
+                         @keyup.enter.native="getList()"
+
+        >
+        </el-autocomplete>
       </el-form-item>
 
       <el-popover
@@ -33,6 +62,34 @@
               </el-option>
             </el-select>
             <el-input size="mini" v-model="item.searchStr" style="width: 150px" clearable></el-input>
+            <!-- 公司货号 -->
+            <div v-if="item.selectField==='userArtNo'" :class=" 'el-input el-input--mini'" style="width: 200px">
+              <input   class="el-input__inner"   placeholder="请输入搜索内容"
+                       v-model.lazy="item.searchStr">
+              </input>
+            </div>
+
+            <div v-if="item.selectField==='packageNo'" :class=" 'el-input el-input--mini'" style="width: 200px">
+              <input   class="el-input__inner"   placeholder="请输入搜索内容"
+                       v-model.lazy="item.searchStr">
+              </input>
+            </div>
+
+            <!-- 品牌 -->
+            <el-autocomplete size="mini" v-if="item.selectField === 'userName'" clearable
+                             style="width: 200px"
+                             popper-class="my-autocomplete"
+                             class="inline-input"
+                             v-model="item.searchStr"
+                             :fetch-suggestions="querySearchWithName"
+                             :trigger-on-focus="false"
+                             @select="searchManySelect($event,index)"
+                             @focus="loadCustomerAll()"
+                             placeholder="请输入搜索内容"
+                             @change="moveMouse"
+
+            >
+            </el-autocomplete>
 
             <el-button type="danger" size="mini" icon="el-icon-delete" circle
                        @click="delSearch(index)"
@@ -142,6 +199,11 @@
           width="100">
       </el-table-column>
       <el-table-column
+          label="区域"
+          prop="region"
+          width="100">
+      </el-table-column>
+      <el-table-column
           prop="packageNo"
           label="快递号"
           width="150"
@@ -173,7 +235,12 @@
           label="客户要求"
           width="150px"
       >
-
+      </el-table-column>
+      <el-table-column
+          prop="departmentName"
+          label="所属部门"
+          width="100px"
+      >
       </el-table-column>
 
       <el-table-column
@@ -226,7 +293,8 @@
     <el-dialog
         title="退残鞋信息"
         :visible.sync="dialogVisible"
-        width="30%"
+        width="40%"
+        top="0vh"
         :before-close="handleClose"
     >
 
@@ -247,7 +315,24 @@
         </el-form-item>
 
         <el-form-item label="客户" prop="userName">
-          <el-input v-model="editForm.userName"></el-input>
+          <el-autocomplete   clearable
+                           style="width: 200px"
+                           popper-class="my-autocomplete"
+                           class="inline-input"
+                           v-model="editForm.userName"
+                           :fetch-suggestions="querySearchWithName"
+                           :trigger-on-focus="false"
+                           @select="editFormSelectUserName"
+                           @focus="loadCustomerAll()"
+                           placeholder="请输入搜索内容"
+                           @change="moveMouse"
+
+          >
+          </el-autocomplete>
+        </el-form-item>
+
+        <el-form-item label="区域" prop="region">
+          <el-input v-model="editForm.region"></el-input>
         </el-form-item>
 
         <el-form-item label="快递号" prop="packageNo">
@@ -266,6 +351,24 @@
         </el-form-item>
         <el-form-item label="客户要求" prop="userRequest">
           <el-input v-model="editForm.userRequest"></el-input>
+        </el-form-item>
+        <el-form-item v-if="false" prop="departmentId" style="margin-bottom: 0">
+          <el-input v-model="editForm.departmentId"></el-input>
+        </el-form-item>
+        <el-form-item label="原因部门" prop="departmentName" style="margin-bottom: 10px">
+          <!-- 搜索框 -->
+          <el-autocomplete
+              popper-class="my-autocomplete"
+              class="inline-input"
+              v-model="editForm.departmentName"
+              :fetch-suggestions="querySearch"
+              placeholder="请输入部门"
+              @select="handleSelect"
+              @change="moveMouseDepartment"
+              @focus="loadDepartmentAll()"
+              clearable
+          >
+          </el-autocomplete>
         </el-form-item>
         <el-form-item label="处理情况" prop="dealSituation">
           <el-radio v-model="editForm.dealSituation" label="退鞋">退鞋</el-radio>
@@ -356,15 +459,102 @@ export default {
         ],
         dealSituation: [
           {required: true, message: '请选择类别', trigger: 'blur'}
+        ],
+        departmentName: [
+          {required: true, message: '请选择原因部门', trigger: 'blur'}
         ]
       }
       ,
       dialogVisible: false,
       tableData: [],
-      multipleSelection: [] // 多选框数组
+      multipleSelection: [], // 多选框数组
+      restaurantsCustomer: [],
+      restaurantsDepartment:[],
     }
   },
   methods: {
+    loadDepartmentAll() {
+      request.post('/baseData/department/getSearchAllData').then(res => {
+        this.restaurantsDepartment = res.data.data
+      })
+    },
+    editFormSelectUserName(item) {
+      this.editForm.userName = item.name
+    },
+    handleSelect(item) {
+      this.editForm.departmentId = item.id
+      this.editForm.departmentName = item.name
+    },
+    createFilter(queryString) {
+      return (restaurant) => {
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || ((restaurant.id+"").toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+      };
+    },
+    querySearch(queryString, cb) {
+      var restaurants = this.restaurantsDepartment;
+      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    searchManySelect(item,index) {
+      let theObj = this.manySearchArr[index];
+      theObj.searchStr = item.name;
+      console.log("manySearchArr:",this.manySearchArr)
+    },
+    loadCustomerAll() {
+      request.post('/baseData/customer/getSearchAllData').then(res => {
+        this.restaurantsCustomer = res.data.data
+      })
+    },
+    searchSelect(item) {
+      this.searchStr = item.name
+    },
+    tableSelectSearchCustomer(selectItem, param) {
+      param.userName = selectItem.obj.name
+    },
+    moveMouseDepartment(text) {
+      try {
+        // foreach 只能抛出异常结束
+        this.restaurants.forEach(item => {
+          if (text === item.name) {
+            this.editForm.departmentId = item.id
+            this.editForm.departmentName = item.name
+            throw new Error();
+          } else {
+            this.editForm.departmentId = ''
+            this.editForm.departmentName = ''
+          }
+        })
+      } catch (err) {
+      }
+    },
+    moveMouse(text) {
+      try {
+        // foreach 只能抛出异常结束
+        this.restaurantsCustomer.forEach(item => {
+          if (text === item.name) {
+            this.editForm.userName = item.name
+            throw new Error();
+          } else {
+            this.editForm.userName = ''
+          }
+        })
+      } catch (err) {
+      }
+    },
+    createFilterWithName(queryString) {
+      return (restaurant) => {
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
+      };
+    },
+    querySearchWithName(queryString, cb) {
+      let restaurants = this.restaurantsCustomer;
+      console.log("res",restaurants)
+      let results = queryString ? restaurants.filter(this.createFilterWithName(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
     getSummaries(param) {
       const {columns, data} = param;
       const sums = [];
@@ -373,7 +563,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 6 ) {
+        if (index === 7 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -593,6 +783,7 @@ export default {
   },
   // 页面初始化时调用的方法
   created() {
+    this.loadCustomerAll()
     this.getList()
     this.dialogVisible = false
 

@@ -26,11 +26,20 @@
           </div>
 
           <!-- 品牌 -->
-          <div v-if="selectedName === 'productBrand'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
-            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
-                    v-model.lazy="searchStr">
-            </input>
-          </div>
+          <el-autocomplete size="mini" v-if="selectedName === 'productBrand'" clearable
+                           style="width: 200px"
+                           popper-class="my-autocomplete"
+                           class="inline-input"
+                           v-model="searchStr"
+                           :fetch-suggestions="querySearchWithName"
+                           :trigger-on-focus="false"
+                           placeholder="请输入搜索内容"
+                           @select="searchSelect"
+                           @focus="loadCustomerAll()"
+                           @keyup.enter.native="search()"
+
+          >
+          </el-autocomplete>
 
           <!-- 列表界面-物料搜索 -->
           <el-autocomplete size="mini" v-if="selectedName === 'materialName'" clearable
@@ -74,11 +83,21 @@
               </div>
 
               <!-- 品牌 -->
-              <div v-if="item.selectField==='productBrand'" :class=" 'el-input el-input--mini'" style="width: 200px">
-                <input   class="el-input__inner"   placeholder="请输入搜索内容"
-                        v-model.lazy="item.searchStr">
-                </input>
-              </div>
+              <el-autocomplete size="mini" v-if="item.selectField === 'productBrand'" clearable
+                               style="width: 200px"
+                               popper-class="my-autocomplete"
+                               class="inline-input"
+                               v-model="item.searchStr"
+                               :fetch-suggestions="querySearchWithName"
+                               :trigger-on-focus="false"
+                               @select="searchManySelect($event,index)"
+                               @focus="loadCustomerAll()"
+                               placeholder="请输入搜索内容"
+                               @change="moveMouse"
+
+              >
+              </el-autocomplete>
+
 
               <el-autocomplete size="mini" v-if="item.selectField === 'materialName'" clearable
                                style="width: 200px"
@@ -454,13 +473,23 @@
           </el-form-item>
 
           <el-form-item label="品牌" prop="productBrand" style="margin-bottom: 10px">
-            <!-- 公司货号 -->
-            <div  :class=" [(this.editForm.status!=1 )? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']" style="margin: 0 0">
-              <input  class="el-input__inner" style="width: 200px"
-                      :disabled="editForm.status!=1"
-                      v-model.lazy="editForm.productBrand">
-              </input>
-            </div>
+
+            <!-- 品牌 -->
+            <el-autocomplete size="mini"  clearable
+                             style="width: 200px"
+                             :disabled="editForm.status!=1"
+                             popper-class="my-autocomplete"
+                             class="inline-input"
+                             v-model="editForm.productBrand"
+                             :fetch-suggestions="querySearchWithName"
+                             :trigger-on-focus="false"
+                             placeholder="请输入搜索内容"
+                             @select="tableSelectSearchCustomer"
+                             @focus="loadCustomerAll()"
+                             @change="moveMouse"
+
+            >
+            </el-autocomplete>
           </el-form-item>
 
           <el-form-item label="颜色" prop="productColor" style="margin-bottom: 10px">
@@ -687,6 +716,7 @@ export default {
       restaurants: [],// 搜索框列表数据存放
       restaurants2: [], //
       restaurants3: [], //用于增量表格的搜索框内容
+      restaurantsCustomer: [], //
 
       // 分页字段
       currentPage: 1 // 当前页
@@ -976,6 +1006,11 @@ export default {
         this.restaurants3 = res.data.data
       })
     },
+    loadCustomerAll() {
+      request.post('/baseData/customer/getSearchAllData').then(res => {
+        this.restaurantsCustomer = res.data.data
+      })
+    },
     loadMaterialAll() {
       request.post('/baseData/material/getSearchAllData').then(res => {
         this.restaurants2 = res.data.data
@@ -985,6 +1020,14 @@ export default {
     tableSearch(queryString, cb) {
       let restaurants = this.restaurants3;
       let results = queryString ? restaurants.filter(this.createFilter2(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    // 查询搜索框列表数据
+    querySearchWithName(queryString, cb) {
+      let restaurants = this.restaurantsCustomer;
+      console.log("res",restaurants)
+      let results = queryString ? restaurants.filter(this.createFilterWithName(queryString)) : restaurants;
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
@@ -1002,6 +1045,11 @@ export default {
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
+    createFilterWithName(queryString) {
+      return (restaurant) => {
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1);
+      };
+    },
     createFilter(queryString) {
       return (restaurant) => {
         return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || ((restaurant.id+"").toLowerCase().indexOf(queryString.toLowerCase()) === 0);
@@ -1015,16 +1063,12 @@ export default {
     moveMouse(text) {
       try {
         // foreach 只能抛出异常结束
-        this.restaurants.forEach(item => {
+        this.restaurantsCustomer.forEach(item => {
           if (text === item.name) {
-            console.log("匹配到:", text, item.name, this.editForm.departmentId, item.id)
-            this.editForm.departmentId = item.id
-            this.editForm.productNum = item.name
+            this.editForm.productBrand = item.name
             throw new Error();
           } else {
-            this.editForm.departmentId = ''
-            console.log("没有匹配到", text, item.name)
-            this.editForm.productNum = ''
+            this.editForm.productBrand = ''
           }
         })
       } catch (err) {
@@ -1056,6 +1100,9 @@ export default {
         })
       } catch (err) {
       }
+    },
+    tableSelectSearchCustomer(selectItem, param) {
+      param.productBrand = selectItem.obj.name
     },
     tableSelectSearch(selectItem, param) {
       console.log("每个表格项选中：", selectItem, param);
@@ -1353,6 +1400,7 @@ export default {
     cellStyle() {
       return 'padding:0 0'
     },
+
     searchMmaterialFocus(){
       this.loadMaterialAll()
     },
@@ -1365,6 +1413,7 @@ export default {
     this.getList()
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
+    this.loadCustomerAll();
 
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
