@@ -29,7 +29,7 @@
           </el-form-item>
 
           <el-form-item>
-            <el-button size="mini" icon="el-icon-search" type="success"  @click="getData" >搜索</el-button>
+            <el-button size="mini" icon="el-icon-search" type="success"  @click="search" >搜索</el-button>
           </el-form-item>
 
         </el-form>
@@ -39,6 +39,16 @@
     <div  id="line" style="height: 600px; width: 1300px;">
 
     </div>
+    <el-divider>退残鞋品牌分布图</el-divider>
+    <div  id="line2" style="height: 600px; width: 1300px;">
+
+    </div>
+
+    <el-divider>退残鞋归属部门分布图</el-divider>
+    <div  id="line3" style="height: 600px; width: 1300px;">
+
+    </div>
+
   </div>
 
 
@@ -52,6 +62,7 @@ export default {
   name: "daProductionEchart",
   data(){
     return{
+      // 1. 车间进度表
       dataMap:{},
       calType:['总产量','平均耗时(天)','超期次数','超期百分比'],
 
@@ -62,6 +73,17 @@ export default {
       supplierOverPercents:[4,400],// 动态获取(同下标对应同个供应商数据)
       supplierAvgCost:[5,500],// 动态获取(同下标对应同个供应商数据),
       supplierAllSendPercents:[],
+
+      // 2. 退残鞋品牌分析图
+      productBrands:['品牌1','品牌2'], // 动态获取
+      productFixDatas:[1,2],
+      productReturnDatas:[3,4],
+      // 3. 退残鞋品牌分析图
+      departments:['部门1','部门2'],
+      productFixDataByDepartments:[1,2],
+      productReturnDatasByDepartments:[3,4],
+
+
 
       searchStartDate: new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 180).format("yyyy-MM-dd"),
       searchEndDate: new Date().format("yyyy-MM-dd"),
@@ -85,6 +107,39 @@ export default {
       obj['all' + 'max'] = Math.floor(max / 100) * 100;
       obj['all' + 'sum'] = sum;
       return obj;
+    },
+    async getData3(){
+
+      await  request.get('/analysis/getProduceReturnShoesWithDepartments?'+"searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate).then(res => {
+        if(res.data.data != null){
+          let data = res.data.data;
+          this.departments=data.departments;
+          this.productFixDataByDepartments=data.productFixDataByDepartments;
+          this.productReturnDatasByDepartments=data.productReturnDatasByDepartments;
+
+          this.drawLine3();
+        }
+      })
+    },
+    async getData2(){
+
+      await  request.get('/analysis/getProduceReturnShoesWithBrands?'+"searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate).then(res => {
+        if(res.data.data != null){
+          let data = res.data.data;
+          this.productBrands=data.productBrands;
+          this.productFixDatas=data.productFixDatas;
+          this.productReturnDatas=data.productReturnDatas;
+
+          this.drawLine2();
+        }
+      })
+    },
+    search(){
+      this.getData();
+      this.getData2();
+      this.getData3()
     },
     async getData(){
 
@@ -220,12 +275,151 @@ export default {
       // 使用刚指定的配置项和数据显示图表。
       myChart.setOption(option);
     },
-
+    drawLine2() {
+      console.log("开始绘制")
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.$echarts.init(document.getElementById("line2"));
+      // 指定图表的配置项和数据
+      let option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            // Use axis to trigger tooltip
+            type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
+          }
+        },
+        legend: {},
+        dataZoom:[
+          {
+            type:'slider',
+            show:true,
+            yAxisIndex:[0],
+            left:'93%',
+            start:60,
+            end:100
+          }
+        ],
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'value'
+        },
+        yAxis: {
+          type: 'category',
+          data: this.productBrands
+        },
+        series: [
+          {
+            name: '返修',
+            type: 'bar',
+            stack: 'total',
+            label: {
+              show: true
+            },
+            emphasis: {
+              focus: 'series'
+            },
+            data: this.productFixDatas
+          },
+          {
+            name: '退鞋',
+            type: 'bar',
+            stack: 'total',
+            label: {
+              show: true
+            },
+            emphasis: {
+              focus: 'series'
+            },
+            data: this.productReturnDatas
+          }
+        ]
+      };
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option);
+    },
+    drawLine3() {
+      console.log("开始绘制")
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.$echarts.init(document.getElementById("line3"));
+      // 指定图表的配置项和数据
+      let option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            // Use axis to trigger tooltip
+            type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
+          }
+        },
+        legend: {},
+        dataZoom:[
+          {
+            type:'slider',
+            show:true,
+            yAxisIndex:[0],
+            left:'93%',
+            start:60,
+            end:100
+          }
+        ],
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'value'
+        },
+        yAxis: {
+          type: 'category',
+          data: this.departments
+        },
+        series: [
+          {
+            name: '返修',
+            type: 'bar',
+            stack: 'total',
+            label: {
+              show: true
+            },
+            emphasis: {
+              focus: 'series'
+            },
+            data: this.productFixDataByDepartments
+          },
+          {
+            name: '退鞋',
+            type: 'bar',
+            stack: 'total',
+            label: {
+              show: true
+            },
+            emphasis: {
+              focus: 'series'
+            },
+            data: this.productReturnDatasByDepartments
+          }
+        ]
+      };
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option);
+    },
   },
   mounted() {
     this.drawLine();
+    this.drawLine2()
+    this.drawLine3()
+
   },created() {
     this.getData()
+    this.getData2()
+    this.getData3()
+
 
   }
 }

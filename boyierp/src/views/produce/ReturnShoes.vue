@@ -347,7 +347,7 @@
           <el-input v-model="editForm.size"></el-input>
         </el-form-item>
         <el-form-item label="数量" prop="num">
-          <el-input v-model="editForm.num"></el-input>
+          <el-input v-model="editForm.num"  onkeyup="value=value.replace(/[^0-9]/g,'')"></el-input>
         </el-form-item>
         <el-form-item label="客户要求" prop="userRequest">
           <el-input v-model="editForm.userRequest"></el-input>
@@ -451,8 +451,8 @@ export default {
         returnDate: [
           {required: true, message: '请输入日期', trigger: 'blur'}
         ],
-        packageNo: [
-          {required: true, message: '请输入快递号', trigger: 'blur'}
+        num: [
+          {required: true, message: '请输入数量', trigger: 'blur'}
         ],
         userArtNo: [
           {required: true, message: '请输入货号', trigger: 'blur'}
