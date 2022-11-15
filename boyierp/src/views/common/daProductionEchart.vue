@@ -64,7 +64,6 @@ export default {
     return{
       // 1. 车间进度表
       dataMap:{},
-      calType:['总产量','平均耗时(天)','超期次数','超期百分比'],
 
       supplierNames:['供应商1','供应商2'], // 动态获取(同下标对应同个供应商数据)
       supplierTotalNums:[1,100],// 动态获取(同下标对应同个供应商数据)

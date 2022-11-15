@@ -53,31 +53,37 @@
           </el-form-item>
 
           <el-form-item>
-            <el-button size="mini" icon="el-icon-search" type="success"  @click="getData()" >搜索</el-button>
+            <el-button size="mini" icon="el-icon-search" type="success"  @click="search()" >搜索</el-button>
           </el-form-item>
 
         </el-form>
       </el-main>
     </el-container>
 
-    <div  id="line" style="height: 600px; width: 1000px;">
+    <div  id="line" style="height: 600px; width: 1000px;" v-if="hasAuth('dataAnalysis:material:onlyList')">
+
+    </div>
+
+    <el-divider  v-if="hasAuth('dataAnalysis:material:onlyList')"></el-divider>
+
+    <div  id="line2" style="height: 600px; width: 1300px;"  v-if="hasAuth('dataAnalysis:material:onlyList')">
+
+    </div>
+
+    <el-divider  v-if="hasAuth('dataAnalysis:material:onlyList')"></el-divider>
+
+    <div  id="line3" style="height: 600px; width: 1300px;"  v-if="hasAuth('dataAnalysis:material:onlyList')">
+
+    </div>
+    <el-divider  v-if="hasAuth('dataAnalysis:material:onlyList')"></el-divider>
+
+    <div  id="line4" style="height: 600px; width: 1300px;"  v-if="hasAuth('dataAnalysis:material:onlyList')">
 
     </div>
 
     <el-divider></el-divider>
 
-    <div  id="line2" style="height: 600px; width: 1300px;">
-
-    </div>
-
-    <el-divider></el-divider>
-
-    <div  id="line3" style="height: 600px; width: 1300px;">
-
-    </div>
-    <el-divider></el-divider>
-
-    <div  id="line4" style="height: 600px; width: 1300px;">
+    <div  id="line5" style="height: 600px; width: 1300px;">
 
     </div>
 
@@ -94,6 +100,14 @@ export default {
   name: "daMaterialEchart",
   data(){
     return{
+      // 1. 车间进度表
+      dataMap:{},
+
+      materialNamesLists:['供应商1','供应商2'], // 动态获取(同下标对应同个供应商数据)
+      orderNumbers:[1,100],// 动态获取(同下标对应同个供应商数据)
+      netInNums:[2,200],
+      complementNums:[3,300],// 动态获取(同下标对应同个供应商数据)
+
       select: 'all', // 搜索默认值
       options: [
       ],
@@ -113,6 +127,143 @@ export default {
     }
   },
   methods: {
+    dataFormatter(obj){
+      var pList = this.materialNamesLists;
+      var temp;
+      temp = obj['all'];
+      var max = 0;
+      var sum = 0;
+      for (var i = 0, l = temp.length; i < l; i++) {
+        max = Math.max(max, temp[i]);
+        sum += temp[i];
+        obj['all'][i] = {
+          name: pList[i],
+          value: temp[i]
+        };
+      }
+      obj['all' + 'max'] = Math.floor(max / 100) * 100;
+      obj['all' + 'sum'] = sum;
+      return obj;
+    },
+    async getData5(){
+
+      await  request.get('/analysis/getSTXMaterial?'+"searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate).then(res => {
+        if(res.data.data != null){
+          let dataTemp = res.data.data;
+          this.materialNamesLists = dataTemp.materialNamesLists;
+          this.orderNumbers = dataTemp.orderNumbers;
+          this.netInNums = dataTemp.netInNums;
+          this.complementNums = dataTemp.complementNums;
+
+          console.log("dataTemp",dataTemp)
+
+          this.dataMap.dataOrderNumbers = this.dataFormatter({
+            all: this.orderNumbers,
+          });
+          this.dataMap.dataNetInNums = this.dataFormatter({
+            all: this.netInNums,
+          });
+          this.dataMap.dataComplementNums = this.dataFormatter({
+            //max : 25000,
+            all: this.complementNums,
+          });
+
+          this.drawLine5();
+        }
+      })
+    },
+    drawLine5() {
+      console.log("开始绘制")
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.$echarts.init(document.getElementById("line5"));
+      // 指定图表的配置项和数据
+      let option = {
+        baseOption: {
+          dataZoom: [
+            {
+              type: 'inside'
+            },
+            {
+              type: 'slider'
+            }
+          ],
+          timeline: {
+            show:false,
+            axisType: 'category',
+            autoPlay: false,
+            playInterval: 1000,
+            data: [],
+            label: {
+              formatter: function (s) {
+                return new Date(s).getFullYear();
+              }
+            }
+          },
+          title: {
+            subtext: '统计数据'
+          },
+          tooltip: {},
+          legend: {
+            left: 'right',
+            data: ['应备数量', '净入库数量','补数数量'],
+            selected: {
+              // 超期次数: false,
+            }
+          },
+          calculable: true,
+          grid: {
+            top: 80,
+            bottom: 100,
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow',
+                label: {
+                  show: true,
+                  formatter: function (params) {
+                    return params.value.replace('\n', '');
+                  }
+                }
+              }
+            }
+          },
+          xAxis: [
+            {
+              type: 'category',
+              axisLabel: { interval: 0 },
+              data: this.materialNamesLists,
+              splitLine: { show: false }
+            }
+          ],
+          yAxis: [
+            {
+              type: 'value',
+              name: '数值'
+            }
+          ],
+          series: [
+            { name: '应备数量', type: 'bar' },
+            { name: '净入库数量', type: 'bar' },
+            { name: '补数数量', type: 'bar' },
+          ]
+        },
+
+        options: [
+          {
+            title: {text: '沙滩鞋饰扣'},
+            series: [
+              {data: this.dataMap.dataOrderNumbers['all']},
+              {data: this.dataMap.dataNetInNums['all']},
+              {data: this.dataMap.dataComplementNums['all']},
+            ]
+          }
+        ]
+      };
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option);
+    },
+
     getAllMaterialGroup(){
       request.post('/baseData/materialGroup/listValide').then(res => {
         if(res.data.data != null){
@@ -156,6 +307,10 @@ export default {
           }
         }
       })
+    },
+    search(){
+      this.getData();
+      this.getData5();
     },
     async getData(){
       await  request.get('/analysis/materialSupplierAmountPercent?'+"searchStartDate="+this.searchStartDate+
@@ -407,8 +562,10 @@ export default {
     this.drawLine2();
     this.drawLine3();
     this.drawLine4();
+    this.drawLine5()
   },created() {
     this.getData()
+    this.getData5()
     this.getAllSupplierGroup();
     this.getAllMaterialGroup();
 

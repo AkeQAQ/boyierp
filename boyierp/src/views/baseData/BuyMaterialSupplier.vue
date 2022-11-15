@@ -13,8 +13,6 @@
         </el-select>
       </el-form-item>
 
-
-
       <el-form-item>
         <!-- 列表界面-供应商搜索 -->
           <el-autocomplete
@@ -57,6 +55,12 @@
         </el-autocomplete>
 
         <el-input size="mini" v-model="searchStr" v-if="selectedName === 'supplierMaterialId'" clearable
+                  style="width: 200px"
+                  @keyup.enter.native="search()"
+                  placeholder="请输入内容"></el-input>
+
+
+        <el-input size="mini" v-model="searchStr" v-if="selectedName === 'supplierMaterialName'" clearable
                   style="width: 200px"
                   @keyup.enter.native="search()"
                   placeholder="请输入内容"></el-input>
@@ -118,6 +122,10 @@
             </el-autocomplete>
 
             <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'supplierMaterialId'" clearable
+                      style="width: 200px"
+                      placeholder="请输入内容"></el-input>
+
+            <el-input size="mini" v-model="item.searchStr" v-if="item.selectField === 'supplierMaterialName'" clearable
                       style="width: 200px"
                       placeholder="请输入内容"></el-input>
 
@@ -187,7 +195,7 @@
       <el-table-column
           label="内部物料名称"
           prop="materialName"
-          width="150">
+          width="250">
       </el-table-column>
       <el-table-column
           prop="supplierName"
@@ -205,7 +213,7 @@
       <el-table-column
           prop="supplierMaterialName"
           label="供应商物料名称"
-          width="150"
+          width="300"
           show-overflow-tooltip
       >
       </el-table-column>
@@ -221,7 +229,6 @@
       <el-table-column
           prop="action"
           label="操作"
-          width="230px"
           fixed="right"
 
       >
@@ -363,7 +370,9 @@ export default {
       options: [
         {value: 'materialName', label: '内部物料'},
         {value: 'supplierName', label: '供应商名称'},
-        {value: 'supplierMaterialId', label: '供应商物料编码'}
+        {value: 'supplierMaterialId', label: '供应商物料编码'},
+        {value: 'supplierMaterialName', label: '供应商物料名称'}
+
       ],
 
       currentPage: 1 // 当前页

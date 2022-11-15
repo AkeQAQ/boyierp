@@ -990,6 +990,26 @@
             </template>
           </el-table-column>
 
+          <el-table-column label="供应商信息" align="center" width="150" >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="900"
+                  trigger="click">
+                <el-table :data="oneMaterialPrices">
+                  <el-table-column width="80" property="supplierId" label="供应商ID"></el-table-column>
+                  <el-table-column width="100" property="supplierName" label="供应商名称"></el-table-column>
+                  <el-table-column width="150" property="supplierMaterialId" label="供应商物料唯一编码"></el-table-column>
+                  <el-table-column width="150" property="supplierMaterialName" label="供应商物料名称"></el-table-column>
+                  <el-table-column width="150" property="supplierMaterialPrice" label="内部审核过的价格"></el-table-column>
+
+                </el-table>
+                <el-button slot="reference" @click="queryPrices(prepareList[scope.row.seqNum-1].materialId)">供应商物料</el-button>
+              </el-popover>
+            </template>
+
+          </el-table-column>
+
           <el-table-column label="进度" align="center" width="120" prop="progressPercent">
             <template slot-scope="scope">
               <el-progress :percentage="prepareList[scope.row.seqNum-1].progressPercent"></el-progress>
@@ -1091,6 +1111,26 @@
                   <el-table-column width="100" property="preparedNum" label="已报备用量"></el-table-column>
                 </el-table>
                 <el-button slot="reference">查看明细</el-button>
+              </el-popover>
+            </template>
+
+          </el-table-column>
+
+          <el-table-column label="供应商信息" align="center" width="150" >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="900"
+                  trigger="click">
+                <el-table :data="oneMaterialPrices">
+                  <el-table-column width="80" property="supplierId" label="供应商ID"></el-table-column>
+                  <el-table-column width="100" property="supplierName" label="供应商名称"></el-table-column>
+                  <el-table-column width="150" property="supplierMaterialId" label="供应商物料唯一编码"></el-table-column>
+                  <el-table-column width="150" property="supplierMaterialName" label="供应商物料名称"></el-table-column>
+                  <el-table-column width="150" property="supplierMaterialPrice" label="内部审核过的价格"></el-table-column>
+
+                </el-table>
+                <el-button slot="reference" @click="queryPrices(prepareBatchList[scope.row.seqNum-1].materialId)">供应商物料</el-button>
               </el-popover>
             </template>
 
@@ -1279,6 +1319,8 @@ export default {
   name: 'ProductOrder',
   data() {
     return {
+      oneMaterialPrices:[],
+
       dialogMergeOrdersVisible:false,
 
       dialogCalMaterials:false,
@@ -1393,6 +1435,18 @@ export default {
   },
 
   methods: {
+    queryPrices(materialId){
+      if(materialId==null || materialId == '' ){
+        this.$message.error("请确保有物料编码和用料信息")
+        return;
+      }
+      // 获取供应商信息
+      request.get('/baseData/buyMaterialSupplier/queryMsgsByMaterialId?materialId='+materialId).then(res => {
+        if(res.data.data != null){
+          this.oneMaterialPrices = res.data.data
+        }
+      })
+    },
     // 行点击事件
     rowClick(row,column,event){
       console.log("某行单击,",row,column,event)
