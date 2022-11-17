@@ -864,11 +864,216 @@
           fullscreen
           title="备料进度"
           :before-close="handleClosePrepare"
+
       >
+        <el-dialog
+            width="70%"
+            title="报单信息"
+            :visible.sync="dialogShowMsgVisible"
+            append-to-body>
+
+          <el-divider > 按供应商排序列表（1. 物料仅有一个供应商时） </el-divider>
+          <el-table
+              ref="prepareShowMsgDatas1"
+              :data="prepareShowMsgDatas['oneLists']"
+              v-if="prepareShowMsgDatas['oneLists'].length>0"
+              border
+              stripe
+              size="mini"
+              :cell-style="{padding:'0'}"
+              height="300px"
+              tooltip-effect="dark"
+              style="width: 100%;color:black">
+            <el-table-column
+                label="内部物料ID"
+                prop="materialInnerId"
+                width="100px"
+                show-overflow-tooltip
+            >
+            </el-table-column>
+            <el-table-column
+                label="内部物料名称"
+                prop="materialInnerName"
+                width="200px"
+                show-overflow-tooltip
+            >
+
+            </el-table-column>
+
+            <el-table-column
+                label="供应商物料ID"
+                prop="materialOutId"
+                show-overflow-tooltip
+                width="100px"
+
+            >
+            </el-table-column>
+            <el-table-column
+                label="供应商物料名称"
+                prop="materialOutName"
+                show-overflow-tooltip
+                width="200px"
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="新增数量"
+                prop="num"
+                width="100px"
+
+            >
+            </el-table-column>
+            <el-table-column
+                label="单位"
+                prop="unit"
+                width="70px"
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="货号品牌"
+                prop="productNumBrand"
+                width="200px"
+                show-overflow-tooltip
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="供应商ID"
+                prop="supplierId"
+                width="100px"
+            >
+            </el-table-column>
+            <el-table-column
+                label="供应商名称"
+                prop="supplierName"
+                width="100px"
+
+            >
+
+            </el-table-column>
+            <el-table-column
+                label="价格"
+                prop="price"
+                width="70px"
+
+            >
+            </el-table-column>
+
+
+
+          </el-table>
+
+
+          <el-divider > 无法分类列表(1.没有供应商信息（价目表和物料供应商表） 2. 一个物料多个供应商) </el-divider>
+
+          <el-table
+              ref="prepareShowMsgDatas2"
+              :data="prepareShowMsgDatas['zeroOrMoreLists']"
+              v-if="prepareShowMsgDatas['zeroOrMoreLists'].length>0"
+              border
+              stripe
+              size="mini"
+              :cell-style="{padding:'0'}"
+              height="300px"
+              tooltip-effect="dark"
+              style="width: 100%;color:black">
+            <el-table-column
+                label="内部物料ID"
+                prop="materialInnerId"
+                width="100px"
+                show-overflow-tooltip
+            >
+            </el-table-column>
+            <el-table-column
+                label="内部物料名称"
+                prop="materialInnerName"
+                width="200px"
+                show-overflow-tooltip
+            >
+
+            </el-table-column>
+
+            <el-table-column
+                label="供应商物料ID"
+                prop="materialOutId"
+                show-overflow-tooltip
+                width="100px"
+
+            >
+            </el-table-column>
+            <el-table-column
+                label="供应商物料名称"
+                prop="materialOutName"
+                show-overflow-tooltip
+                width="200px"
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="新增数量"
+                prop="num"
+                width="100px"
+
+            >
+            </el-table-column>
+            <el-table-column
+                label="单位"
+                prop="unit"
+                width="70px"
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="货号品牌"
+                prop="productNumBrand"
+                width="200px"
+                show-overflow-tooltip
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="供应商ID"
+                prop="supplierId"
+                width="100px"
+            >
+            </el-table-column>
+            <el-table-column
+                label="供应商名称"
+                prop="supplierName"
+                width="100px"
+
+            >
+
+            </el-table-column>
+            <el-table-column
+                label="价格"
+                prop="price"
+                width="70px"
+
+            >
+            </el-table-column>
+
+
+
+          </el-table>
+
+
+
+        </el-dialog>
+
         <el-descriptions class="margin-top" style="margin-top: 0px"  :column="3"  border>
           <template slot="extra">
             <el-button type="primary" v-show="theCurrentOrderMsg.prepared===1 && hasAuth('order:productOrder:prepare')  " size="small" @click="submitPrepare">提交备料</el-button>
+            <el-button type="warning" v-show="theCurrentOrderMsg.prepared===1 && hasAuth('order:productOrder:prepare')  " size="small" @click="showMsgs(prepareList)">报单信息</el-button>
           </template>
+
           <el-descriptions-item>
             <template slot="label">
               <i class="el-icon-s-home">
@@ -1027,7 +1232,211 @@
           title="批量备料"
           :before-close="handleCloseBatchPrepare"
       >
+        <el-dialog
+            width="70%"
+            title="报单信息"
+            :visible.sync="dialogShowMsgBatchVisible"
+            append-to-body>
+
+          <el-divider > 按供应商排序列表（1. 物料仅有一个供应商时） </el-divider>
+          <el-table
+              ref="prepareShowMsgDatas3"
+              :data="prepareShowMsgDatas['oneLists']"
+              v-if="prepareShowMsgDatas['oneLists'].length>0"
+              border
+              stripe
+              size="mini"
+              :cell-style="{padding:'0'}"
+              height="300px"
+              tooltip-effect="dark"
+              style="width: 100%;color:black">
+            <el-table-column
+                label="内部物料ID"
+                prop="materialInnerId"
+                width="100px"
+                show-overflow-tooltip
+            >
+            </el-table-column>
+            <el-table-column
+                label="内部物料名称"
+                prop="materialInnerName"
+                width="200px"
+                show-overflow-tooltip
+            >
+
+            </el-table-column>
+
+            <el-table-column
+                label="供应商物料ID"
+                prop="materialOutId"
+                show-overflow-tooltip
+                width="100px"
+
+            >
+            </el-table-column>
+            <el-table-column
+                label="供应商物料名称"
+                prop="materialOutName"
+                show-overflow-tooltip
+                width="200px"
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="新增数量"
+                prop="num"
+                width="100px"
+
+            >
+            </el-table-column>
+            <el-table-column
+                label="单位"
+                prop="unit"
+                width="70px"
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="货号品牌"
+                prop="productNumBrand"
+                width="200px"
+                show-overflow-tooltip
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="供应商ID"
+                prop="supplierId"
+                width="100px"
+            >
+            </el-table-column>
+            <el-table-column
+                label="供应商名称"
+                prop="supplierName"
+                width="100px"
+
+            >
+
+            </el-table-column>
+            <el-table-column
+                label="价格"
+                prop="price"
+                width="70px"
+
+            >
+            </el-table-column>
+
+
+
+          </el-table>
+
+
+          <el-divider > 无法分类列表(1.没有供应商信息（价目表和物料供应商表） 2. 一个物料多个供应商) </el-divider>
+
+          <el-table
+              ref="prepareShowMsgDatas4"
+              :data="prepareShowMsgDatas['zeroOrMoreLists']"
+              v-if="prepareShowMsgDatas['zeroOrMoreLists'].length>0"
+              border
+              stripe
+              size="mini"
+              :cell-style="{padding:'0'}"
+              height="300px"
+              tooltip-effect="dark"
+              style="width: 100%;color:black">
+            <el-table-column
+                label="内部物料ID"
+                prop="materialInnerId"
+                width="100px"
+                show-overflow-tooltip
+            >
+            </el-table-column>
+            <el-table-column
+                label="内部物料名称"
+                prop="materialInnerName"
+                width="200px"
+                show-overflow-tooltip
+            >
+
+            </el-table-column>
+
+            <el-table-column
+                label="供应商物料ID"
+                prop="materialOutId"
+                show-overflow-tooltip
+                width="100px"
+
+            >
+            </el-table-column>
+            <el-table-column
+                label="供应商物料名称"
+                prop="materialOutName"
+                show-overflow-tooltip
+                width="200px"
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="新增数量"
+                prop="num"
+                width="100px"
+
+            >
+            </el-table-column>
+            <el-table-column
+                label="单位"
+                prop="unit"
+                width="70px"
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="货号品牌"
+                prop="productNumBrand"
+                width="200px"
+                show-overflow-tooltip
+
+            >
+            </el-table-column>
+
+            <el-table-column
+                label="供应商ID"
+                prop="supplierId"
+                width="100px"
+            >
+            </el-table-column>
+            <el-table-column
+                label="供应商名称"
+                prop="supplierName"
+                width="100px"
+
+            >
+
+            </el-table-column>
+            <el-table-column
+                label="价格"
+                prop="price"
+                width="70px"
+
+            >
+            </el-table-column>
+
+
+
+          </el-table>
+
+
+
+        </el-dialog>
+        <el-button type="warning" v-show="canPrepareBatchFlag===true" size="small" @click="showBatchMsgs(prepareBatchList)">报单信息</el-button>
+
         <el-button type="primary" v-show="canPrepareBatchFlag===true" size="small" @click="submitPrepareBatch">提交批量备料</el-button>
+
         <el-button type="info" v-show="canPrepareBatchFlag===true" size="small" @click="submitPrepareBatchAndSure">提交批量备料并确认</el-button>
 
         <el-divider content-position="left">明细信息</el-divider>
@@ -1319,6 +1728,10 @@ export default {
   name: 'ProductOrder',
   data() {
     return {
+      prepareShowMsgDatas:{'oneLists':[],'zeroOrMoreLists':[]},
+      dialogShowMsgVisible:false,
+      dialogShowMsgBatchVisible:false,
+
       oneMaterialPrices:[],
 
       dialogMergeOrdersVisible:false,
@@ -1808,6 +2221,24 @@ export default {
         load.close()
       }).catch(()=>{
         load.close()
+      })
+    },
+    showBatchMsgs(list){
+
+      request.post('/produce/orderMaterialProgress/showMsgs', list,null)
+          .then(res => {
+            this.prepareShowMsgDatas = res.data.data;
+            this.dialogShowMsgBatchVisible=true;
+          }).catch(()=>{
+      })
+    },
+    showMsgs(list){
+
+      request.post('/produce/orderMaterialProgress/showMsgs?orderId='+this.theCurrentOrderMsg.id, list,null)
+          .then(res => {
+            this.prepareShowMsgDatas = res.data.data;
+            this.dialogShowMsgVisible=true;
+          }).catch(()=>{
       })
     },
     submitPrepare(){

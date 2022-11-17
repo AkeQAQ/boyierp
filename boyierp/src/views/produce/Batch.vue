@@ -198,7 +198,6 @@
             show-overflow-tooltip>
         </el-table-column>
 
-
         <el-table-column
             prop="orderType"
             label="订单类型"
@@ -218,6 +217,15 @@
             show-overflow-tooltip>
         </el-table-column>
 
+
+        <el-table-column
+            prop="endDate"
+            label="货期"
+            width="100px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+
         <el-table-column
             prop="push"
             label="是否下推"
@@ -228,6 +236,7 @@
             <el-tag size="small" v-else-if="scope.row.push===1" type="warning">未下推</el-tag>
           </template>
         </el-table-column>
+
 
         <el-table-column
             prop="batchId"
@@ -740,7 +749,7 @@
 
       <el-dialog
           :visible.sync="dialogQueryVisible"
-          width="60%"
+          width="65%"
           title="查询进度表"
           top="0vh"
           :before-close="handleCloseQuery"
@@ -797,7 +806,7 @@
           <el-table-column
               prop="orderNum"
               label="订单号"
-              width="100px"
+              width="80px"
               show-overflow-tooltip>
           </el-table-column>
           <el-table-column
@@ -824,7 +833,25 @@
           <el-table-column
               prop="productBrand"
               label="品牌"
-              width="150px"
+              width="100px"
+              show-overflow-tooltip>
+          </el-table-column>
+          <el-table-column
+              prop="orderType"
+              label="订单类型"
+              width="70px"
+          >
+            <template slot-scope="scope">
+              <el-tag size="small" v-if="scope.row.orderType === 0" type="success">订单</el-tag>
+              <el-tag size="small" v-else-if="scope.row.orderType===1" type="warning">回单</el-tag>
+              <el-tag size="small" v-else-if="scope.row.orderType===2" type="danger">取消</el-tag>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="endDate"
+              label="货期"
+              width="100px"
               show-overflow-tooltip>
           </el-table-column>
 
@@ -846,7 +873,7 @@
           <el-table-column
               prop="isAccept"
               label="是否被接收"
-              width="200px">
+              width="100px">
             <template slot-scope="scope">
                 <el-tag size="small" v-if=" (scope.row.outDate !=null && scope.row.outDate!='' && scope.row.outDate!=undefined) && scope.row.isAccept === 0" type="success">已接收</el-tag>
                 <el-tag size="small" v-else-if="(scope.row.outDate !=null && scope.row.outDate!='' && scope.row.outDate!=undefined) && scope.row.isAccept===1" type="danger">未接收</el-tag>
@@ -1285,7 +1312,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 5 ) {
+        if (index === 7 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1433,7 +1460,7 @@ export default {
     },
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
-      if (columnIndex === 1 || columnIndex === 2|| columnIndex === 3 || columnIndex === 4 || columnIndex === 5||columnIndex === 6) {
+      if (columnIndex === 1 || columnIndex === 2|| columnIndex === 3 || columnIndex === 4 || columnIndex === 5||columnIndex === 6 || columnIndex === 7) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1441,9 +1468,9 @@ export default {
           colspan: _col
         }
       }
-      else if (   columnIndex === 22 || columnIndex === 23 ||
+       if (    columnIndex === 23 ||
           columnIndex === 24 || columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30
-          || columnIndex === 31 || columnIndex === 32 || columnIndex === 33  ) {
+          || columnIndex === 31 || columnIndex === 32 || columnIndex === 33 || columnIndex === 34  ) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1451,9 +1478,9 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && this.showProgress)&& (   columnIndex === 8 ||columnIndex === 9 || columnIndex === 10 ||
+      if((!this.showDetailNum && this.showProgress)&& (   columnIndex === 9 || columnIndex === 10 ||
           columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18
-          ||columnIndex === 19 )){
+          ||columnIndex === 19 ||columnIndex === 20 )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1461,8 +1488,8 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && !this.showProgress)&& (  columnIndex === 8 || columnIndex === 9 ||
-          columnIndex === 10 ||columnIndex === 11 )){
+      if((!this.showDetailNum && !this.showProgress)&& (   columnIndex === 9 ||
+          columnIndex === 10 ||columnIndex === 11 ||columnIndex === 12 )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1930,7 +1957,8 @@ export default {
     },
     cellClass({ row, column,rowIndex,columnIndex }) {
 
-      if(this.showProgress && columnIndex === 12  ){
+      if( (this.showProgress && !this.showDetailNum && columnIndex === 14 )
+      || (this.showProgress && this.showDetailNum  && columnIndex === 28 ) ){
         // 1. 收回时间是空，并且当天>外发时间+2
         let progresses = row.progresses;
 
@@ -1962,7 +1990,8 @@ export default {
           }
         }
       }
-      if(this.showProgress && columnIndex === 13 ){
+      if( (this.showProgress && !this.showDetailNum && columnIndex === 15 )
+      || (this.showProgress && this.showDetailNum  && columnIndex === 29 )){
 
         // 1. 出库时间是空，并且当天>批次号+5
         let progresses = row.progresses;

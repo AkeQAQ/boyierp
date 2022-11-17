@@ -187,7 +187,6 @@
           style="width: 100%;color:black"
           :cell-style="{padding:'0',borderColor:'black'}"
           :header-cell-style="{borderColor:'black'}"
-          :default-sort="{prop:'id',order:'descending'}"
           @selection-change="handleSelectionChange">
 
         <el-table-column
