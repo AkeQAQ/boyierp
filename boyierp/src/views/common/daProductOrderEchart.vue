@@ -63,6 +63,11 @@
     </div>
 
 
+    <div  id="line5" style="height: 600px; width: 1000px;">
+
+    </div>
+
+
   </div>
 
 
@@ -76,6 +81,13 @@ export default {
   name: "daProductOrderEchart",
   data(){
     return{
+      dataMap:{},
+
+      productBrandLists:['品牌1','品牌2'], // 动态获取(同下标对应同个供应商数据)
+      productOrders:[1,100],// 动态获取(同下标对应同个供应商数据)
+      productReturnOrders:[2,200],
+      productOrderTypeRate:[3,300],// 动态获取(同下标对应同个供应商数据)
+      
       data:{/*"legendData":['2','1']
         ,"seriesData":[{"name":"1","value":1},{"name":"2","value":2}]*/
       },
@@ -88,9 +100,25 @@ export default {
     }
   },
   methods: {
-    search(){
-
+    dataFormatter(obj){
+      var pList = this.productBrandLists;
+      var temp;
+      temp = obj['all'];
+      var max = 0;
+      var sum = 0;
+      for (var i = 0, l = temp.length; i < l; i++) {
+        max = Math.max(max, temp[i]);
+        sum += temp[i];
+        obj['all'][i] = {
+          name: pList[i],
+          value: temp[i]
+        };
+      }
+      obj['all' + 'max'] = Math.floor(max / 100) * 100;
+      obj['all' + 'sum'] = sum;
+      return obj;
     },
+
     async getData(){
       await  request.get('/analysis/productOrder?'+"searchStartDate="+this.searchStartDate+
           "&&searchEndDate="+this.searchEndDate).then(res => {
@@ -123,6 +151,122 @@ export default {
           this.drawLine4();
         }
       })
+
+      await  request.get('/analysis/productOrderByOrderType?'+"searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate).then(res => {
+        if(res.data.data != null){
+          let dataTemp = res.data.data;
+          this.productBrandLists = dataTemp.productBrandLists;
+          this.productOrders = dataTemp.productOrders;
+          this.productReturnOrders = dataTemp.productReturnOrders;
+          this.productOrderTypeRate = dataTemp.productOrderTypeRate;
+
+          console.log("dataTemp",dataTemp)
+
+          this.dataMap.dataProductOrders = this.dataFormatter({
+            all: this.productOrders,
+          });
+          this.dataMap.dataProductReturnOrders = this.dataFormatter({
+            all: this.productReturnOrders,
+          });
+          this.dataMap.dataProductOrderTypeRate = this.dataFormatter({
+            //max : 25000,
+            all: this.productOrderTypeRate,
+          });
+
+          this.drawLine5();
+        }
+      })
+    },
+    drawLine5() {
+      console.log("开始绘制")
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.$echarts.init(document.getElementById("line5"));
+      // 指定图表的配置项和数据
+      let option = {
+        baseOption: {
+          dataZoom: [
+            {
+              type: 'inside'
+            },
+            {
+              type: 'slider'
+            }
+          ],
+          timeline: {
+            show:false,
+            axisType: 'category',
+            autoPlay: false,
+            playInterval: 1000,
+            data: [],
+            label: {
+              formatter: function (s) {
+                return new Date(s).getFullYear();
+              }
+            }
+          },
+          title: {
+            subtext: '统计数据'
+          },
+          tooltip: {},
+          legend: {
+            left: 'right',
+            data: ['订单数量', '回单数量','回单比例'],
+            selected: {
+              // 超期次数: false,
+            }
+          },
+          calculable: true,
+          grid: {
+            top: 80,
+            bottom: 100,
+            tooltip: {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'shadow',
+                label: {
+                  show: true,
+                  formatter: function (params) {
+                    return params.value.replace('\n', '');
+                  }
+                }
+              }
+            }
+          },
+          xAxis: [
+            {
+              type: 'category',
+              axisLabel: { interval: 0 },
+              data: this.productBrandLists,
+              splitLine: { show: false }
+            }
+          ],
+          yAxis: [
+            {
+              type: 'value',
+              name: '数值'
+            }
+          ],
+          series: [
+            { name: '订单数量', type: 'bar' },
+            { name: '回单数量', type: 'bar' },
+            { name: '回单比例', type: 'bar' },
+          ]
+        },
+
+        options: [
+          {
+            title: {text: '订单、回单、回单比例'},
+            series: [
+              {data: this.dataMap.dataProductOrders['all']},
+              {data: this.dataMap.dataProductReturnOrders['all']},
+              {data: this.dataMap.dataProductOrderTypeRate['all']},
+            ]
+          }
+        ]
+      };
+      // 使用刚指定的配置项和数据显示图表。
+      myChart.setOption(option);
     },
 
     drawLine4() {
