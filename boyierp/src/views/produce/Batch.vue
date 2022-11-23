@@ -1468,9 +1468,20 @@ export default {
           colspan: _col
         }
       }
-       if (    columnIndex === 23 ||
-          columnIndex === 24 || columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30
-          || columnIndex === 31 || columnIndex === 32 || columnIndex === 33 || columnIndex === 34  ) {
+      if((this.showDetailNum && this.showProgress) && (
+          (columnIndex === 23 || columnIndex === 24 || columnIndex === 25 || columnIndex === 26 ||
+              columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30 || columnIndex === 31
+          ||columnIndex === 32 || columnIndex === 33 || columnIndex === 34)
+      )){
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+       if ( (this.showDetailNum && !this.showProgress) && (columnIndex === 23 ||
+          columnIndex === 24 || columnIndex === 25 || columnIndex === 26  )) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {

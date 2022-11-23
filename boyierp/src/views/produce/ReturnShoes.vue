@@ -332,25 +332,50 @@
         </el-form-item>
 
         <el-form-item label="区域" prop="region">
-          <el-input v-model="editForm.region"></el-input>
+          <div :class=" 'el-input el-input'">
+            <input  class="el-input__inner"
+                    v-model.lazy="editForm.region">
+            </input>
+          </div>
         </el-form-item>
 
         <el-form-item label="快递号" prop="packageNo">
-          <el-input v-model="editForm.packageNo"></el-input>
+          <div :class=" 'el-input el-input'">
+            <input  class="el-input__inner"
+                    v-model.lazy="editForm.packageNo">
+            </input>
+          </div>
         </el-form-item>
 
         <el-form-item label="货号" prop="userArtNo">
-          <el-input v-model="editForm.userArtNo"></el-input>
+          <div :class=" 'el-input el-input'">
+            <input  class="el-input__inner"
+                    v-model.lazy="editForm.userArtNo">
+            </input>
+          </div>
         </el-form-item>
 
         <el-form-item label="尺码" prop="size">
-          <el-input v-model="editForm.size"></el-input>
+          <div :class=" 'el-input el-input'">
+            <input  class="el-input__inner"
+                    v-model.lazy="editForm.size">
+            </input>
+          </div>
         </el-form-item>
         <el-form-item label="数量" prop="num">
-          <el-input v-model="editForm.num"  onkeyup="value=value.replace(/[^0-9]/g,'')"></el-input>
+          <div :class=" 'el-input el-input'">
+            <input  class="el-input__inner"
+                    onkeyup="value=value.replace(/[^0-9]/g,'')"
+                    v-model.lazy="editForm.num">
+            </input>
+          </div>
         </el-form-item>
         <el-form-item label="客户要求" prop="userRequest">
-          <el-input v-model="editForm.userRequest"></el-input>
+          <div :class=" 'el-input el-input'">
+            <input  class="el-input__inner"
+                    v-model.lazy="editForm.userRequest">
+            </input>
+          </div>
         </el-form-item>
         <el-form-item v-if="false" prop="departmentId" style="margin-bottom: 0">
           <el-input v-model="editForm.departmentId"></el-input>
@@ -375,7 +400,11 @@
           <el-radio v-model="editForm.dealSituation" label="返修">返修</el-radio>
         </el-form-item>
         <el-form-item label="回寄快递单号" prop="backPackage">
-          <el-input v-model="editForm.backPackage"></el-input>
+          <div :class=" 'el-input el-input'">
+            <input  class="el-input__inner"
+                    v-model.lazy="editForm.backPackage">
+            </input>
+          </div>
         </el-form-item>
 
         <el-form-item>
@@ -393,7 +422,7 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="this.currentPage"
-        :page-sizes="[200, 500, 700, 1000]"
+        :page-sizes="[50, 200, 500, 1000]"
         :page-size="this.pageSize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="this.total">
@@ -428,7 +457,7 @@ export default {
       ],
 
       currentPage: 1 // 当前页
-      , pageSize: 200 // 一页多少条
+      , pageSize: 50 // 一页多少条
       , total: 0, // 总共多少数据
       // batchDelDisable: true,
       // 输入框的内容要写全，不然会发生，莫名其妙不能输入的问题
@@ -437,7 +466,7 @@ export default {
         packageNo:'',
         userArtNo:'',
         size:'',
-        num:'',
+        num:0,
         userRequest:'',
         dealSituation:'',
         backPackage:'',
