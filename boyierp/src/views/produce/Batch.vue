@@ -154,7 +154,8 @@
           fit
           height="820px"
           :span-method="objectSpanMethod"
-
+          :summary-method="getSummariesMain"
+          show-summary
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
@@ -213,7 +214,7 @@
         <el-table-column
             prop="mergeBatchNumber"
             label="数量"
-            width="50px"
+            width="80px"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -235,6 +236,23 @@
             <el-tag size="small" v-if="scope.row.push === 0" type="success">已下推</el-tag>
             <el-tag size="small" v-else-if="scope.row.push===1" type="warning">未下推</el-tag>
           </template>
+        </el-table-column>
+
+        <el-table-column label="核算信息" align="center" width="120" >
+          <template slot-scope="scope">
+            <el-popover
+                placement="bottom"
+                width="900"
+                trigger="click">
+              <el-table :data="oneMaterialPrices">
+                <el-table-column width="80" property="companyNum" label="公司货号"></el-table-column>
+                <el-table-column width="100" property="customer" label="品牌"></el-table-column>
+                <el-table-column width="400" property="foreignMsg" label="核算外加工信息"></el-table-column>
+              </el-table>
+              <el-button slot="reference" @click="queryPrices(scope.row.productNum)">查询核算</el-button>
+            </el-popover>
+          </template>
+
         </el-table-column>
 
 
@@ -1192,6 +1210,8 @@ export default {
   },
   data() {
     return {
+      oneMaterialPrices:[],
+
       showDetailNum:false,
       showProgress:false,
 
@@ -1303,6 +1323,46 @@ export default {
   },
 
   methods: {
+    queryPrices(productNum){
+      // 获取该物料价目信息
+      request.get('/order/productPricePre/queryPriceByForeignProduction?productNum='+productNum).then(res => {
+        if(res.data.data != null){
+          this.oneMaterialPrices = res.data.data
+        }
+      })
+    },
+
+    getSummariesMain(param) {
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0 ) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 5 ) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+
+        }
+
+      });
+
+      return sums;
+    },
+
     getSummaries(param) {
       console.log("param:",param)
       const {columns, data} = param;
@@ -1460,7 +1520,7 @@ export default {
     },
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
-      if (columnIndex === 1 || columnIndex === 2|| columnIndex === 3 || columnIndex === 4 || columnIndex === 5||columnIndex === 6 || columnIndex === 7) {
+      if (columnIndex === 1 || columnIndex === 2|| columnIndex === 3 || columnIndex === 4 || columnIndex === 5||columnIndex === 6 || columnIndex === 7 || columnIndex===8) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1469,9 +1529,9 @@ export default {
         }
       }
       if((this.showDetailNum && this.showProgress) && (
-          (columnIndex === 23 || columnIndex === 24 || columnIndex === 25 || columnIndex === 26 ||
+          ( columnIndex === 24 || columnIndex === 25 || columnIndex === 26 ||
               columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30 || columnIndex === 31
-          ||columnIndex === 32 || columnIndex === 33 || columnIndex === 34)
+          ||columnIndex === 32 || columnIndex === 33 || columnIndex === 34 || columnIndex === 35)
       )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
@@ -1480,8 +1540,8 @@ export default {
           colspan: _col
         }
       }
-       if ( (this.showDetailNum && !this.showProgress) && (columnIndex === 23 ||
-          columnIndex === 24 || columnIndex === 25 || columnIndex === 26  )) {
+       if ( (this.showDetailNum && !this.showProgress) && (
+          columnIndex === 24 || columnIndex === 25 || columnIndex === 26 || columnIndex === 27 )) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1489,9 +1549,9 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && this.showProgress)&& (   columnIndex === 9 || columnIndex === 10 ||
+      if((!this.showDetailNum && this.showProgress)&& (    columnIndex === 10 ||
           columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18
-          ||columnIndex === 19 ||columnIndex === 20 )){
+          ||columnIndex === 19 ||columnIndex === 20  || columnIndex === 21)){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1499,8 +1559,8 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && !this.showProgress)&& (   columnIndex === 9 ||
-          columnIndex === 10 ||columnIndex === 11 ||columnIndex === 12 )){
+      if((!this.showDetailNum && !this.showProgress)&& (
+          columnIndex === 10 ||columnIndex === 11 ||columnIndex === 12 || columnIndex === 13 )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
