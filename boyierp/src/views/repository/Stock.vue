@@ -89,7 +89,7 @@
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
-          :cell-style="{padding:'0'}"
+          :cell-style="cellClass"
           @selection-change="handleSelectionChange">
         <el-table-column
             type="selection"
@@ -98,6 +98,7 @@
         <el-table-column
             label="物料编码"
             prop="materialId"
+            width="200px"
 
         >
         </el-table-column>
@@ -111,6 +112,7 @@
         <el-table-column
             prop="num"
             label="库存数量"
+            width="100px"
         >
 
         </el-table-column>
@@ -126,6 +128,20 @@
         <el-table-column
             prop="specs"
             label="规格型号"
+            width="100px"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="latestPriceDate"
+            label="最近购买时间"
+            width="100px"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="latestPickDate"
+            label="最近领料时间"
             width="100px"
         >
         </el-table-column>
@@ -251,6 +267,28 @@ export default {
     }
   },
   methods: {
+    cellClass({ row, column,rowIndex,columnIndex }) {
+
+      if(columnIndex===7){
+        // 1. 最近领料时间是空，或者现在时间>最近领料时间+60天
+
+        if(row.latestPickDate!=null && row.latestPickDate!=undefined) {
+          let pickDate = row.latestPickDate;
+          let yyMMddArr = pickDate.split("-");
+          let pickDateTimeStamp = new Date(yyMMddArr[0],yyMMddArr[1]-1,yyMMddArr[2]).getTime();
+
+          let nowDateTimeStamp = new Date().getTime()
+
+          if ((nowDateTimeStamp - pickDateTimeStamp) >= (24 * 60 * 60 * 1000 * 60)) {
+            return {padding: '0', "background-color": "#e6a23c"}
+          }
+        }else{
+          return {padding: '0', "background-color": "#e6a23c"}
+        }
+      }
+
+
+      },
     // 打印按钮事件
     printDemo() {
       this.$refs.easyPrint.print()

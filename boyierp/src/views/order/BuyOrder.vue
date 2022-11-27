@@ -254,6 +254,7 @@
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item  v-if="hasAuth('order:buyOrder:import')" command="downImportBatchBuyOrders">批量导入模板下载</el-dropdown-item>
               <el-dropdown-item  v-if="hasAuth('order:buyOrder:import')" command="importBatchBuyOrders">批量导入</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('order:buyOrder:list')" command="exportNoPriceForeignMaterial">打印未报价外加工</el-dropdown-item>
             </el-dropdown-menu>
 
           </el-dropdown>
@@ -526,7 +527,7 @@
 
 
       <!-- 打印弹窗 -->
-<!--      <el-dialog
+      <el-dialog
           title=""
           :visible.sync="dialogVisiblePrint"
           width="55%"
@@ -538,13 +539,13 @@
                    v-focus ref="printBtn"
                    size="mini" icon="el-icon-printer" type="primary">打印
         </el-button>
-&lt;!&ndash;        <vue-easy-print tableShow ref="easyPrint">
+         <vue-easy-print tableShow ref="easyPrint">
           <template slot-scope="func">
-            <print :tableData="editForm" :getChineseNumber="func.getChineseNumber"></print>
+            <printNoPriceForeignMaterial :tableData="noPriceForeignData" :getChineseNumber="func.getChineseNumber"></printNoPriceForeignMaterial>
           </template>
-        </vue-easy-print>&ndash;&gt;
+        </vue-easy-print>
 
-      </el-dialog>-->
+      </el-dialog>
 
       <!-- 采购订单弹窗 -->
 
@@ -898,7 +899,7 @@ import {request} from "@/axios";
 
 // 引入打印基础组件，和打印模块print页面
 import vueEasyPrint from "vue-easy-print";
-import print from "@/views/printModule/printOrder";
+import printNoPriceForeignMaterial from "@/views/printModule/printNoPriceForeignMaterial";
 import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
 import material from "@/views/baseData/Material"
@@ -910,7 +911,7 @@ export default {
   // 引入打印模块基础组件和该打印模块的模板页面
   components: {
     vueEasyPrint,
-    print,
+    printNoPriceForeignMaterial,
     exportExcelCommon,
     material,
     supplier
@@ -1037,6 +1038,8 @@ export default {
       fileList: [],
       fileSizeIsSatisfy: false,
 
+      noPriceForeignData:[],
+
     }
   },
   methods: {
@@ -1139,7 +1142,30 @@ export default {
         this.dialogImportVisible = true;
       }else if(item === 'downImportBatchBuyOrders'){
         this.downImportBatchBuyOrders();
+      }else if(item === 'exportNoPriceForeignMaterial'){
+        this.exportNoPriceForeignMaterial();
       }
+    },
+    exportNoPriceForeignMaterial(){
+      request.get('/order/buyOrder/getNoPriceForeignMaterialLists').then(res => {
+        let datas = res.data.data;
+        if (datas) {
+          console.log("打印时的easyPrint：", this.$refs.easyPrint)
+          console.log("打印时的noPriceForeignData：", this.noPriceForeignData)
+          this.noPriceForeignData=datas;
+          if (this.$refs.easyPrint) {
+
+            this.$refs.easyPrint.tableData = this.datas
+          }
+          this.dialogVisiblePrint = true
+        } else {
+          this.$message({
+            message: '没有内容!',
+            type: 'error'
+          });
+        }
+      })
+
     },
     filterChange(filters){
       console.log("搜索条件变动",filters.priceKey)
@@ -2288,25 +2314,6 @@ export default {
       });
 
       return sums;
-    },
-    preViewPrint() {
-      if (this.editForm) {
-        console.log("打印时的easyPrint：", this.$refs.easyPrint)
-        console.log("打印时的editForm：", this.editForm)
-        if (this.$refs.easyPrint) {
-          console.log("设置前打印内容", this.$refs.easyPrint.tableData)
-
-          this.$refs.easyPrint.tableData = this.editForm
-          console.log("设置后打印内容", this.$refs.easyPrint.tableData)
-
-        }
-        this.dialogVisiblePrint = true
-      } else {
-        this.$message({
-          message: '没有内容!',
-          type: 'error'
-        });
-      }
     },
     // el-table 单元格样式修改
     cellStyle() {

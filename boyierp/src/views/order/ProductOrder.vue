@@ -2194,6 +2194,15 @@ export default {
       return percentage === 100 ? '满' : `${percentage}%`;
     },
     submitPrepareBatchAndSure(){
+      for (let i = 0; i < this.prepareBatchList.length; i++) {
+        if(this.prepareBatchList[i].addNums===null || this.prepareBatchList[i].addNums===undefined || this.prepareBatchList[i].addNums===''){
+          this.$message({
+            message: this.prepareBatchList[i].materialName+"增加数量不能为空",
+            type: 'error'
+          });
+          throw new Error();
+        }
+      }
       let ids = this.multipleSelection;
       const load = this.$loading({
         lock: true,
@@ -2209,6 +2218,15 @@ export default {
       })
     },
     submitPrepareBatch(){
+      for (let i = 0; i < this.prepareBatchList.length; i++) {
+        if(this.prepareBatchList[i].addNums===null || this.prepareBatchList[i].addNums===undefined || this.prepareBatchList[i].addNums===''){
+          this.$message({
+            message: this.prepareBatchList[i].materialName+"增加数量不能为空",
+            type: 'error'
+          });
+          throw new Error();
+        }
+      }
       let ids = this.multipleSelection;
       const load = this.$loading({
         lock: true,
@@ -2291,6 +2309,7 @@ export default {
       request.post('/order/productOrder/listBatchOrderConstituentProgress',ids).then(res => {
         this.canPrepareBatchFlag = res.data.data.canBatchPrepareFlag;
         this.prepareBatchList = res.data.data.datas;
+        // 赋值到编辑表单
         this.dialogPrepareBatchVisible = true;
       })
     },

@@ -9,19 +9,24 @@
         <table cellpadding='0' cellspacing='0' >
           <tr>
             <th width='20%'>物料编码</th>
-            <th width='40%'>物料名称</th>
+            <th width='32%'>物料名称</th>
             <th width='10%'>库存数量</th>
             <th width='10%'>基本单位</th>
-            <th width='20%'>规格型号</th>
+            <th width='10%'>规格型号</th>
+            <th width='14%'>最近购买时间</th>
+            <th width='14%'>最近领料时间</th>
 
           </tr>
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
             <td style="text-align: left;padding-left: 8px">{{row.materialId}}</td>
-            <td style="text-align: center;font-size:12px">{{row.materialName.length >22 ? row.materialName.substring(0,22):row.materialName}}</td>
+            <td style="text-align: center;font-size:12px">{{row.materialName.length >12 ? row.materialName.substring(0,12):row.materialName}}</td>
             <td style="text-align: center">{{row.num.toFixed(3) }}</td>
             <td style="text-align: center">{{row.unit.length >4 ? row.unit.substring(0,4):row.unit}}</td>
             <td style="text-align: center">{{row.specs.length >8 ? row.specs.substring(0,8):row.specs}}</td>
+            <td style="text-align: center">{{row.latestPriceDate}}</td>
+            <td style="text-align: center">{{row.latestPickDate}}</td>
+
           </tr>
           <!-- 插入空白行 -->
          <template v-if="blankLines===true && tableData.slice((page-1)*onePageRow,page*onePageRow).length<onePageRow">
@@ -31,6 +36,9 @@
               <td></td>
               <td></td>
               <td></td>
+              <td></td>
+              <td></td>
+
             </tr>
           </template>
 
