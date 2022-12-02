@@ -1,6 +1,6 @@
 <template>
   <!-- 打印入库单据21cm的适配宽度 -->
-  <div style="width: 682px;margin-left: 50px;margin-top: 0px">
+  <div style="width: 760px;margin-left: 15px;margin-top: 0px">
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
       <div  class='tab_company_out'>
@@ -8,29 +8,38 @@
 
         <table cellpadding='0' cellspacing='0' >
           <tr>
-            <th width='20%'>物料编码</th>
-            <th width='32%'>物料名称</th>
-            <th width='10%'>库存数量</th>
-            <th width='10%'>基本单位</th>
-            <th width='10%'>规格型号</th>
-            <th width='14%'>最近购买时间</th>
-            <th width='14%'>最近领料时间</th>
+            <th width='12%'>物料编码</th>
+            <th width='25%'>物料名称</th>
+            <th width='9%'>库存数量</th>
+            <th width='7%'>基本单位</th>
+            <th width='9%'>规格型号</th>
+            <th width='10%' >最近购买时间</th>
+            <th width='10%'>最近领料时间</th>
+            <th width='6%'>投产未领数量</th>
+            <th width='6%'>已报未入库量</th>
+            <th width='6%'>未投需要数量</th>
 
           </tr>
           <!-- 每页显示onePageRow条数据 -->
           <tr v-for="(row,index) in tableData.slice((page-1)*onePageRow,page*onePageRow)" :key="index">
             <td style="text-align: left;padding-left: 8px">{{row.materialId}}</td>
-            <td style="text-align: center;font-size:12px">{{row.materialName.length >12 ? row.materialName.substring(0,12):row.materialName}}</td>
+            <td style="text-align: center;font-size:12px">{{row.materialName.length >14 ? row.materialName.substring(0,14):row.materialName}}</td>
             <td style="text-align: center">{{row.num.toFixed(3) }}</td>
             <td style="text-align: center">{{row.unit.length >4 ? row.unit.substring(0,4):row.unit}}</td>
-            <td style="text-align: center">{{row.specs.length >8 ? row.specs.substring(0,8):row.specs}}</td>
+            <td style="text-align: center">{{row.specs.length >5 ? row.specs.substring(0,5):row.specs}}</td>
             <td style="text-align: center">{{row.latestPriceDate}}</td>
             <td style="text-align: center">{{row.latestPickDate}}</td>
+            <td style="text-align: center">{{row.noPickNum}}</td>
+            <td style="text-align: center">{{row.noInNum}}</td>
+            <td style="text-align: center">{{row.needNum}}</td>
 
           </tr>
           <!-- 插入空白行 -->
          <template v-if="blankLines===true && tableData.slice((page-1)*onePageRow,page*onePageRow).length<onePageRow">
             <tr v-for="d in (onePageRow-tableData.slice((page-1)*onePageRow,page*onePageRow).length)" :key="`_${d}_`">
+              <td></td>
+              <td></td>
+              <td></td>
               <td></td>
               <td></td>
               <td></td>
@@ -108,7 +117,7 @@ export default {
   margin: 0;
   list-style-type: none;
   font-family: "微软雅黑";
-  font-size: 15px;
+  font-size: 10px;
 }
 .tab_company_out {
   text-align: center;
@@ -151,6 +160,7 @@ table tr td {
   border-bottom: none;
   border-right: none;
   height: 32px;
+  font-size: 5px;
   line-height: 32px;
 }
 table tr td:last-of-type,
@@ -162,7 +172,7 @@ table tr th {
   border-left: 1px solid #000;
   height: 22px;
   line-height: 22px;
-  font-size: 12px;
+  font-size: 5px;
 }
 table tr th:nth-child(2) {
   width: 0;

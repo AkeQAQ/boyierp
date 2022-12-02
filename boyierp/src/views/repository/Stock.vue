@@ -84,12 +84,12 @@
           ref="multipleTable"
           :data="tableData"
           border
-          stripe
           height="520px"
           size="mini"
           tooltip-effect="dark"
           style="width: 100%;color:black"
           :cell-style="cellClass"
+          :row-class-name="tableRowClassName"
           @selection-change="handleSelectionChange">
         <el-table-column
             type="selection"
@@ -145,6 +145,31 @@
             width="100px"
         >
         </el-table-column>
+
+
+        <el-table-column
+            prop="noPickNum"
+            label="投产未领数量"
+            width="120px"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="noInNum"
+            label="已报未入库数量"
+            width="120px"
+        >
+        </el-table-column>
+
+        <el-table-column
+            prop="needNum"
+            label="未投产需要数量"
+            width="120px"
+        >
+        </el-table-column>
+
+
+
 
       </el-table>
 
@@ -267,6 +292,18 @@ export default {
     }
   },
   methods: {
+
+    tableRowClassName({row, rowIndex}) {
+      row.seqNum = rowIndex + 1;
+
+      let stockNum = this.tableData[row.seqNum-1].num ==null?0:this.tableData[row.seqNum-1].num;
+      if( (parseFloat(this.tableData[row.seqNum-1].needNum) +  parseFloat(this.tableData[row.seqNum-1].noPickNum) ) <  (parseFloat (stockNum) + parseFloat (this.tableData[row.seqNum-1].noInNum))){
+        console.log("warning_row")
+        return 'warning-row';
+      }
+      return '';
+    },
+
     cellClass({ row, column,rowIndex,columnIndex }) {
 
       if(columnIndex===7){
@@ -511,9 +548,15 @@ export default {
 }
 </script>
 
+<style>
+.el-table .warning-row {
+  background: #e6aaaa;
+}
+</style>
 <style scoped>
 .el-pagination {
   float: right;
 
 }
+
 </style>
