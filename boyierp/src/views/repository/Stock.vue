@@ -152,6 +152,25 @@
             label="投产未领数量"
             width="120px"
         >
+          <template slot-scope="scope">
+            <el-popover
+                placement="bottom"
+                width="800"
+                trigger="click">
+              <el-table :data="scope.row.noPickNums">
+                <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
+                <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
+                <el-table-column width="100" property="batchId" label="批次号"></el-table-column>
+                <el-table-column width="100" property="batchNumber" label="批次号数量"></el-table-column>
+                <el-table-column width="70" property="dosage" label="用量"></el-table-column>
+                <el-table-column width="100" property="num" label="未领数量"></el-table-column>
+
+              </el-table>
+              <el-button  slot="reference" type="text">{{scope.row.noPickNum}}</el-button>
+            </el-popover>
+
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -159,6 +178,24 @@
             label="已报未入库数量"
             width="120px"
         >
+          <template slot-scope="scope">
+            <el-popover
+                placement="bottom"
+                width="700"
+                trigger="click">
+              <el-table :data="scope.row.noInNums">
+                <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
+                <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
+                <el-table-column width="100" property="orderNumber" label="订单数量"></el-table-column>
+                <el-table-column width="100" property="preparedNum" label="已报备数量"></el-table-column>
+                <el-table-column width="100" property="inNum" label="入库数量"></el-table-column>
+
+              </el-table>
+              <el-button  slot="reference" type="text">{{scope.row.noInNum}}</el-button>
+            </el-popover>
+
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -166,6 +203,24 @@
             label="未投产需要数量"
             width="120px"
         >
+          <template slot-scope="scope">
+            <el-popover
+                placement="bottom"
+                width="700"
+                trigger="click">
+              <el-table :data="scope.row.noProductionNums">
+                <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
+                <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
+                <el-table-column width="100" property="orderNumber" label="订单数量"></el-table-column>
+                <el-table-column width="70" property="dosage" label="用量"></el-table-column>
+                <el-table-column width="100" property="needNum" label="需要数量"></el-table-column>
+
+              </el-table>
+              <el-button  slot="reference" type="text">{{scope.row.needNum}}</el-button>
+            </el-popover>
+
+          </template>
         </el-table-column>
 
 
