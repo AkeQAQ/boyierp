@@ -643,6 +643,14 @@
 
           </el-table-column>
 
+          <el-table-column label="备注" align="center" prop="content" width="250">
+            <template slot-scope="scope">
+              <el-input size="mini" style="width: 240px"
+                        v-model="editForm.rowList[scope.row.seqNum-1].content" :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.canChange )"
+              ></el-input>
+            </template>
+          </el-table-column>
+
         </el-table>
 
       </el-dialog>
@@ -1129,7 +1137,8 @@ export default {
           num:'',
           specs:'',
           dosage:'',
-          canChange: true
+          canChange: true,
+          content:''
         }]
       }
       this.dialogVisible = true

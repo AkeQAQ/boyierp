@@ -390,10 +390,10 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   &&scope.row.hasProductConstituent===true  && scope.row.status ===0   "></el-divider>
+                        v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   &&scope.row.hasProductConstituent===true  && scope.row.status ===0 && scope.row.orderType !=2   "></el-divider>
 
             <el-button style="padding: 0" type="text" size="small"
-                       v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone')) &&scope.row.hasProductConstituent===true   && scope.row.status ===0   " @click="prepare(scope.row)">
+                       v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone')) &&scope.row.hasProductConstituent===true   && scope.row.status ===0  && scope.row.orderType !=2 " @click="prepare(scope.row)">
 
               查看备料
             </el-button>
@@ -1221,6 +1221,88 @@
             </template>
           </el-table-column>
 
+          <el-table-column label="库存数量" align="center" prop="stockNum" width="100">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{prepareList[scope.row.seqNum-1].stockNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="noPickNum"
+              label="投产未领数量"
+              width="120px"
+          >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="800"
+                  trigger="click">
+                <el-table :data="prepareList[scope.row.seqNum-1].noPickNums">
+                  <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                  <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
+                  <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
+                  <el-table-column width="100" property="batchId" label="批次号"></el-table-column>
+                  <el-table-column width="100" property="batchNumber" label="批次号数量"></el-table-column>
+                  <el-table-column width="70" property="dosage" label="用量"></el-table-column>
+                  <el-table-column width="100" property="num" label="未领数量"></el-table-column>
+
+                </el-table>
+                <el-button  slot="reference" type="text">{{prepareList[scope.row.seqNum-1].noPickNum}}</el-button>
+              </el-popover>
+
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="noInNum"
+              label="已报未入库数量"
+              width="120px"
+          >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="700"
+                  trigger="click">
+                <el-table :data="prepareList[scope.row.seqNum-1].noInNums">
+                  <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                  <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
+                  <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
+                  <el-table-column width="100" property="orderNumber" label="订单数量"></el-table-column>
+                  <el-table-column width="100" property="preparedNum" label="已报备数量"></el-table-column>
+                  <el-table-column width="100" property="inNum" label="入库数量"></el-table-column>
+
+                </el-table>
+                <el-button  slot="reference" type="text">{{prepareList[scope.row.seqNum-1].noInNum}}</el-button>
+              </el-popover>
+
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="needNum"
+              label="未投产需要数量"
+              width="120px"
+          >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="700"
+                  trigger="click">
+                <el-table :data="prepareList[scope.row.seqNum-1].noProductionNums">
+                  <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                  <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
+                  <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
+                  <el-table-column width="100" property="orderNumber" label="订单数量"></el-table-column>
+                  <el-table-column width="70" property="dosage" label="用量"></el-table-column>
+                  <el-table-column width="100" property="needNum" label="需要数量"></el-table-column>
+
+                </el-table>
+                <el-button  slot="reference" type="text">{{prepareList[scope.row.seqNum-1].needNum}}</el-button>
+              </el-popover>
+
+            </template>
+          </el-table-column>
+
 
         </el-table>
 
@@ -1543,6 +1625,88 @@
               </el-popover>
             </template>
 
+          </el-table-column>
+
+          <el-table-column label="库存数量" align="center" prop="stockNum" width="100">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{prepareBatchList[scope.row.seqNum-1].stockNum}}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="noPickNum"
+              label="投产未领数量"
+              width="120px"
+          >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="800"
+                  trigger="click">
+                <el-table :data="prepareBatchList[scope.row.seqNum-1].noPickNums">
+                  <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                  <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
+                  <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
+                  <el-table-column width="100" property="batchId" label="批次号"></el-table-column>
+                  <el-table-column width="100" property="batchNumber" label="批次号数量"></el-table-column>
+                  <el-table-column width="70" property="dosage" label="用量"></el-table-column>
+                  <el-table-column width="100" property="num" label="未领数量"></el-table-column>
+
+                </el-table>
+                <el-button  slot="reference" type="text">{{prepareBatchList[scope.row.seqNum-1].noPickNum}}</el-button>
+              </el-popover>
+
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="noInNum"
+              label="已报未入库数量"
+              width="120px"
+          >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="700"
+                  trigger="click">
+                <el-table :data="prepareBatchList[scope.row.seqNum-1].noInNums">
+                  <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                  <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
+                  <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
+                  <el-table-column width="100" property="orderNumber" label="订单数量"></el-table-column>
+                  <el-table-column width="100" property="preparedNum" label="已报备数量"></el-table-column>
+                  <el-table-column width="100" property="inNum" label="入库数量"></el-table-column>
+
+                </el-table>
+                <el-button  slot="reference" type="text">{{prepareBatchList[scope.row.seqNum-1].noInNum}}</el-button>
+              </el-popover>
+
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="needNum"
+              label="未投产需要数量"
+              width="120px"
+          >
+            <template slot-scope="scope">
+              <el-popover
+                  placement="bottom"
+                  width="700"
+                  trigger="click">
+                <el-table :data="prepareBatchList[scope.row.seqNum-1].noProductionNums">
+                  <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
+                  <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
+                  <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
+                  <el-table-column width="100" property="orderNumber" label="订单数量"></el-table-column>
+                  <el-table-column width="70" property="dosage" label="用量"></el-table-column>
+                  <el-table-column width="100" property="needNum" label="需要数量"></el-table-column>
+
+                </el-table>
+                <el-button  slot="reference" type="text">{{prepareBatchList[scope.row.seqNum-1].needNum}}</el-button>
+              </el-popover>
+
+            </template>
           </el-table-column>
 
         </el-table>
@@ -2304,16 +2468,30 @@ export default {
       })
     },
     prepareBatch(){
-
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
       let ids = this.multipleSelection;
       request.post('/order/productOrder/listBatchOrderConstituentProgress',ids).then(res => {
         this.canPrepareBatchFlag = res.data.data.canBatchPrepareFlag;
         this.prepareBatchList = res.data.data.datas;
         // 赋值到编辑表单
         this.dialogPrepareBatchVisible = true;
+        load.close()
+      }).catch(()=>{
+        load.close()
       })
     },
     prepare(scopeRow){
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
       console.info("prepare row:",scopeRow)
       this.theCurrentOrderMsg=scopeRow
 
@@ -2321,9 +2499,12 @@ export default {
           +scopeRow.id
       ).then(res => {
 
+        load.close();
         let data = res.data.data;
         this.prepareList = data;
         this.dialogCalNumVisible = true;
+      }).catch(()=>{
+        load.close()
       })
     },
 
