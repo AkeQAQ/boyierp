@@ -594,7 +594,7 @@
                          @keyup.down.native="numDown(scope.row.seqNum)"
                          @focus="addNext(scope.row.seqNum)"
 
-                         :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.canChange )"
+                         :disabled="editForm.status!=1  && !( specialAddFlag  )"
                          size="mini" v-model="editForm.rowList[scope.row.seqNum-1].dosage"/>
             </template>
           </el-table-column>
