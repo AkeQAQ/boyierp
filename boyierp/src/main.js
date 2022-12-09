@@ -16,6 +16,7 @@ Vue.use(Element)
 import * as echarts from 'echarts';
 Vue.prototype.$echarts = echarts;
 
+import './components/video/index'
 
 
 import 'xe-utils'

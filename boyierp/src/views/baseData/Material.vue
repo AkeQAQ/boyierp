@@ -335,7 +335,7 @@
                   </div>
                 </el-form-item>
 
-                <el-form-item >
+                <el-form-item label="照片">
                   <!-- 新的缩略图-->
                   <el-upload
                       :disabled="!hasAuth('baseData:material:save') || this.fileList.length >=1"
@@ -381,6 +381,10 @@
                   </el-dialog>
                 </el-form-item>
 
+                <el-form-item label="视频">
+                  <video-my ref="videoUpload" @returnBack="returnBack"    v-model="editForm.videoUrl"/>
+                </el-form-item>
+
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
                   <el-button type="primary" @click="addNew()">新增</el-button>
@@ -409,12 +413,14 @@
 
 <script>
 import {request, request2, sysbaseUrl} from "@/axios";
+import VideoMy from "@/components/video";
 
 export default {
   name: "Material",
-
+  components: {VideoMy},
   data() {
     return {
+      video:'http://localhost:8081\\baseDataMaterial-_1670558123950.mp4',
       copyFlag:false,
 
 
@@ -440,7 +446,8 @@ export default {
         specs:'',
         bigUnit:'',
         unitRadio:'1',
-        lowWarningLine:''
+        lowWarningLine:'',
+        videoUrl:''
       },
       rules: {
         name: [
@@ -506,6 +513,13 @@ export default {
     }
   },
   methods: {
+    // video 子组件回传事件
+    returnBack(data){
+      // 查看图片
+      request.get('/baseData/material/removeVideoPath?id='+data).then(res => {
+        this.$message.success("删除视频成功!");
+      })
+    },
     expChange(item) {
       console.log("导出:",item)
       if(item === 'all'){
@@ -904,11 +918,11 @@ export default {
     },
     // 编辑页面
     edit(id) {
+      console.log("this.$refs.videoUpload，",this.$refs['videoUpload'])
       this.fileList = []
       this.addOrUpdate = "update"
       request.get('/baseData/material/queryById?id=' + id).then(res => {
         let result = res.data.data
-
         // 查看图片
         request.get('/baseData/material/getPicturesById?id='+id).then(res => {
           let data = res.data.data;
@@ -922,6 +936,14 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
+          this.$refs['videoUpload'].id=id;
+          this.$refs['videoUpload'].action= sysbaseUrl+'/baseData/material/uploadVideo?id='+id
+          if(result.videoUrl){
+            this.$refs['videoUpload'].commonUpdateSrc(sysbaseUrl+"\\"+result.videoUrl)
+          }else{
+            this.$refs['videoUpload'].commonUpdateSrc('')
+          }
+          console.log("edit 时，video的id和action",this.$refs['videoUpload'].id,this.$refs['videoUpload'].action);
         })
 
       })
