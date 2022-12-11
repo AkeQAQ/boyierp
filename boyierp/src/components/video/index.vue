@@ -7,7 +7,7 @@
       <el-upload
           class="avatar-uploader el-upload--text"
           :headers="headers"
-          :disabled="tempSrc!='' && !isFactor && isFactorVideo"
+          :disabled="tempSrc!='' || !isFactor "
           :action=action
           :show-file-list="false"
           :on-success="handleVideoSuccess"
@@ -33,7 +33,7 @@
         >
           <i
               @click.stop="clearVideo"
-              v-if="isFactor || (!isFactor && !isFactorVideo)"
+              v-if="isFactor "
               class="el-icon-circle-close"
               style="
                             color: red;
@@ -75,11 +75,6 @@ export default {
       type: Boolean,
       default: true
     },
-    isFactorVideo: {
-      // 视频是否是厂商的，默认是
-      type: Boolean,
-      default: true
-    }
   },
   model: {
     prop: 'src',
@@ -88,7 +83,8 @@ export default {
   data() {
     return {
       id:'',
-      action: sysbaseUrl+'/baseData/material/uploadVideo?id='+this.id,
+      urlPre:'',
+      action: sysbaseUrl+this.urlPre+'uploadVideo?id='+this.id,
       headers: {'Authorization':sessionStorage.getItem("token")},
       videoFlag: false,
       tempSrc: this.src
@@ -129,8 +125,10 @@ export default {
       // this.videoUploadPercent = Math.floor(event.percent)
     },
     beforeUploadVideo(file) {
-      this.action= sysbaseUrl+'/baseData/material/uploadVideo?id='+this.id
-      console.log("beforeUploadVideo,action",this.action)
+      if(this.id===null || this.id ===undefined || this.id ===''){
+        this.$message.error('没有ID')
+        return false
+      }
       const isLt40M = file.size / 1024 / 1024 <= 40
       if (['video/mp4'].indexOf(file.type) == -1) {
         this.$message.error('请上传正确的视频格式')

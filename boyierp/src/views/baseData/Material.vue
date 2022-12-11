@@ -382,7 +382,7 @@
                 </el-form-item>
 
                 <el-form-item label="视频">
-                  <video-my ref="videoUpload" @returnBack="returnBack"    v-model="editForm.videoUrl"/>
+                  <video-my ref="videoUpload" @returnBack="returnBack" :urlPre="'/baseData/material/'"   v-model="editForm.videoUrl"/>
                 </el-form-item>
 
                 <el-form-item>
@@ -582,6 +582,10 @@ export default {
 
     // 图片新增
     uploadRequest(fileobj) {
+      if(this.editForm.id ===null || this.editForm.id ===undefined || this.editForm.id ===''){
+        this.$message.error("没有ID")
+        return;
+      }
 
       let param = new FormData()
       param.append('files', fileobj.file)

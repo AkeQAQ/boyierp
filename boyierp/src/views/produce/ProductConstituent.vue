@@ -462,21 +462,21 @@
             </el-input>
           </el-form-item>
 
-          <el-form-item label="公司货号" prop="productNum" style="margin-bottom: 10px">
+          <el-form-item label="公司货号" prop="productNum" style="margin-bottom: 10px" label-width="70px">
             <!-- 公司货号 -->
             <div  :class=" [(this.editForm.status!=1 )? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']" style="margin: 0 0">
-              <input  class="el-input__inner" style="width: 200px"
+              <input  class="el-input__inner" style="width: 120px"
                       :disabled="editForm.status!=1"
                       v-model.lazy="editForm.productNum">
               </input>
             </div>
           </el-form-item>
 
-          <el-form-item label="品牌" prop="productBrand" style="margin-bottom: 10px">
+          <el-form-item label="品牌" prop="productBrand" style="margin-bottom: 10px" label-width="40px">
 
             <!-- 品牌 -->
             <el-autocomplete size="mini"  clearable
-                             style="width: 200px"
+                             style="width: 120px"
                              :disabled="editForm.status!=1"
                              popper-class="my-autocomplete"
                              class="inline-input"
@@ -492,7 +492,7 @@
             </el-autocomplete>
           </el-form-item>
 
-          <el-form-item label="颜色" prop="productColor" style="margin-bottom: 10px">
+          <el-form-item label="颜色" prop="productColor" style="margin-bottom: 10px" label-width="40px">
             <!-- 公司货号 -->
             <div  :class=" [(this.editForm.status!=1 )? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']" style="margin: 0 0">
               <input  class="el-input__inner" style="width: 100px"
@@ -520,6 +520,58 @@
                   复制</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
+          </el-form-item>
+
+
+          <el-form-item label="照片" label-width="40px">
+            <!-- 新的缩略图-->
+            <el-upload
+                :disabled="!hasAuth('produce:productConstituent:upload') || this.fileList.length >=1"
+                :class="{disabled:uploadDisabled}"
+                action="#"
+                ref="upload"
+                :http-request="uploadRequest"
+                :file-list="fileList"
+                list-type="picture-card"
+                :auto-upload="true">
+              <i slot="default" class="el-icon-plus"></i>
+              <div slot="file" slot-scope="{file}">
+                <img
+                    class="el-upload-list__item-thumbnail"
+                    :src="file.url" alt=""
+                >
+                <span class="el-upload-list__item-actions">
+                  <span
+                      class="el-upload-list__item-preview"
+                      @click="showPic(file)"
+                  >
+                    <i class="el-icon-zoom-in"></i>
+                  </span>
+                  <!--            <span
+                                  v-if="!disabled"
+                                  class="el-upload-list__item-delete"
+                                  @click="handleDownload(file)"
+                              >
+                                <i class="el-icon-download"></i>
+                              </span>-->
+                  <span
+                      v-if="hasAuth('produce:productConstituent:upload') "
+                      class="el-upload-list__item-delete"
+                      @click="handleRemove(file)"
+                  >
+                      <i class="el-icon-delete"></i>
+                  </span>
+                </span>
+              </div>
+            </el-upload>
+
+            <el-dialog :visible.sync="dialogOnePicVisible" :append-to-body=true top="0vh">
+              <img width="100%" :src="dialogOneImageUrl" alt="">
+            </el-dialog>
+          </el-form-item>
+
+          <el-form-item label="视频" label-width="40px">
+            <video-my ref="ppc_videoUpload" @returnBack="returnBack"     v-model="editForm.videoUrl"/>
           </el-form-item>
 
         </el-form>
@@ -685,11 +737,18 @@ import {request} from "@/axios";
 import {sysbaseUrl} from "@/axios";
 
 import {request2} from "@/axios";
+import VideoMy from "@/components/video";
 
 export default {
   name: 'ProductConstituent',
+  components: {VideoMy},
+
   data() {
     return {
+      fileList: [],
+      dialogOnePicVisible:false,
+      dialogOneImageUrl:'',
+
       oneMaterialPrices:[],
       specialAddFlag:false,
       specialAddOldSeq:99999,
@@ -764,6 +823,66 @@ export default {
     }
   },
   methods: {
+    handleRemove(file, fileList) {
+      console.log("删除图片:",file)
+      const url = file.url
+      const i = this.fileList.findIndex(x => x.url === url)
+      this.fileList.splice(i, 1)
+
+      request({
+        method: 'get',
+        url: '/produce/productConstituent/delPic?fileName='+file.name,
+        headers: {'Content-Type': 'multipart/form-data'}
+      }).then(res => {
+        // 成功
+        this.$message({
+          message: '删除成功!',
+          type: 'success'
+        });
+
+      })
+    },
+
+    uploadRequest(fileobj) {
+      if(this.editForm.id ===null || this.editForm.id ===undefined || this.editForm.id ===''){
+        this.$message.error("没有ID")
+        this.fileList=[]
+        return;
+      }
+      let param = new FormData()
+      param.append('files', fileobj.file)
+      console.log("上传的文件对象:",fileobj)
+      request({
+        method: 'post',
+        url: '/produce/productConstituent/uploadPic?id='+this.editForm.id,
+        headers: {'Content-Type': 'multipart/form-data'},
+        data: param
+      }).then(res => {
+        // 成功
+        this.$message({
+          message: '添加成功!',
+          type: 'success'
+        });
+
+        this.$nextTick(() => {
+          request.get('/produce/productConstituent/getPicturesById?id='+this.editForm.id).then(res => {
+            let data = res.data.data;
+            this.fileList.push({name:data[data.length-1],url: sysbaseUrl+"/"+data[data.length-1]})
+          })
+        })
+
+
+      })
+    },
+
+    // video 子组件回传事件
+    returnBack(data){
+      // 查看图片
+      request.get('/produce/productConstituent/removeVideoPath?id='+data).then(res => {
+        this.$message.success("删除视频成功!");
+      })
+    },
+
     changeCanShowPrint(seqNum){
       console.log("当前value:",this.editForm.rowList[seqNum-1].canShowPrint)
       request.get('/produce/productConstituentDetail/changeShowPrint?id=' + this.editForm.rowList[seqNum-1].id).then(res => {
@@ -842,7 +961,11 @@ export default {
 
       })
     },
+    showPic(file){
+      this.dialogOneImageUrl = file.url;
+      this.dialogOnePicVisible=true;
 
+    },
     handlePictureCardPreview(materialId){
       request.get('/baseData/material/getPicturesById?id='+materialId).then(res => {
         if(res.data.data.length ===0){
@@ -926,7 +1049,12 @@ export default {
       }
       else if(item === 'copy'){
         this.editForm.id = '';
+        this.editForm.videoUrl=''
         this.editForm.status = 1;
+        this.dialogOneImageUrl=''
+        this.fileList=[]
+        this.$refs['ppc_videoUpload'].id=null;
+        this.$refs['ppc_videoUpload'].commonUpdateSrc('')
 
         for (let i = 0; i < this.editForm.rowList.length; i++) {
           this.editForm.rowList[i].canChange = true;
@@ -1252,6 +1380,9 @@ export default {
               console.log("回显的ID：",res.data.data)
               this.editForm.id = res.data.data;
               this.addOrUpdate = "update"
+
+              this.$refs['ppc_videoUpload'].id=this.editForm.id;
+              this.$refs['ppc_videoUpload'].action= sysbaseUrl+'/produce/productConstituent/uploadVideo?id='+this.editForm.id
             }
 
             if(this.specialAddFlag){
@@ -1301,11 +1432,30 @@ export default {
       this.addOrUpdate = "update"
       request.get('/produce/productConstituent/queryById?id=' + id).then(res => {
         let result = res.data.data
+        // 查看图片
+        request.get('/produce/productConstituent/getPicturesById?id='+id).then(res => {
+          let data = res.data.data;
+          for (let i = 0; i < data.length; i++) {
+            let oneFileName = data[i];
+            this.fileList.push({name:oneFileName,url: sysbaseUrl+"/"+oneFileName})
+          }
+        })
         this.dialogVisible = true
         // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
+          this.$refs['ppc_videoUpload'].id=id;
+
+          this.$refs['ppc_videoUpload'].isFactor=this.$store.state.menu.authList.indexOf('produce:productConstituent:upload') > -1;
+
+          this.$refs['ppc_videoUpload'].action= sysbaseUrl+'/produce/productConstituent/uploadVideo?id='+id
+          if(result.videoUrl){
+            this.$refs['ppc_videoUpload'].commonUpdateSrc(sysbaseUrl+"\\"+result.videoUrl)
+          }else{
+            this.$refs['ppc_videoUpload'].commonUpdateSrc('')
+          }
+          console.log("edit 时，video的id和action",this.$refs['ppc_videoUpload'].id,this.$refs['ppc_videoUpload'].action);
         })
 
       })
@@ -1393,6 +1543,7 @@ export default {
     closeMethod(){
       this.specialAddFlag=false
       this.$refs['editForm'].resetFields();
+      this.fileList=[]
       this.handleDeleteAllDetails()
       this.getList()
     },
@@ -1417,6 +1568,11 @@ export default {
       this.loadTableSearchMaterialDetailAll()
     },
 
+  },
+  computed:{
+    uploadDisabled:function() {
+      return this.fileList.length >0
+    },
   },
   created() {
     this.getList()
@@ -1448,6 +1604,15 @@ export default {
 }
 
 </script>
+
+<style>
+.el-form-item__label{
+  text-align: left;
+}
+.disabled .el-upload--picture-card {
+  display: none;
+}
+</style>
 
 <style scoped>
 
