@@ -248,6 +248,17 @@
           </template>
         </el-table-column>
 
+        <el-table-column
+            width="110px"
+            label="有无照片/视频">
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.videoUrl !=null && scope.row.videoUrl !='' && scope.row.videoUrl !=undefined && scope.row.picUrl !=null && scope.row.picUrl !='' && scope.row.picUrl !=undefined " type="success">有照片有视频</el-tag>
+            <el-tag size="small" v-else-if="scope.row.videoUrl !=null && scope.row.videoUrl !='' && scope.row.videoUrl !=undefined && (scope.row.picUrl ===null || scope.row.picUrl ==='' ||scope.row.picUrl ===undefined)" type="success">有视频</el-tag>
+            <el-tag size="small" v-else-if="(scope.row.videoUrl ===null || scope.row.videoUrl ==='' || scope.row.videoUrl ===undefined) && (scope.row.picUrl !=null && scope.row.picUrl !='' && scope.row.picUrl !=undefined)" type="success">有照片</el-tag>
+            <el-tag size="small" v-else-if="(scope.row.videoUrl ===null || scope.row.videoUrl ==='' || scope.row.videoUrl ===undefined) && (scope.row.picUrl ===null || scope.row.picUrl ==='' || scope.row.picUrl ===undefined)" type="danger">无任何</el-tag>
+          </template>
+        </el-table-column>
+
 
         <el-table-column
             prop="action"
@@ -557,7 +568,7 @@
                   <span
                       v-if="hasAuth('produce:productConstituent:upload') "
                       class="el-upload-list__item-delete"
-                      @click="handleRemove(file)"
+                      @click="handleRemove(file,editForm.id)"
                   >
                       <i class="el-icon-delete"></i>
                   </span>
@@ -823,7 +834,7 @@ export default {
     }
   },
   methods: {
-    handleRemove(file, fileList) {
+    handleRemove(file, id) {
       console.log("删除图片:",file)
       const url = file.url
       const i = this.fileList.findIndex(x => x.url === url)
@@ -831,7 +842,7 @@ export default {
 
       request({
         method: 'get',
-        url: '/produce/productConstituent/delPic?fileName='+file.name,
+        url: '/produce/productConstituent/delPic?fileName='+file.name+"&&id="+id,
         headers: {'Content-Type': 'multipart/form-data'}
       }).then(res => {
         // 成功
@@ -1050,6 +1061,7 @@ export default {
       else if(item === 'copy'){
         this.editForm.id = '';
         this.editForm.videoUrl=''
+        this.editForm.picUrl=''
         this.editForm.status = 1;
         this.dialogOneImageUrl=''
         this.fileList=[]
@@ -1258,6 +1270,8 @@ export default {
         productNum: '',
         productBrand: '',
         productColor: '',
+        picUrl:'',
+        videoUrl:'',
         rowList: [{
           materialName:'',
           unit:'',
@@ -1266,9 +1280,14 @@ export default {
           specs:'',
           dosage:'',
           canChange: true,
-          content:''
+          content:'',
+
         }]
       }
+      this.dialogOneImageUrl=''
+      this.fileList=[]
+      this.$refs['ppc_videoUpload'].id=null;
+      this.$refs['ppc_videoUpload'].commonUpdateSrc('')
       this.dialogVisible = true
     },
 
