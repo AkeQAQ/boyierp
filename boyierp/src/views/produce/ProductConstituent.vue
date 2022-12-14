@@ -1286,8 +1286,11 @@ export default {
       }
       this.dialogOneImageUrl=''
       this.fileList=[]
-      this.$refs['ppc_videoUpload'].id=null;
-      this.$refs['ppc_videoUpload'].commonUpdateSrc('')
+      if(this.$refs['ppc_videoUpload']!=undefined){
+        this.$refs['ppc_videoUpload'].id=null;
+        this.$refs['ppc_videoUpload'].commonUpdateSrc('')
+      }
+
       this.dialogVisible = true
     },
 

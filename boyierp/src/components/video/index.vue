@@ -31,7 +31,19 @@
                         visibility: tempSrc ? 'visible' : 'hidden'
                     }"
         >
-          <i
+          <el-popconfirm @confirm="clearVideo()" title="确定删除？">
+            <i v-if="isFactor "
+               class="el-icon-circle-close" style="
+                            color: red;
+                            font-size: 22px;
+                            font-weight: bold;
+                            top: 12px;
+                            position: absolute;
+                            right: -22px;"  type="warning"
+                       slot="reference">
+            </i>
+          </el-popconfirm>
+<!--          <i
               @click.stop="clearVideo"
               v-if="isFactor "
               class="el-icon-circle-close"
@@ -43,7 +55,7 @@
                             position: absolute;
                             right: -22px;
                         "
-          ></i>
+          ></i>-->
           <video
               ref="videoPlay"
               :src="src"

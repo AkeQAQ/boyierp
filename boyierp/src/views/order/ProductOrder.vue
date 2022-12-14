@@ -462,7 +462,7 @@
             <el-button style="padding: 0" type="text" size="small"
                        v-if="(hasAuth('order:productOrder:prepare') || hasAuth('order:productOrder:prepareDone'))   && scope.row.status ===0   " @click="updateOrderNum(scope.row.id)">
 
-              修改订单号
+              修改订单
             </el-button>
 
 
@@ -545,6 +545,15 @@
             <div :class="'el-input el-input--mini'">
               <input  class="el-input__inner" style="width: 150px"
                       v-model.lazy="editOrderNumForm.orderNum" >
+              </input>
+            </div>
+          </el-form-item>
+
+
+          <el-form-item label="订单合计数目" prop="orderNumber" style="margin-bottom: 10px">
+            <div :class="'el-input el-input--mini'">
+              <input  class="el-input__inner" style="width: 150px"
+                      v-model.lazy="editOrderNumForm.orderNumber">
               </input>
             </div>
           </el-form-item>
@@ -1976,6 +1985,7 @@ export default {
       editOrderNumForm: {
         id: '',
         orderNum:'',
+        orderNumber:''
       },
       editMergeOrdersForm: {
         orders: '',
