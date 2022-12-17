@@ -1873,6 +1873,20 @@ export default {
 
       })
     },
+    // 一键生产序号领料
+    queryByProduceBatchId(zcPickId) {
+      request.get('/repository/pickMaterial/queryByProduceBatchInId?id=' + zcPickId).then(res => {
+        let result = res.data.data
+        this.dialogVisible = true
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.editForm = result
+          this.editForm.pickDate = new Date().format("yyyy-MM-dd");
+        })
+
+      })
+    },
     // 一键生产领料
     queryByBuyInId(id,buyInDate) {
       request.get('/repository/pickMaterial/queryByBuyInId?buyInId=' + id).then(res => {
@@ -2261,11 +2275,15 @@ export default {
     document.addEventListener('keydown',this.handleEvent)
 
     let id = this.$route.params.id
+    let zcPickId = this.$route.params.zcPickId
     console.log("1激活activated钩子函数 params:",this.$route.params);
 
     console.log("1激活activated钩子函数id:",id);
     if(id != '' && id !=undefined && id != null){
       this.queryByBuyInId(id,this.$route.params.buyInDate)
+    }
+    if(zcPickId != '' && zcPickId !=undefined && zcPickId != null){
+      this.queryByProduceBatchId(zcPickId)
     }
 
   }

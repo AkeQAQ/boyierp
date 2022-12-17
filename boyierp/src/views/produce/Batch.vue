@@ -113,6 +113,7 @@
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:del')" command="batchDel">批量删除</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:push')" command="pushOrder">下推采购订单</el-dropdown-item>
               <el-dropdown-item  v-if="hasAuth('produce:batch:list')" command="queryProgress">查询进度表</el-dropdown-item>
+              <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('repository:pickMaterial:save')" command="batchZCPick">针车领料</el-dropdown-item>
             </el-dropdown-menu>
 
           </el-dropdown>
@@ -260,6 +261,13 @@
             prop="batchId"
             label="生产序号"
             width="90px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="zcPickId"
+            label="针车领料编号"
+            width="100px"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -1529,9 +1537,9 @@ export default {
         }
       }
       if((this.showDetailNum && this.showProgress) && (
-          ( columnIndex === 24 || columnIndex === 25 || columnIndex === 26 ||
+          (  columnIndex === 25 || columnIndex === 26 ||
               columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30 || columnIndex === 31
-          ||columnIndex === 32 || columnIndex === 33 || columnIndex === 34 || columnIndex === 35)
+          ||columnIndex === 32 || columnIndex === 33 || columnIndex === 34 || columnIndex === 35 || columnIndex === 36)
       )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
@@ -1541,7 +1549,7 @@ export default {
         }
       }
        if ( (this.showDetailNum && !this.showProgress) && (
-          columnIndex === 24 || columnIndex === 25 || columnIndex === 26 || columnIndex === 27 )) {
+           columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28  )) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1549,9 +1557,9 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && this.showProgress)&& (    columnIndex === 10 ||
+      if((!this.showDetailNum && this.showProgress)&& (
           columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18
-          ||columnIndex === 19 ||columnIndex === 20  || columnIndex === 21)){
+          ||columnIndex === 19 ||columnIndex === 20  || columnIndex === 21 || columnIndex === 22)){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1560,7 +1568,7 @@ export default {
         }
       }
       if((!this.showDetailNum && !this.showProgress)&& (
-          columnIndex === 10 ||columnIndex === 11 ||columnIndex === 12 || columnIndex === 13 )){
+          columnIndex === 11 ||columnIndex === 12 || columnIndex === 13 || columnIndex === 14 )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1641,6 +1649,32 @@ export default {
             this.$message.info(this.$t("lang.Deletecancelled")); // 使用i18n国际化表示的“已取消删除”
           });
     },
+    batchZCPick(){
+      // 引用确认消息弹窗api
+      this.$confirm(
+          '确定要针车领料吗?', // 第一个参数为弹窗消息内容
+          '提示', // 第二个参数为弹窗左上角标题title
+          // 第三个参数为弹窗项的options，应该为object对象
+          {
+            confirmButtonText: '确定',  // 确认按钮的文本，可省略，默认为确定
+            cancelButtonText: '取消',  // 取消按钮的文本，可省略，默认为取消
+            type: 'warning' // 弹窗的消息类型，比如为warning时弹窗左边图标为'!'感叹号，为success时图标为'√'的勾。
+          }
+      )
+          // then中填写点击确认按钮后执行的事件，例如执行删除该条数据的delect请求
+          .then(() => {
+            let ids = this.multipleSelection;
+            if(ids.length > 1){
+              this.$message.error("只能选择1个批次号")
+            }else{
+              this.$router.push({name:'repository:pickMaterial:list',params:{zcPickId:ids[0]}});
+            }
+          })
+          // catch中填写点击取消按钮后执行的事件，例如消息提示“已取消删除”
+          .catch(() => {
+            this.$message.info(this.$t("lang.Deletecancelled")); // 使用i18n国际化表示的“已取消删除”
+          });
+    },
     batchValid(){
       // 引用确认消息弹窗api
       this.$confirm(
@@ -1710,6 +1744,8 @@ export default {
       }
       else if(item ==='queryProgress'){
         this.queryProgress();
+      }else if(item ==='batchZCPick'){
+        this.batchZCPick();
       }
     },
     importExcel() {
