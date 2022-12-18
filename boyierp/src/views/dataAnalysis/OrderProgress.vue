@@ -107,6 +107,29 @@
 
         </el-popover>
 
+
+        <el-form-item>
+          <el-date-picker style="width: 125px;"
+                          size="mini"
+                          value-format="yyyy-MM-dd"
+                          v-model="searchStartDate"
+                          type="date"
+                          clearable
+                          placeholder="开始日期">
+          </el-date-picker>
+        </el-form-item>
+
+        <el-form-item>
+          <el-date-picker style="width: 125px;"
+                          size="mini"
+                          value-format="yyyy-MM-dd"
+                          v-model="searchEndDate"
+                          type="date"
+                          clearable
+                          placeholder="结束日期">
+          </el-date-picker>
+        </el-form-item>
+
         <el-form-item >
           <el-select
               size ="mini"
@@ -160,9 +183,9 @@
         </el-form-item>
 
         <el-form-item v-if="hasAuth('order:productOrder:list')">
-          <el-popconfirm @confirm="groupView()" title="确定物料分组统计吗？">
+          <el-popconfirm @confirm="groupView()" title="确定分组统计吗？">
             <el-button size="mini" icon="el-icon-shopping-cart-full"  type="warning"
-                       slot="reference">物料分组统计
+                       slot="reference">订单物料时间段分组统计
             </el-button>
           </el-popconfirm>
         </el-form-item>
@@ -469,7 +492,7 @@
       <el-dialog
           :visible.sync="dialogGroupMaterials"
           fullscreen
-          title="进度表物料分组统计"
+          title="订单物料分组统计"
       >
         <el-table
             :data="groupMaterialsLists"
@@ -500,18 +523,17 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="已备料数量" align="center" width="140" prop="preparedNum">
-            <template slot-scope="scope">
-              <span style="text-align: left">{{groupMaterialsLists[scope.row.seqNum-1].preparedNum}}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column label="入库数量" align="center" width="140" prop="inNum">
+          <el-table-column label="净入库数量" align="center" width="140" prop="inNum">
             <template slot-scope="scope">
               <span style="text-align: left">{{groupMaterialsLists[scope.row.seqNum-1].inNum}}</span>
             </template>
           </el-table-column>
 
+          <el-table-column label="时间段之前净入库数量" align="center" width="140" prop="preparedNum">
+            <template slot-scope="scope">
+              <span style="text-align: left">{{groupMaterialsLists[scope.row.seqNum-1].preparedNum}}</span>
+            </template>
+          </el-table-column>
         </el-table>
 
       </el-dialog>
@@ -547,6 +569,9 @@ export default {
   name: 'OrderProgress',
   data() {
     return {
+      searchStartDate: '',
+      searchEndDate: '',
+
       editForm:{
         startDate:new Date().format("yyyy-MM-dd") ,
         endDate:new Date().format("yyyy-MM-dd") ,
@@ -609,15 +634,25 @@ export default {
     tableRowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
 
-      if(parseFloat(this.groupMaterialsLists[row.seqNum-1].preparedNum) >  parseFloat (this.groupMaterialsLists[row.seqNum-1].inNum) ){
+      if(parseFloat(this.groupMaterialsLists[row.seqNum-1].inNum) >  parseFloat (this.groupMaterialsLists[row.seqNum-1].calNum) ){
         return 'warning-row';
       }
       return '';
     },
     groupView(){
-      request.post('/produce/orderMaterialProgress/groupMaterialView').then(res => {
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      request.post('/produce/orderMaterialProgress/groupMaterialView?startDate='+this.searchStartDate+"&&endDate="+this.searchEndDate)
+          .then(res => {
+        load.close()
         this.groupMaterialsLists = res.data.data;
         this.dialogGroupMaterials = true;
+      }).catch(()=>{
+        load.close()
       })
     },
     rowClassName({row, rowIndex}) {
@@ -948,6 +983,8 @@ export default {
 
       let url = '/produce/orderMaterialProgress/list?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
+          "&&searchStartDate="+this.searchStartDate+
+          "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select+
           "&&searchStatus="+checkStr+
           "&&searchStatus2="+check2Str+

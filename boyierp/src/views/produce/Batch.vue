@@ -2064,8 +2064,8 @@ export default {
     },
     cellClass({ row, column,rowIndex,columnIndex }) {
 
-      if( (this.showProgress && !this.showDetailNum && columnIndex === 15 )
-      || (this.showProgress && this.showDetailNum  && columnIndex === 29 ) ){
+      if( (this.showProgress && !this.showDetailNum && columnIndex === 16 )
+      || (this.showProgress && this.showDetailNum  && columnIndex === 30 ) ){
         // 1. 收回时间是空，并且当天>外发时间+2
         let progresses = row.progresses;
 
@@ -2097,8 +2097,8 @@ export default {
           }
         }
       }
-      if( (this.showProgress && !this.showDetailNum && columnIndex === 16 )
-      || (this.showProgress && this.showDetailNum  && columnIndex === 30 )){
+      if( (this.showProgress && !this.showDetailNum && columnIndex === 17 )
+      || (this.showProgress && this.showDetailNum  && columnIndex === 31 )){
 
         // 1. 出库时间是空，并且当天>批次号+5
         let progresses = row.progresses;
