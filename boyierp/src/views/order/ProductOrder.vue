@@ -2824,6 +2824,11 @@ export default {
     },
     hasSameProductNumRowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
+
+      if(this.tableData[row.seqNum-1].hasProduction){
+        return 'hasProduction-row';
+      }
+
       if(this.tableData[row.seqNum-1].hasProductNum && !this.tableData[row.seqNum-1].hasProductConstituent){
         return 'needDoProductConstituent-row';
       }
@@ -3147,6 +3152,10 @@ export default {
 }
 .el-table .needDoProductConstituent-row {
   background: #f1cec6;
+}
+
+.el-table .hasProduction-row {
+  background: #d4cbf6;
 }
 
 </style>
