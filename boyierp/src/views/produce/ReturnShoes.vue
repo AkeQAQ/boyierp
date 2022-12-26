@@ -29,6 +29,13 @@
           </input>
         </div>
 
+        <!-- 区域 -->
+        <div v-if="selectedName === 'region'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+          <input  @keyup.enter="getList()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                  v-model.lazy="searchStr">
+          </input>
+        </div>
+
         <!-- 品牌 -->
         <el-autocomplete size="mini" v-if="selectedName === 'userName'" clearable
                          style="width: 200px"
@@ -61,7 +68,6 @@
               >
               </el-option>
             </el-select>
-            <el-input size="mini" v-model="item.searchStr" style="width: 150px" clearable></el-input>
             <!-- 公司货号 -->
             <div v-if="item.selectField==='userArtNo'" :class=" 'el-input el-input--mini'" style="width: 200px">
               <input   class="el-input__inner"   placeholder="请输入搜索内容"
@@ -70,6 +76,12 @@
             </div>
 
             <div v-if="item.selectField==='packageNo'" :class=" 'el-input el-input--mini'" style="width: 200px">
+              <input   class="el-input__inner"   placeholder="请输入搜索内容"
+                       v-model.lazy="item.searchStr">
+              </input>
+            </div>
+
+            <div v-if="item.selectField==='region'" :class=" 'el-input el-input--mini'" style="width: 200px">
               <input   class="el-input__inner"   placeholder="请输入搜索内容"
                        v-model.lazy="item.searchStr">
               </input>
@@ -453,7 +465,9 @@ export default {
       options: [
         {value: 'userName', label: '客户名称'},
         {value: 'packageNo', label: '快递号'},
-        {value: 'userArtNo', label: '货号'}
+        {value: 'userArtNo', label: '货号'},
+        {value: 'region', label: '区域'},
+
       ],
 
       currentPage: 1 // 当前页

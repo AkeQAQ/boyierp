@@ -39,6 +39,13 @@
             </input>
           </div>
 
+          <!-- 客户货号 -->
+          <div v-if="selectedName === 'customerNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
+
         </el-form-item>
 
         <el-popover
@@ -72,6 +79,13 @@
 
               <!-- 订单号 -->
               <div v-if="item.selectField==='orderNum'" :class=" 'el-input el-input--mini'" style="width: 200px" >
+                <input   class="el-input__inner"   placeholder="请输入搜索内容"
+                         v-model.lazy="item.searchStr">
+                </input>
+              </div>
+
+              <!-- 客户货号 -->
+              <div v-if="item.selectField==='customerNum'" :class=" 'el-input el-input--mini'" style="width: 200px" >
                 <input   class="el-input__inner"   placeholder="请输入搜索内容"
                          v-model.lazy="item.searchStr">
                 </input>
@@ -1948,14 +1962,15 @@ export default {
       checkedBox2:[2,1,0],
 
       status3Arr : [{'name':'取消','val':2},{'name':'回单','val':1},{'name':'订单','val':0}],
-      checkedBox3:[2,1,0],
+      checkedBox3:[1,0],
 
       // 搜索字段
       selectedName: 'productNum',// 搜索默认值
       options: [
         {value: 'productNum', label: '公司货号'},
         {value: 'productBrand', label: '品牌'},
-        {value: 'orderNum', label: '订单号'}
+        {value: 'orderNum', label: '订单号'},
+        {value: 'customerNum', label: '客户货号'},
 
       ],
       select: 'productNum', // 搜索默认值
