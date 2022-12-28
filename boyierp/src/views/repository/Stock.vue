@@ -157,7 +157,7 @@
                 placement="bottom"
                 width="800"
                 trigger="click">
-              <el-table :data="scope.row.noPickNums">
+              <el-table height="300px" :data="scope.row.noPickNums">
                 <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
                 <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
                 <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
@@ -183,7 +183,7 @@
                 placement="bottom"
                 width="700"
                 trigger="click">
-              <el-table :data="scope.row.noInNums">
+              <el-table height="300px" :data="scope.row.noInNums">
                 <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
                 <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
                 <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
@@ -208,7 +208,7 @@
                 placement="bottom"
                 width="700"
                 trigger="click">
-              <el-table :data="scope.row.noProductionNums">
+              <el-table height="300px" :data="scope.row.noProductionNums">
                 <el-table-column width="100" property="orderNum" label="订单号"></el-table-column>
                 <el-table-column width="120" property="productNum" label="工厂货号"></el-table-column>
                 <el-table-column width="120" property="productBrand" label="品牌"></el-table-column>
@@ -222,9 +222,6 @@
 
           </template>
         </el-table-column>
-
-
-
 
       </el-table>
 
