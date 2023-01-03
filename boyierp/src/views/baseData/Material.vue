@@ -273,16 +273,16 @@
 
               <el-form style="margin-top: -30px" :model="editForm" :rules="rules" ref="editForm" label-width="100px" class="demo-editForm">
 
-                <el-form-item  v-if="false" label="唯一编码" prop="id" >
+                <el-form-item   v-if="false" label="唯一编码" prop="id" >
                   <el-input   v-model="editForm.id" ></el-input>
                 </el-form-item>
 
-                <el-form-item label="唯一编码" prop="subId" >
+                <el-form-item style="margin: 5px 0px" label="唯一编码" prop="subId" >
                   <el-input style="width: 80px"  v-model="editForm.groupCode" :disabled="true" ></el-input>
                  <el-input style="width: 40%" placeholder="保存自动生成" v-model="editForm.subId" :disabled="true" ></el-input>
                 </el-form-item>
 
-                <el-form-item label="名称" prop="name">
+                <el-form-item label="名称" prop="name" style="margin: 5px 0px">
 
                   <div  :class=" 'el-input '" >
                     <input  class="el-input__inner"  v-model.lazy="editForm.name">
@@ -290,14 +290,14 @@
                   </div>
                 </el-form-item>
 
-                <el-form-item label="规格型号" prop="specs">
+                <el-form-item label="规格型号" prop="specs" style="margin: 5px 0px">
                   <div  :class=" 'el-input '" >
                     <input  class="el-input__inner"  v-model.lazy="editForm.specs">
                     </input>
                   </div>
                 </el-form-item>
 
-                <el-form-item label="库存单位" prop="unit">
+                <el-form-item label="库存单位" prop="unit" style="margin: 5px 0px">
 
                   <!-- 搜索框 -->
                   <el-autocomplete
@@ -311,7 +311,7 @@
 
                 </el-form-item>
 
-                <el-form-item label="入库单位" prop="bigUnit">
+                <el-form-item label="入库单位" prop="bigUnit" style="margin: 5px 0px">
 
                   <!-- 搜索框 -->
                   <el-autocomplete
@@ -325,17 +325,17 @@
 
                 </el-form-item>
 
-                <el-form-item label="换算系数" prop="unitRadio">
+                <el-form-item label="换算系数" prop="unitRadio" style="margin: 5px 0px">
                   1入库单位=<el-input v-model="editForm.unitRadio" style="width: 100px"></el-input>库存单位
                 </el-form-item>
-                <el-form-item label="低预警线" prop="lowWarningLine">
+                <el-form-item label="低预警线" prop="lowWarningLine" style="margin: 5px 0px">
                   <div  :class=" 'el-input '" >
                     <input  class="el-input__inner"  v-model.lazy="editForm.lowWarningLine">
                     </input>
                   </div>
                 </el-form-item>
 
-                <el-form-item label="照片">
+                <el-form-item label="照片" style="margin: 5px 0px">
                   <!-- 新的缩略图-->
                   <el-upload
                       :disabled="!hasAuth('baseData:material:save') || this.fileList.length >=1"
@@ -380,10 +380,10 @@
                     <img width="100%" :src="dialogOneImageUrl" alt="">
                   </el-dialog>
                 </el-form-item>
-
-                <el-form-item label="视频">
+<!--
+                <el-form-item label="视频" style="height: 200px">
                   <video-my ref="videoUpload" @returnBack="returnBack" :urlPre="'/baseData/material/'"   v-model="editForm.videoUrl"/>
-                </el-form-item>
+                </el-form-item>-->
 
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('editForm',addOrUpdate)">完成</el-button>
@@ -413,11 +413,11 @@
 
 <script>
 import {request, request2, sysbaseUrl} from "@/axios";
-import VideoMy from "@/components/video";
+// import VideoMy from "@/components/video";
 
 export default {
   name: "Material",
-  components: {VideoMy},
+  // components: {VideoMy},
   data() {
     return {
       video:'http://localhost:8081\\baseDataMaterial-_1670558123950.mp4',
@@ -922,7 +922,6 @@ export default {
     },
     // 编辑页面
     edit(id) {
-      console.log("this.$refs.videoUpload，",this.$refs['videoUpload'])
       this.fileList = []
       this.addOrUpdate = "update"
       request.get('/baseData/material/queryById?id=' + id).then(res => {
@@ -940,14 +939,14 @@ export default {
         this.$nextTick(() => {
           // 赋值到编辑表单
           this.editForm = result
-          this.$refs['videoUpload'].id=id;
-          this.$refs['videoUpload'].action= sysbaseUrl+'/baseData/material/uploadVideo?id='+id
-          if(result.videoUrl){
-            this.$refs['videoUpload'].commonUpdateSrc(sysbaseUrl+"\\"+result.videoUrl)
-          }else{
-            this.$refs['videoUpload'].commonUpdateSrc('')
-          }
-          console.log("edit 时，video的id和action",this.$refs['videoUpload'].id,this.$refs['videoUpload'].action);
+          // this.$refs['videoUpload'].id=id;
+          // this.$refs['videoUpload'].action= sysbaseUrl+'/baseData/material/uploadVideo?id='+id
+          // if(result.videoUrl){
+          //   this.$refs['videoUpload'].commonUpdateSrc(sysbaseUrl+"\\"+result.videoUrl)
+          // }else{
+          //   this.$refs['videoUpload'].commonUpdateSrc('')
+          // }
+          // console.log("edit 时，video的id和action",this.$refs['videoUpload'].id,this.$refs['videoUpload'].action);
         })
 
       })
