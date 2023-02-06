@@ -250,7 +250,7 @@
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
           :current-page="this.currentPage"
-          :page-sizes="[200, 500, 700, 1000]"
+          :page-sizes="[50, 100, 200, 1000]"
           :page-size="this.pageSize"
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
@@ -336,7 +336,7 @@ export default {
       materialSearchDatas:[], // 用于搜索的建议框
       // 分页字段
       currentPage: 1 // 当前页
-      , pageSize: 200 // 一页多少条
+      , pageSize: 50 // 一页多少条
       , total: 0 // 总共多少数据
       ,
       tableData: [],
