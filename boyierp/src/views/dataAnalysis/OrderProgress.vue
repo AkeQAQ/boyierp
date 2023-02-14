@@ -175,19 +175,31 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
+          <el-switch
+              style="display: block"
+              v-model="searchNoAllIn"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-text="筛选欠入库进度"
+              inactive-text="筛选关闭">
+          </el-switch>
         </el-form-item>
 
         <el-form-item>
-          <el-button size="mini" icon="el-icon-data-analysis"  v-if="hasAuth('order:productOrder:import')" @click="calOrderNeedMaterials()" type="primary">产品订单导入计算物料</el-button>
+          <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('order:productOrder:list')">
-          <el-popconfirm @confirm="groupView()" title="确定分组统计吗？">
-            <el-button size="mini" icon="el-icon-shopping-cart-full"  type="warning"
-                       slot="reference">订单物料时间段分组统计
+        <el-form-item >
+          <el-dropdown   @command="otherBtn">
+            <el-button  icon="el-icon-more" size="mini" >
+              其他操作<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
-          </el-popconfirm>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item  v-if="hasAuth('order:productOrder:import')" command="importCal">产品订单导入计算物料</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('order:productOrder:list')" command="group">订单物料时间段分组统计</el-dropdown-item>
+            </el-dropdown-menu>
+
+          </el-dropdown>
         </el-form-item>
 
 
@@ -197,6 +209,7 @@
           ref="multipleTable"
           :data="tableData"
           v-loading = "tableLoad"
+          :row-class-name="hasNoAllInAndProducedRowsClassName"
           element-loading-background = "rgba(255, 255, 255, .5)"
           element-loading-text = "加载中，请稍后..."
           border
@@ -335,6 +348,18 @@
             <el-tag size="small" v-if="scope.row.prepared === 2" type="warning">备料确认</el-tag>
             <el-tag size="small" v-else-if="scope.row.prepared === 1" type="info">备料未确认</el-tag>
             <el-tag size="small" v-else-if="scope.row.prepared===0" type="success">备料已报(完成)</el-tag>
+          </template>
+
+        </el-table-column>
+
+        <el-table-column
+            prop="isHasProduceBatch"
+            label="投产状态"
+            width="90px"
+            show-overflow-tooltip>
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.isHasProduceBatch === true" type="danger">已投产</el-tag>
+            <el-tag size="small" v-else-if="scope.row.isHasProduceBatch === false" type="info">未投产</el-tag>
           </template>
 
         </el-table-column>
@@ -591,6 +616,8 @@ export default {
       checkedBox2:[2,1,0],
       searchNoPropread:true,
 
+      searchNoAllIn:true,
+
       // 搜索字段
       selectedName: 'materialName',// 搜索默认值
       options: [
@@ -631,6 +658,22 @@ export default {
   },
 
   methods: {
+    otherBtn(item) {
+      if (item === 'importCal') {
+        this.calOrderNeedMaterials();
+      }else if(item === 'group') {
+        this.groupView();
+      }
+    },
+    hasNoAllInAndProducedRowsClassName({row, rowIndex}) {
+      row.seqNum = rowIndex + 1;
+
+      if(this.tableData[row.seqNum-1].preparedNum > 0 && this.tableData[row.seqNum-1].isHasProduceBatch && this.tableData[row.seqNum-1].inPercent < 100){
+        return 'noAllInProduced-row';
+      }
+      return '';
+    },
+
     tableRowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
 
@@ -988,7 +1031,9 @@ export default {
           "&&searchField="+this.select+
           "&&searchStatus="+checkStr+
           "&&searchStatus2="+check2Str+
-          "&searchNoPropread="+this.searchNoPropread;
+          "&&searchNoPropread="+this.searchNoPropread+
+      "&&searchNoAllIn="+this.searchNoAllIn
+      ;
       request.post(url,
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
@@ -1027,6 +1072,11 @@ export default {
 
 </script>
 <style>
+
+.el-table .noAllInProduced-row {
+  background: #f1cec6;
+}
+
 .el-table .warning-row {
   background: #e6aaaa;
 }
