@@ -94,14 +94,6 @@
           </el-dropdown>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('produce:batch:list')">
-          <el-popconfirm @confirm="batchPrint()" title="确定批量打印吗？">
-            <el-button size="mini" icon="el-icon-receiving" :disabled="this.multipleSelection.length === 0 " type="warning"
-                       slot="reference">批量打印
-            </el-button>
-          </el-popconfirm>
-        </el-form-item>
-
         <el-form-item >
           <el-dropdown   @command="otherBtn">
             <el-button  icon="el-icon-more" size="mini" >
@@ -114,6 +106,9 @@
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:push')" command="pushOrder">下推采购订单</el-dropdown-item>
               <el-dropdown-item  v-if="hasAuth('produce:batch:list')" command="queryProgress">查询进度表</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('repository:pickMaterial:save')" command="batchZCPick">针车领料</el-dropdown-item>
+              <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:list')" command="batchPrintCaiDuan">裁断批量打印</el-dropdown-item>
+              <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:list')" command="batchPrintZhenChe">针车批量打印</el-dropdown-item>
+
             </el-dropdown-menu>
 
           </el-dropdown>
@@ -141,6 +136,17 @@
           </el-switch>
         </el-form-item>
 
+        <el-form-item>
+          <el-switch
+              style="display: block"
+              v-model="showDelay"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-text="显示延期"
+              inactive-text="不显示延期">
+          </el-switch>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -153,7 +159,7 @@
           element-loading-text = "加载中，请稍后..."
           border
           fit
-          height="820px"
+          height="600px"
           :span-method="objectSpanMethod"
           :summary-method="getSummariesMain"
           show-summary
@@ -594,7 +600,7 @@
 
         </el-table-column>
 
-        <el-table-column label="延期原因">
+        <el-table-column label="延期原因" v-if="showDelay" >
 
           <el-table-column
               label="操作"
@@ -714,7 +720,7 @@
         <el-table-column
             prop="action"
             label="操作"
-            width="200px"
+            width="280px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id) "
@@ -765,6 +771,10 @@
 
             <el-button type="text" size="small" @click="preViewPrint(scope.row.id) "
                        v-if="hasAuth('produce:batch:list') && scope.row.status ===0   ">裁断计划单预览
+            </el-button>
+
+            <el-button type="text" size="small" @click="preViewPrintZC(scope.row.id) "
+                       v-if="hasAuth('produce:batch:list') && scope.row.status ===0   ">针车领料预览
             </el-button>
 
 
@@ -1119,6 +1129,27 @@
 
       </el-dialog>
 
+      <!-- 针车打印弹窗 -->
+      <el-dialog
+          title=""
+          :visible.sync="dialogVisiblePrintZhenChe"
+          width="55%"
+          style="padding-top: 0"
+          :before-close="printZhenCheClose"
+      >
+        <el-button v-if="dialogVisiblePrintZhenChe"
+                   @click="printZhenChe"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="zhenChePrint">
+          <template slot-scope="func">
+            <printZC :tableData="printZhenCheDataList" :getChineseNumber="func.getChineseNumber"></printZC>
+          </template>
+        </vue-easy-print>
+
+      </el-dialog>
+
+
       <!--价目列表 分页组件 -->
       <el-pagination
 
@@ -1205,6 +1236,7 @@ import vueEasyPrint from "vue-easy-print";
 import {request} from "@/axios";
 import {sysbaseUrl} from "@/axios";
 import print from "@/views/printModule/printCaiDuan";
+import printZC from "@/views/printModule/printZhenChe";
 
 import {request2} from "@/axios";
 import exportExcelCommon from "@/views/common/ExportExcelCommon";
@@ -1215,25 +1247,38 @@ export default {
   components: {
     vueEasyPrint,
     print,
+    printZC
   },
   data() {
     return {
       oneMaterialPrices:[],
 
+      showDelay:false,
       showDetailNum:false,
       showProgress:false,
 
       editSupplierName:'',
 
       dialogVisiblePrint: false,
+      dialogVisiblePrintZhenChe: false,
+
       printCaiDuanDataList:
           {rowList:[
           {productNum:'10s57202',batchId:123,customerNum:'112233'
         ,size34:'0',size35:'0',size36:'0',size37:'0',size38:'0',size39:'0',size40:'0',size41:'0'
         ,size42:'0',size43:'0',size44:'0',size45:'0',size46:'0',size47:'0',
         subList:[
-          {materialId:'01.01',materialName:'哈哈',dosage:'1.21',needNum:'189',comment:'我啊我啊我啊我啊我啊我啊我啊我啊我啊'}
+          {materialId:'01.01',materialName:'ceshi',dosage:'1.21',needNum:'189',comment:'ceshi'}
         ]}]
+          },
+      printZhenCheDataList:
+          {rowList:[
+              {productNum:'10s57202',batchId:123,customerNum:'112233'
+                ,size34:'0',size35:'0',size36:'0',size37:'0',size38:'0',size39:'0',size40:'0',size41:'0'
+                ,size42:'0',size43:'0',size44:'0',size45:'0',size46:'0',size47:'0',
+                subList:[
+                  {materialId:'01.01',materialName:'ceshi',dosage:'1.21',needNum:'189',comment:'ceshi'}
+                ]}]
           },
 
       rules: {
@@ -1536,7 +1581,7 @@ export default {
           colspan: _col
         }
       }
-      if((this.showDetailNum && this.showProgress) && (
+      if((this.showDetailNum && this.showProgress && this.showDelay) && (
           (  columnIndex === 25 || columnIndex === 26 ||
               columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30 || columnIndex === 31
           ||columnIndex === 32 || columnIndex === 33 || columnIndex === 34 || columnIndex === 35 || columnIndex === 36)
@@ -1548,7 +1593,19 @@ export default {
           colspan: _col
         }
       }
-       if ( (this.showDetailNum && !this.showProgress) && (
+      if((this.showDetailNum && this.showProgress && !this.showDelay) && (
+          (  columnIndex === 25 || columnIndex === 26 ||
+              columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30 || columnIndex === 31
+              ||columnIndex === 32)
+      )){
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+       if ( (this.showDetailNum && !this.showProgress && this.showDelay) && (
            columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28  )) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
@@ -1557,7 +1614,11 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && this.showProgress)&& (
+      // 此条件，不需要合并其他的
+      /*if ( (this.showDetailNum && !this.showProgress && !this.showDelay)) {
+
+      }*/
+      if((!this.showDetailNum && this.showProgress && this.showDelay)&& (
           columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18
           ||columnIndex === 19 ||columnIndex === 20  || columnIndex === 21 || columnIndex === 22)){
         const _row = this.spanArr[rowIndex];
@@ -1567,7 +1628,17 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && !this.showProgress)&& (
+      if((!this.showDetailNum && this.showProgress && !this.showDelay)&& (
+          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18
+          )){
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+      if((!this.showDetailNum && !this.showProgress && this.showDelay)&& (
           columnIndex === 11 ||columnIndex === 12 || columnIndex === 13 || columnIndex === 14 )){
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
@@ -1576,6 +1647,11 @@ export default {
           colspan: _col
         }
       }
+
+      // 此条件，不需要合并其他的
+      /*if((!this.showDetailNum && !this.showProgress && !this.showDelay)){
+
+      }*/
 
     },
 
@@ -1746,6 +1822,11 @@ export default {
         this.queryProgress();
       }else if(item ==='batchZCPick'){
         this.batchZCPick();
+      }else if(item ==='batchPrintCaiDuan'){
+        this.batchPrint()
+      }
+      else if(item ==='batchPrintZhenChe'){
+        this.batchPrintZC()
       }
     },
     importExcel() {
@@ -1828,11 +1909,41 @@ export default {
     printDemo() {
       this.$refs.easyPrint.print()
     },
+    printZhenChe() {
+      this.$refs.zhenChePrint.print()
+    },
     // 关闭打印弹窗弹窗处理动作
     printClose(done) {
       console.log("打印弹窗关闭...")
       this.$refs.easyPrint.tableShow = false;
       done();
+    },
+    printZhenCheClose(done) {
+      console.log("打印弹窗关闭...")
+      this.$refs.zhenChePrint.tableShow = false;
+      done();
+    },
+    batchPrintZC(){
+      let ids = this.multipleSelection;
+      // 查询裁断计划数据
+      request.post('/produce/batch/queryZhenChePrintByIds' , ids).then(res => {
+        let result = res.data.data
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.printZhenCheDataList = result
+        })
+
+      })
+
+      console.log("打印时的zhenChePrint：", this.$refs.zhenChePrint)
+      if (this.$refs.zhenChePrint) {
+        console.log("zhenChePrint设置前打印内容", this.$refs.zhenChePrint.tableData)
+
+        this.$refs.zhenChePrint.tableData = this.printZhenCheDataList
+        console.log("zhenChePrint设置后打印内容", this.$refs.zhenChePrint.tableData)
+      }
+      this.dialogVisiblePrintZhenChe = true
     },
     batchPrint(){
       let ids = this.multipleSelection;
@@ -1855,6 +1966,27 @@ export default {
         console.log("设置后打印内容", this.$refs.easyPrint.tableData)
       }
       this.dialogVisiblePrint = true
+    },
+    preViewPrintZC(id) {
+      // 查询针车计划数据
+      request.get('/produce/batch/queryZhenChePrintById?id=' + id).then(res => {
+        let result = res.data.data
+        // 弹出框我们先让他初始化结束再赋值 ，不然会无法重置
+        this.$nextTick(() => {
+          // 赋值到编辑表单
+          this.printZhenCheDataList = result
+        })
+
+      })
+
+      console.log("打印时的zhenChePrint：", this.$refs.zhenChePrint)
+      if (this.$refs.zhenChePrint) {
+        console.log("zhenChePrint设置前打印内容", this.$refs.zhenChePrint.tableData)
+
+        this.$refs.zhenChePrint.tableData = this.printZhenCheDataList
+        console.log("zhenChePrint设置后打印内容", this.$refs.zhenChePrint.tableData)
+      }
+      this.dialogVisiblePrintZhenChe = true
     },
     preViewPrint(id) {
       // 查询裁断计划数据

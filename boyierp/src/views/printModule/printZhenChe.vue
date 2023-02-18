@@ -4,7 +4,7 @@
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
       <div  class='tab_company_out'>
-        <h3 style="font-size: 20px;margin-bottom: 0px">裁  断  计  划  领  料  单</h3>
+        <h3 style="font-size: 20px;margin-bottom: 0px">针  车  计  划  领  料  单</h3>
 
         <table cellpadding='0' cellspacing='0'  style="padding: 0 0">
           <tr>
@@ -66,21 +66,21 @@
           </tr>
 
           <tr>
-            <td colspan="4" style="text-align: center;font-size: 18px">皮料名称</td>
+            <td colspan="6" style="text-align: center;font-size: 18px">物料名称</td>
             <td colspan="2" style="text-align: center;font-size: 18px">标准用量</td>
+            <td colspan="2" style="text-align: center;font-size: 18px">单位</td>
             <td colspan="3" style="text-align: center;font-size: 18px">应发用量</td>
             <td colspan="3" style="text-align: center;font-size: 18px">实发用量</td>
-            <td colspan="4" style="text-align: center;font-size: 15px">备注</td>
 
           </tr>
 
           <tr v-for="(row,index) in tableData.rowList[page-1].subList" :key="index">
-            <td colspan="4" style="text-align: center;font-size: 16px;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length < 25">{{row.materialId}}:{{row.materialName}}</td>
-            <td colspan="4" style="text-align: center;font-size: 13px ;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length >= 25">{{row.materialId}}:{{row.materialName}}</td>
+            <td colspan="6" style="text-align: center;font-size: 16px;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length < 25">{{row.materialId}}:{{row.materialName}}</td>
+            <td colspan="6" style="text-align: center;font-size: 13px ;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length >= 25">{{row.materialId}}:{{row.materialName}}</td>
             <td colspan="2" style="text-align: center;font-size: 16px">{{row.dosage}}</td>
+            <td colspan="2" style="text-align: center;font-size: 16px">{{row.materialUnit}}</td>
             <td colspan="3" style="text-align: center;font-size: 18px">{{row.needNum}}</td>
             <td colspan="3" style="text-align: center;font-size: 16px"></td>
-            <td colspan="4"  style="text-align: center;font-size: 16px" v-if="index===0" rowspan='3'></td>
 
           </tr>
 
@@ -105,7 +105,7 @@
 
 <script>
 export default {
-  name: "printCaiduan",
+  name: "printZhenChe",
   // 制作打印模版组件时，props区域尽量保留。
   props: {
     // 每页多少行
