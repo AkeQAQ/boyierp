@@ -159,7 +159,7 @@
           element-loading-text = "加载中，请稍后..."
           border
           fit
-          height="600px"
+          height="700px"
           :span-method="objectSpanMethod"
           :summary-method="getSummariesMain"
           show-summary
