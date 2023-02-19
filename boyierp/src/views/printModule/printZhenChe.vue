@@ -8,79 +8,33 @@
 
         <table cellpadding='0' cellspacing='0'  style="padding: 0 0">
           <tr>
-            <td width='25%' style="text-align: center;font-size: 15px" >本厂货号:</td>
-            <td width='15%' style="text-align: center;font-size: 18px;font-weight: bold" >{{tableData.rowList[page-1].productNum}}</td>
-            <td width='10%' style="text-align: center;font-size: 15px">日期</td>
-            <td width='20%' style="text-align: center;font-size: 18px"></td>
-            <td width='10%' style="text-align: center;font-size: 15px">单号</td>
-            <td width='20%' style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].batchId}}</td>
-          </tr>
-          <tr>
-            <td colspan="1" style="text-align: center;font-size: 20px;font-weight: bold" >{{ tableData.rowList[page -1].productBrand }}</td>
-            <td colspan="1" style="text-align: center;font-size: 15px" >{{tableData.rowList[page-1].productColor}}</td>
-            <td colspan="4" style="text-align: center;font-size: 18px">配 码 明 细</td>
+            <td width='25%' style="text-align: center;font-size: 20px;font-weight: bold" >{{ tableData.rowList[page -1].productBrand }}</td>
+            <td width='25%' style="text-align: center;font-size: 18px;font-weight: bold" >{{tableData.rowList[page-1].productNum}}</td>
+            <td width='12%' style="text-align: center;font-size: 18px;font-weight: bold">{{tableData.rowList[page-1].productColor}}</td>
+            <td width='25%' style="text-align: center;font-size: 18px;font-weight: bold">单号:{{tableData.rowList[page-1].batchId}}</td>
+            <td width='13%' style="text-align: center;font-size: 18px;font-weight: bold">数量:{{tableData.rowList[page-1].totalNum}}</td>
+
           </tr>
 
         </table>
         <table cellpadding='0' cellspacing='0' style="padding: 0 0" >
-          <tr >
-            <td  width="25%" style="text-align: center;font-size: 15px;">客户货号:</td>
-            <td width="5%" style="text-align: center;font-size: 15px">数量</td>
-            <td width="5%" style="text-align: center;font-size: 15px">34</td>
-            <td width="5%" style="text-align: center;font-size: 15px">35</td>
-            <td width="5%" style="text-align: center;font-size: 15px">36</td>
-            <td width="5%" style="text-align: center;font-size: 15px">37</td>
-            <td width="5%" style="text-align: center;font-size: 15px">38</td>
-            <td width="5%" style="text-align: center;font-size: 15px">39</td>
-            <td width="5%" style="text-align: center;font-size: 15px">40</td>
-            <td width="5%" style="text-align: center;font-size: 15px">41</td>
-            <td width="5%" style="text-align: center;font-size: 15px">42</td>
-            <td width="5%" style="text-align: center;font-size: 15px">43</td>
-            <td width="5%" style="text-align: center;font-size: 15px">44</td>
-            <td width="5%" style="text-align: center;font-size: 15px">45</td>
-            <td width="5%" style="text-align: center;font-size: 15px">46</td>
-            <td width="5%" style="text-align: center;font-size: 15px">47</td>
-
-          </tr>
-          <tr>
-            <td  width="25%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].customerNum}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].totalNum}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size34==0?"":tableData.rowList[page-1].size34}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size35==0?"":tableData.rowList[page-1].size35}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size36==0?"":tableData.rowList[page-1].size36}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size37==0?"":tableData.rowList[page-1].size37}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size38==0?"":tableData.rowList[page-1].size38}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size39==0?"":tableData.rowList[page-1].size39}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size40==0?"":tableData.rowList[page-1].size40}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size41==0?"":tableData.rowList[page-1].size41}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size42==0?"":tableData.rowList[page-1].size42}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size43==0?"":tableData.rowList[page-1].size43}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size44==0?"":tableData.rowList[page-1].size44}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size45==0?"":tableData.rowList[page-1].size45}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size46==0?"":tableData.rowList[page-1].size46}}</td>
-            <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size47==0?"":tableData.rowList[page-1].size47}}</td>
-
-          </tr>
-          <tr>
-            <td colspan="16"></td>
-          </tr>
 
           <tr>
-            <td colspan="6" style="text-align: center;font-size: 18px">物料名称</td>
-            <td colspan="2" style="text-align: center;font-size: 18px">标准用量</td>
-            <td colspan="2" style="text-align: center;font-size: 18px">单位</td>
-            <td colspan="3" style="text-align: center;font-size: 18px">应发用量</td>
-            <td colspan="3" style="text-align: center;font-size: 18px">实发用量</td>
+            <td width='50%' style="text-align: center;font-size: 18px">物料名称</td>
+            <td width="10.5%" style="text-align: center;font-size: 18px">标准用量</td>
+            <td width="13%" style="text-align: center;font-size: 18px">单位</td>
+            <td width="13.75%" style="text-align: center;font-size: 18px">应发用量</td>
+            <td width="12%" style="text-align: center;font-size: 18px">实发用量</td>
 
           </tr>
 
           <tr v-for="(row,index) in tableData.rowList[page-1].subList" :key="index">
-            <td colspan="6" style="text-align: center;font-size: 16px;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length < 25">{{row.materialId}}:{{row.materialName}}</td>
-            <td colspan="6" style="text-align: center;font-size: 13px ;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length >= 25">{{row.materialId}}:{{row.materialName}}</td>
-            <td colspan="2" style="text-align: center;font-size: 16px">{{row.dosage}}</td>
-            <td colspan="2" style="text-align: center;font-size: 16px">{{row.materialUnit}}</td>
-            <td colspan="3" style="text-align: center;font-size: 18px">{{row.needNum}}</td>
-            <td colspan="3" style="text-align: center;font-size: 16px"></td>
+            <td width='50%' style="text-align: center;font-size: 16px;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length < 25">{{row.materialId}}:{{row.materialName}}</td>
+            <td width="50%" style="text-align: center;font-size: 13px ;font-weight: bold" v-if="(row.materialId+':'+row.materialName).length >= 25">{{row.materialId}}:{{row.materialName}}</td>
+            <td width="10.5%" style="text-align: center;font-size: 16px">{{row.dosage}}</td>
+            <td width="13%" style="text-align: center;font-size: 16px">{{row.materialUnit}}</td>
+            <td width="13.75%" style="text-align: center;font-size: 18px">{{row.needNum}}</td>
+            <td width="12%" style="text-align: center;font-size: 16px"></td>
 
           </tr>
 
