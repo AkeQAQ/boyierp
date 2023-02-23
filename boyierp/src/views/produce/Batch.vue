@@ -284,6 +284,9 @@
             label="34"
             width="37px"
             >
+          <template slot-scope="scope">
+            {{scope.row.size34==="0"? "":scope.row.size34}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -292,6 +295,9 @@
             label="35"
             width="37px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size35==="0"? "":scope.row.size35}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -300,6 +306,9 @@
             label="36"
             width="37px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size36==="0"? "":scope.row.size36}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -308,6 +317,9 @@
             label="37码"
             width="50px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size37==="0"? "":scope.row.size37}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -316,6 +328,9 @@
             label="38码"
             width="50px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size38==="0"? "":scope.row.size38}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -324,6 +339,9 @@
             label="39码"
             width="50px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size39==="0"? "":scope.row.size39}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -332,6 +350,9 @@
             label="40码"
             width="50px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size40==="0"? "":scope.row.size40}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -340,6 +361,9 @@
             label="41码"
             width="50px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size41==="0"? "":scope.row.size41}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -348,6 +372,9 @@
             label="42码"
             width="50px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size42==="0"? "":scope.row.size42}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -356,6 +383,9 @@
             label="43码"
             width="50px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size43==="0"? "":scope.row.size43}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -364,6 +394,9 @@
             label="44码"
             width="50px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size44==="0"? "":scope.row.size44}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -372,6 +405,9 @@
             label="45码"
             width="50px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size45==="0"? "":scope.row.size45}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -380,6 +416,9 @@
             label="46"
             width="37px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size46==="0"? "":scope.row.size46}}
+          </template>
         </el-table-column>
         <el-table-column
             v-if="showDetailNum"
@@ -388,6 +427,9 @@
             label="47"
             width="37px"
         >
+          <template slot-scope="scope">
+            {{scope.row.size47==="0"? "":scope.row.size47}}
+          </template>
         </el-table-column>
 
         <el-table-column label="进度表信息" v-if="showProgress">

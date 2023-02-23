@@ -2,11 +2,14 @@
   <div>
     <test-echart></test-echart>
 
+<!--    <material-dead-line-view></material-dead-line-view>-->
+
   </div>
 </template>
 
 <script>
 import testEchart from "@/views/common/testEchart";
+import materialDeadLineView from "@/views/dataAnalysis/MaterialDeadLineView"
 
 export default {
   name: "Index",
@@ -14,7 +17,8 @@ export default {
     console.log("这是首页")
   },
   components:{
-    testEchart
+    testEchart,
+    materialDeadLineView
   }
 }
 </script>
