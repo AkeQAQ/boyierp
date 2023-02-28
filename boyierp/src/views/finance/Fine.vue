@@ -126,15 +126,15 @@
         </el-form-item>
 
 
-        <el-form-item v-if="hasAuth('finance:roundDown:save')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('finance:roundDown:save')"
+        <el-form-item v-if="hasAuth('finance:fine:save')">
+          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('finance:fine:save')"
                      @click="add()"
 
           >新增
           </el-button>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('finance:roundDown:valid')">
+        <el-form-item v-if="hasAuth('finance:fine:valid')">
           <el-popconfirm @confirm="statusPassBatch()" title="确定审核吗？">
             <el-button size="mini" icon="el-icon-success" :disabled="this.multipleSelection.length === 0 " type="danger"
                        slot="reference">批量审核
@@ -245,12 +245,12 @@
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('finance:roundDown:update') || (hasAuth('finance:roundDown:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
+                       v-if="hasAuth('finance:fine:update') || (hasAuth('finance:fine:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
             </el-button>
 
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('finance:roundDown:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
+                       v-if="hasAuth('finance:fine:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
 
               <template>
                 <el-popconfirm @confirm="statusPass(scope.row.id)"
@@ -262,7 +262,7 @@
             </el-button>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('finance:roundDown:valid')  && scope.row.status ===0  ">
+                       v-if="hasAuth('finance:fine:valid')  && scope.row.status ===0  ">
               <template>
                 <el-popconfirm @confirm="statusReturn(scope.row.id)"
                                title="确定反审核吗？"
@@ -273,10 +273,10 @@
             </el-button>
 
             <el-divider direction="vertical"
-                        v-if="hasAuth('finance:roundDown:del')  && scope.row.status ===1  "></el-divider>
+                        v-if="hasAuth('finance:fine:del')  && scope.row.status ===1  "></el-divider>
 
             <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('finance:roundDown:del') && scope.row.status ===1   ">
+                       v-if="hasAuth('finance:fine:del') && scope.row.status ===1   ">
               <template>
                 <el-popconfirm @confirm="del(scope.row.id)"
                                title="确定删除吗？"
@@ -402,19 +402,19 @@
             </el-dialog>
           </el-form-item>
 
-          <el-form-item v-if="hasAuth('finance:roundDown:save')">
+          <el-form-item v-if="hasAuth('finance:fine:save')">
             <el-dropdown   @command="action">
               <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="save" v-show="hasAuth('finance:roundDown:save') && (this.editForm.status===1 )" >
+                <el-dropdown-item command="save" v-show="hasAuth('finance:fine:save') && (this.editForm.status===1 )" >
                   提交单据</el-dropdown-item>
-                <el-dropdown-item command="subReturn" v-show="hasAuth('finance:roundDown:save') && (this.editForm.status===2 || this.editForm.status===3)">
+                <el-dropdown-item command="subReturn" v-show="hasAuth('finance:fine:save') && (this.editForm.status===2 || this.editForm.status===3)">
                   撤销</el-dropdown-item>
-                <el-dropdown-item command="addNew" v-show="hasAuth('finance:roundDown:save') ">
+                <el-dropdown-item command="addNew" v-show="hasAuth('finance:fine:save') ">
                   新增</el-dropdown-item>
-                <el-dropdown-item command="copy" v-show="hasAuth('finance:roundDown:save') ">
+                <el-dropdown-item command="copy" v-show="hasAuth('finance:fine:save') ">
                   复制</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
