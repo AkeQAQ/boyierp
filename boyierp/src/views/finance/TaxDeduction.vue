@@ -477,14 +477,14 @@
 
           <el-form-item label="付款状态" prop="payStatus" label-width="110px">
             <el-radio-group v-model="editForm.payStatus" >
-              <el-radio  :disabled="editForm.status!==1 " :label="0">已付</el-radio>
-              <el-radio  :disabled="editForm.status!==1 " :label="1">未付</el-radio>
+              <el-radio  :disabled="editForm.status!==0 " :label="0">已付</el-radio>
+              <el-radio  :disabled="editForm.status!==0 " :label="1">未付</el-radio>
             </el-radio-group>
 
           </el-form-item>
 
           <el-form-item label="付款时间" prop="payDate" label-width="110px">
-            <el-date-picker :disabled="this.editForm.status!==1 " style="width: 200px;"
+            <el-date-picker :disabled="this.editForm.status!==0 || this.editForm.payStatus!=0" style="width: 200px;"
                             value-format="yyyy-MM-dd"
                             v-model="editForm.payDate"
                             type="date"
@@ -539,7 +539,7 @@
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="save" v-show="hasAuth('finance:taxSupplement:save') && (this.editForm.status===1 )" >
+                <el-dropdown-item command="save" v-show="hasAuth('finance:taxSupplement:save') && (this.editForm.status===1 || this.editForm.status===0 )" >
                   提交单据</el-dropdown-item>
                 <el-dropdown-item command="subReturn" v-show="hasAuth('finance:taxSupplement:save') && (this.editForm.status===2 || this.editForm.status===3)">
                   撤销</el-dropdown-item>
@@ -634,7 +634,7 @@ export default {
         documentAmount:'',
         payStatus:1,
         taxCalAmount:'',
-        payDate: new Date().format("yyyy-MM-dd") ,
+        payDate: '' ,
 
       },
       dialogVisible: false,
@@ -645,6 +645,28 @@ export default {
     }
   },
   methods: {
+    calendarChange(dates){
+      if(dates===null){
+        return;
+      }
+      request.get('/finance/supplierTaxDeduction/updatePayDate?id=' + this.editForm.id+"&&payDate="+dates).then(res => {
+        this.$message.success(res.data.data)
+      }).catch(error=>{
+        this.$message.error("修改失败")
+        console.log("error:",error)
+      })
+    },
+    statusChange(currentNum){
+      if(this.editForm.payDate!='' || this.editForm.payDate!=null){
+        return;
+      }
+      request.get('/finance/supplierTaxDeduction/updatePayStatus?id=' + this.editForm.id+"&&payStatus="+currentNum).then(res => {
+        this.$message.success(res.data.data)
+      }).catch(error=>{
+        this.$message.error("修改失败")
+        console.log("error:",error)
+      })
+    },
     changePoint(seq){
       if(this.editForm.taxCalAmount !== ''){
         this.editForm.deductionAmount = (this.editForm.taxPoint *  this.editForm.taxCalAmount).toFixed(2)
@@ -890,7 +912,7 @@ export default {
         documentAmount:'',
         payStatus:1,
         taxCalAmount:'',
-        payDate: new Date().format("yyyy-MM-dd") ,
+        payDate: '' ,
       }
       this.dialogOneImageUrl=''
       this.fileList=[]
@@ -935,6 +957,22 @@ export default {
             });
             return
           }
+
+          if(this.editForm.payStatus===0 && (this.editForm.payDate===''|| this.editForm.payDate===null) ){
+            this.$message({
+              message: '已付必须填写付款日期',
+              type: 'error'
+            });
+            return
+          }
+          if(this.editForm.payDate!==''&&this.editForm.payDate!==null && this.editForm.payStatus===1){
+            this.$message({
+              message: '未付不能填写付款日期',
+              type: 'error'
+            });
+            return
+          }
+
 
           const load = this.$loading({
             lock: true,
