@@ -93,7 +93,7 @@
                                @select="searchManySelect($event,index)"
                                @focus="loadCustomerAll()"
                                placeholder="请输入搜索内容"
-                               @change="moveMouse"
+                               @change="moveMouse($event,editForm)"
 
               >
               </el-autocomplete>
@@ -326,9 +326,16 @@
                        v-if="hasAuth('produce:productConstituent:queryRealDosage') && scope.row.status ===0  ">查看实际用量
             </el-button>
 
+            <el-button type="text" size="small" @click="updateNumAndBrand(scope.row.id)"
+                       v-if="hasAuth('produce:productConstituent:valid')  && scope.row.status ===0  ">修改货号品牌
+            </el-button>
 
           </template>
+
+
         </el-table-column>
+
+
 
       </el-table>
 
@@ -495,9 +502,9 @@
                              :fetch-suggestions="querySearchWithName"
                              :trigger-on-focus="false"
                              placeholder="请输入搜索内容"
-                             @select="tableSelectSearchCustomer"
+                             @select="tableSelectSearchCustomer($event,editForm)"
                              @focus="loadCustomerAll()"
-                             @change="moveMouse"
+                             @change="moveMouse($event,editForm)"
 
             >
             </el-autocomplete>
@@ -718,6 +725,61 @@
 
       </el-dialog>
 
+      <!-- 货号组成结构弹窗 -->
+      <el-dialog
+          title="修改货号组成结构信息"
+          :visible.sync="dialogNumBrandVisible"
+          :before-close="handleCloseNumBrand"
+          fullscreen
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 size="mini" :inline="true"
+                 label-width="100px"
+                 :model="editNumBrandForm"  ref="editNumBrandForm"
+                 class="demo-editForm">
+
+          <el-form-item label="编号" prop="id" v-show="false" style="margin-bottom: 0">
+            <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editNumBrandForm.id">
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="公司货号" prop="productNum" style="margin-bottom: 10px" label-width="70px">
+            <!-- 公司货号 -->
+            <div class="el-input el-input--mini"  style="margin: 0 0">
+              <input  class="el-input__inner" style="width: 120px"
+                      v-model.lazy="editNumBrandForm.productNum">
+              </input>
+            </div>
+          </el-form-item>
+
+          <el-form-item label="品牌" prop="productBrand" style="margin-bottom: 10px" label-width="40px">
+
+            <!-- 品牌 -->
+            <el-autocomplete size="mini"  clearable
+                             style="width: 120px"
+                             popper-class="my-autocomplete"
+                             class="inline-input"
+                             v-model="editNumBrandForm.productBrand"
+                             :fetch-suggestions="querySearchWithName"
+                             :trigger-on-focus="false"
+                             placeholder="请输入搜索内容"
+                             @select="tableSelectSearchCustomer($event,editNumBrandForm)"
+                             @focus="loadCustomerAll()"
+                             @change="moveMouse($event,editNumBrandForm)"
+
+            >
+            </el-autocomplete>
+          </el-form-item>
+
+          <el-form-item v-if="hasAuth('produce:productConstituent:valid')">
+            <el-button   size="mini" type="success" @click="updateNumAndBrandSubmit">保存
+            </el-button>
+          </el-form-item>
+
+        </el-form>
+
+      </el-dialog>
+
       <el-dialog :visible.sync="dialogPicVisible" top="0vh" >
         <img width="100%" :src="dialogImageUrl" alt="">
       </el-dialog>
@@ -803,6 +865,12 @@ export default {
       ,
       // 表单字段
       addOrUpdate: 'save',
+      editNumBrandForm:{
+        id:'',
+        productNum:'',
+        productBrand:'',
+        productColor:''
+      },
       editForm: {
         status: 1, // 编辑表单初始默认值
         id: '',
@@ -825,6 +893,7 @@ export default {
       },
       dialogVisible: false,
       dialogRealDosageVisible: false,
+      dialogNumBrandVisible: false,
       tableData: [],
       tableRealDosageData: [],
       spanArr: [],
@@ -1208,15 +1277,16 @@ export default {
         return (restaurant.obj.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) || (restaurant.id.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
       };
     },
-    moveMouse(text) {
+    moveMouse(text,editForm) {
+      console.log("moveMouse:",editForm,text)
       try {
         // foreach 只能抛出异常结束
         this.restaurantsCustomer.forEach(item => {
           if (text === item.name) {
-            this.editForm.productBrand = item.name
+            editForm.productBrand = item.name
             throw new Error();
           } else {
-            this.editForm.productBrand = ''
+            editForm.productBrand = ''
           }
         })
       } catch (err) {
@@ -1250,7 +1320,9 @@ export default {
       }
     },
     tableSelectSearchCustomer(selectItem, param) {
-      param.productBrand = selectItem.obj.name
+      console.log("每个表格项选中：", selectItem, param);
+
+      param.productBrand = selectItem.name
     },
     tableSelectSearch(selectItem, param) {
       console.log("每个表格项选中：", selectItem, param);
@@ -1422,6 +1494,32 @@ export default {
         }
       });
     },
+    updateNumAndBrandSubmit() {
+
+          if(this.editNumBrandForm.productColor==='' || this.editNumBrandForm.productNum==='' || this.editNumBrandForm.productBrand ===''){
+            this.$message({
+              message: '产品货号，颜色，品牌不能为空',
+              type: 'error'
+            });
+            return
+          }
+          const load = this.$loading({
+            lock: true,
+            text: '处理中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+
+          request.post('/produce/productConstituent/updateNumBrandSubmit', this.editNumBrandForm).then(res => {
+            load.close()
+            this.$message({
+              message:'修改成功!',
+              type: 'success'
+            });
+          }).catch(()=>{
+            load.close()
+          })
+    },
 
     search(){
       this.currentPage = 1
@@ -1447,6 +1545,15 @@ export default {
       }).catch(error=>{
         this.tableLoad = false;
         console.log("error:",error)
+      })
+    },
+    updateNumAndBrand(id) {
+      request.get('/produce/productConstituent/updateNumAndBrand?id=' + id).then(res => {
+        this.dialogNumBrandVisible = true
+        this.$nextTick(() => {
+          this.editNumBrandForm = res.data.data
+
+        });
       })
     },
     // 编辑页面
@@ -1549,6 +1656,11 @@ export default {
       })
     },
     // 关闭弹窗处理动作
+    handleCloseNumBrand(done) {
+      this.dialogNumBrandVisible=false;
+      this.$refs['editNumBrandForm'].resetFields();
+      this.getList()
+    },
     handleClose(done) {
       if(this.editForm.status === 1){
         this.$confirm('确认关闭？')
