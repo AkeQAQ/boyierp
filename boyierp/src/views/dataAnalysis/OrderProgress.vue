@@ -34,6 +34,13 @@
           >
           </el-autocomplete>
 
+
+          <div v-if="selectedName === 'materialId'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
+
           <!-- 公司货号 -->
           <div v-if="selectedName === 'productNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
             <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
@@ -80,7 +87,12 @@
 
               >
               </el-autocomplete>
-
+              <!-- 公司货号 -->
+              <div v-if="item.selectField==='materialId'" :class=" 'el-input el-input--mini'" style="width: 200px">
+                <input   class="el-input__inner"  placeholder="请输入搜索内容"
+                         v-model.lazy="item.searchStr">
+                </input>
+              </div>
               <!-- 公司货号 -->
               <div v-if="item.selectField==='productNum'" :class=" 'el-input el-input--mini'" style="width: 200px">
                 <input   class="el-input__inner"  placeholder="请输入搜索内容"
@@ -204,6 +216,8 @@
 
 
       </el-form>
+
+
 
       <el-table
           ref="multipleTable"
@@ -365,6 +379,7 @@
         </el-table-column>
 
       </el-table>
+
 
       <el-dialog
           title="导入订单计算"
@@ -575,7 +590,56 @@
           layout="total, sizes, prev, pager, next, jumper"
           :total="this.total">
       </el-pagination>
+      <el-divider content-position="left">当前页物料分组统计表</el-divider>
 
+      <el-table
+          ref="materialGroupTable"
+          :data="materialGroupData"
+          border
+          :row-class-name="hasNoAllInRowsClassName"
+          fit
+          height="520px"
+          size="mini"
+          tooltip-effect="dark"
+          style="width: 100%;color:black"
+          :cell-style="{padding:'0',borderColor:'black'}"
+          :header-cell-style="{borderColor:'black'}">
+
+        <el-table-column
+            label="物料编码"
+            prop="materialId"
+            width="200px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+
+        <el-table-column
+            label="物料名称"
+            prop="materialName"
+            width="300px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+        <el-table-column
+            prop="needTotalNum"
+            label="应报数目"
+            width="80px"
+            show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column
+            prop="preparedTotalNum"
+            label="已报备数目"
+            width="90px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="inTotalNum"
+            label="入库数目"
+            width="80px"
+            show-overflow-tooltip>
+        </el-table-column>
+      </el-table>
     </el-main>
 
   </el-container>
@@ -622,7 +686,7 @@ export default {
       selectedName: 'materialName',// 搜索默认值
       options: [
         {value: 'materialName', label: '物料名称'},
-
+        {value: 'materialId', label: '物料编码'},
         {value: 'productNum', label: '公司货号'},
         {value: 'productBrand', label: '品牌'}
       ],
@@ -637,6 +701,7 @@ export default {
       , total: 0 // 总共多少数据
       ,
       tableData: [],
+      materialGroupData: [],
       spanArr: [],
       pos: '',
 
@@ -669,6 +734,15 @@ export default {
       row.seqNum = rowIndex + 1;
 
       if(this.tableData[row.seqNum-1].preparedNum > 0 && this.tableData[row.seqNum-1].isHasProduceBatch && this.tableData[row.seqNum-1].inPercent < 100){
+        return 'noAllInProduced-row';
+      }
+      return '';
+    },
+
+    hasNoAllInRowsClassName({row, rowIndex}) {
+      row.seqNum = rowIndex + 1;
+
+      if(parseFloat(this.materialGroupData[row.seqNum-1].preparedTotalNum) > parseFloat(this.materialGroupData[row.seqNum-1].inTotalNum) ){
         return 'noAllInProduced-row';
       }
       return '';
@@ -1020,6 +1094,7 @@ export default {
     },
     // 查询价目表单列表数据
     getList() {
+
       this.tableLoad = true;
       let checkStr = this.checkedBox.join(",");
       let check2Str = this.checkedBox2.join(",");
@@ -1037,13 +1112,18 @@ export default {
       request.post(url,
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
-          this.tableData = res.data.data.records
+          this.tableData = res.data.data.pageData.records
         this.getSpanArr(this.tableData)
-        this.total = res.data.data.total
+        this.total = res.data.data.pageData.total
+
+        this.materialGroupData = res.data.data.materialGroupMap
+
           this.tableLoad = false;
           this.$nextTick(() => {
           this.$refs['multipleTable'].doLayout();
-        })
+          this.$refs['materialGroupTable'].doLayout();
+
+          })
       }).catch(error=>{
         this.tableLoad = false;
         console.log("error:",error)
