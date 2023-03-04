@@ -891,202 +891,247 @@
 
       >
         <el-dialog
+
             width="70%"
             title="报单信息"
             :visible.sync="dialogShowMsgVisible"
             append-to-body>
 
           <el-divider > 按供应商排序列表（1. 物料仅有一个供应商时） </el-divider>
-          <el-table
-              ref="prepareShowMsgDatas1"
-              :data="prepareShowMsgDatas['oneLists']"
-              v-if="prepareShowMsgDatas['oneLists'].length>0"
-              border
-              stripe
-              size="mini"
-              :cell-style="{padding:'0'}"
-              height="300px"
-              tooltip-effect="dark"
-              style="width: 100%;color:black">
-            <el-table-column
-                label="内部物料ID"
-                prop="materialInnerId"
-                width="100px"
-                show-overflow-tooltip
-            >
-            </el-table-column>
-            <el-table-column
-                label="内部物料名称"
-                prop="materialInnerName"
-                width="200px"
-                show-overflow-tooltip
-            >
+          <el-row :gutter="0" style="padding-bottom: 0px;margin-bottom: -10px;text-align: center">
+            <el-col :span="11"><div class="grid-content bg-purple"></div>
+              <el-table
+                  ref="prepareShowMsgDatas1"
+                  :data="prepareShowMsgDatas['oneLists']"
+                  v-if="prepareShowMsgDatas['oneLists'].length>0"
+                  stripe
+                  size="mini"
 
-            </el-table-column>
+                  height="300px"
+                  max-height="300px"
+                  tooltip-effect="dark"
+                  style="width: 100%;color:black;">
+                <el-table-column
+                    label="内部物料名称"
+                    prop="materialInnerName"
+                    width="200px"
+                    show-overflow-tooltip
 
-            <el-table-column
-                label="供应商物料ID"
-                prop="materialOutId"
-                show-overflow-tooltip
-                width="100px"
+                >
 
-            >
-            </el-table-column>
-            <el-table-column
-                label="供应商物料名称"
-                prop="materialOutName"
-                show-overflow-tooltip
-                width="200px"
+                </el-table-column>
 
-            >
-            </el-table-column>
+                <el-table-column
+                    label="新增数量"
+                    prop="num"
+                    width="70px"
+                    show-overflow-tooltip
 
-            <el-table-column
-                label="新增数量"
-                prop="num"
-                width="100px"
+                >
+                </el-table-column>
+                <el-table-column
+                    label="单位"
+                    prop="unit"
+                    width="70px"
+                    show-overflow-tooltip
 
-            >
-            </el-table-column>
-            <el-table-column
-                label="单位"
-                prop="unit"
-                width="70px"
-
-            >
-            </el-table-column>
-
-            <el-table-column
-                label="货号品牌"
-                prop="productNumBrand"
-                width="200px"
-                show-overflow-tooltip
-
-            >
-            </el-table-column>
-
-            <el-table-column
-                label="供应商ID"
-                prop="supplierId"
-                width="100px"
-            >
-            </el-table-column>
-            <el-table-column
-                label="供应商名称"
-                prop="supplierName"
-                width="100px"
-
-            >
-
-            </el-table-column>
-            <el-table-column
-                label="价格"
-                prop="price"
-                width="70px"
-
-            >
-            </el-table-column>
+                >
+                </el-table-column>
 
 
+                <el-table-column
+                    label="货号品牌"
+                    prop="productNumBrand"
+                    width="200px"
+                    show-overflow-tooltip
 
-          </el-table>
+                >
+                </el-table-column>
 
+              </el-table>
+            </el-col>
+            <el-col :span="13"><div class="grid-content bg-purple">
+              <el-table
+                  ref="prepareShowMsgDatas11"
+                  :data="prepareShowMsgDatas['oneLists']"
+                  v-if="prepareShowMsgDatas['oneLists'].length>0"
+                  stripe
+                  size="mini"
+                  height="300px"
+                  max-height="300px"
+
+                  tooltip-effect="dark"
+                  style="width: 100%;color:black;">
+                <el-table-column
+                    label="内部物料ID"
+                    prop="materialInnerId"
+                    width="100px"
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商物料ID"
+                    prop="materialOutId"
+                    width="100px"
+
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商物料名称"
+                    prop="materialOutName"
+                    width="200px"
+
+                >
+                </el-table-column>
+
+                <el-table-column
+                    label="供应商ID"
+                    prop="supplierId"
+                    width="100px"
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商名称"
+                    prop="supplierName"
+                    width="100px"
+
+                >
+
+                </el-table-column>
+                <el-table-column
+                    label="价格"
+                    prop="price"
+                    width="70px"
+
+                >
+                </el-table-column>
+
+              </el-table>
+            </div>
+            </el-col>
+          </el-row>
 
           <el-divider > 无法分类列表(1.没有供应商信息（价目表和物料供应商表） 2. 一个物料多个供应商) </el-divider>
 
-          <el-table
-              ref="prepareShowMsgDatas2"
-              :data="prepareShowMsgDatas['zeroOrMoreLists']"
-              v-if="prepareShowMsgDatas['zeroOrMoreLists'].length>0"
-              border
-              stripe
-              size="mini"
-              :cell-style="{padding:'0'}"
-              height="300px"
-              tooltip-effect="dark"
-              style="width: 100%;color:black">
-            <el-table-column
-                label="内部物料ID"
-                prop="materialInnerId"
-                width="100px"
-                show-overflow-tooltip
-            >
-            </el-table-column>
-            <el-table-column
-                label="内部物料名称"
-                prop="materialInnerName"
-                width="200px"
-                show-overflow-tooltip
-            >
+          <el-row :gutter="0" style="padding-bottom: 0px;margin-bottom: -10px;text-align: center">
+            <el-col :span="11"><div class="grid-content bg-purple"></div>
+              <el-table
+                  ref="prepareShowMsgDatas2"
+                  :data="prepareShowMsgDatas['zeroOrMoreLists']"
+                  v-if="prepareShowMsgDatas['zeroOrMoreLists'].length>0"
+                  border
+                  stripe
+                  size="mini"
+                  height="300px"
+                  tooltip-effect="dark"
+                  style="width: 100%;color:black">
+                <el-table-column
+                    label="内部物料名称"
+                    prop="materialInnerName"
+                    width="200px"
+                    show-overflow-tooltip
 
-            </el-table-column>
+                >
 
-            <el-table-column
-                label="供应商物料ID"
-                prop="materialOutId"
-                show-overflow-tooltip
-                width="100px"
+                </el-table-column>
 
-            >
-            </el-table-column>
-            <el-table-column
-                label="供应商物料名称"
-                prop="materialOutName"
-                show-overflow-tooltip
-                width="200px"
+                <el-table-column
+                    label="新增数量"
+                    prop="num"
+                    width="70px"
+                    show-overflow-tooltip
 
-            >
-            </el-table-column>
+                >
+                </el-table-column>
+                <el-table-column
+                    label="单位"
+                    prop="unit"
+                    width="70px"
+                    show-overflow-tooltip
 
-            <el-table-column
-                label="新增数量"
-                prop="num"
-                width="100px"
-
-            >
-            </el-table-column>
-            <el-table-column
-                label="单位"
-                prop="unit"
-                width="70px"
-
-            >
-            </el-table-column>
-
-            <el-table-column
-                label="货号品牌"
-                prop="productNumBrand"
-                width="200px"
-                show-overflow-tooltip
-
-            >
-            </el-table-column>
-
-            <el-table-column
-                label="供应商ID"
-                prop="supplierId"
-                width="100px"
-            >
-            </el-table-column>
-            <el-table-column
-                label="供应商名称"
-                prop="supplierName"
-                width="100px"
-
-            >
-
-            </el-table-column>
-            <el-table-column
-                label="价格"
-                prop="price"
-                width="70px"
-
-            >
-            </el-table-column>
+                >
+                </el-table-column>
 
 
+                <el-table-column
+                    label="货号品牌"
+                    prop="productNumBrand"
+                    width="200px"
+                    show-overflow-tooltip
 
-          </el-table>
+                >
+                </el-table-column>
+
+              </el-table>
+            </el-col>
+            <el-col :span="13"><div class="grid-content bg-purple">
+              <el-table
+                  ref="prepareShowMsgDatas22"
+                  :data="prepareShowMsgDatas['zeroOrMoreLists']"
+                  v-if="prepareShowMsgDatas['zeroOrMoreLists'].length>0"
+                  border
+                  stripe
+                  size="mini"
+                  height="300px"
+                  tooltip-effect="dark"
+                  style="width: 100%;color:black">
+                <el-table-column
+                    label="内部物料ID"
+                    prop="materialInnerId"
+                    width="100px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商物料ID"
+                    prop="materialOutId"
+                    width="100px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商物料名称"
+                    prop="materialOutName"
+                    width="200px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+
+                <el-table-column
+                    label="供应商ID"
+                    prop="supplierId"
+                    width="100px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商名称"
+                    prop="supplierName"
+                    width="100px"
+                    show-overflow-tooltip
+
+                >
+
+                </el-table-column>
+                <el-table-column
+                    label="价格"
+                    prop="price"
+                    width="70px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+
+
+
+              </el-table>
+            </div>
+            </el-col>
+          </el-row>
+
 
 
 
@@ -1345,197 +1390,234 @@
             append-to-body>
 
           <el-divider > 按供应商排序列表（1. 物料仅有一个供应商时） </el-divider>
-          <el-table
-              ref="prepareShowMsgDatas3"
-              :data="prepareShowMsgDatas['oneLists']"
-              v-if="prepareShowMsgDatas['oneLists'].length>0"
-              border
-              stripe
-              size="mini"
-              :cell-style="{padding:'0'}"
-              height="300px"
-              tooltip-effect="dark"
-              style="width: 100%;color:black">
-            <el-table-column
-                label="内部物料ID"
-                prop="materialInnerId"
-                width="100px"
-                show-overflow-tooltip
-            >
-            </el-table-column>
-            <el-table-column
-                label="内部物料名称"
-                prop="materialInnerName"
-                width="200px"
-                show-overflow-tooltip
-            >
+          <el-row :gutter="0" style="padding-bottom: 0px;margin-bottom: -10px;text-align: center">
+            <el-col :span="11"><div class="grid-content bg-purple"></div>
+              <el-table
+                  ref="prepareShowMsgDatas3"
+                  :data="prepareShowMsgDatas['oneLists']"
+                  v-if="prepareShowMsgDatas['oneLists'].length>0"
+                  stripe
+                  size="mini"
 
-            </el-table-column>
+                  height="300px"
+                  max-height="300px"
+                  tooltip-effect="dark"
+                  style="width: 100%;color:black;">
+                <el-table-column
+                    label="内部物料名称"
+                    prop="materialInnerName"
+                    width="200px"
+                    show-overflow-tooltip
 
-            <el-table-column
-                label="供应商物料ID"
-                prop="materialOutId"
-                show-overflow-tooltip
-                width="100px"
+                >
 
-            >
-            </el-table-column>
-            <el-table-column
-                label="供应商物料名称"
-                prop="materialOutName"
-                show-overflow-tooltip
-                width="200px"
+                </el-table-column>
 
-            >
-            </el-table-column>
+                <el-table-column
+                    label="新增数量"
+                    prop="num"
+                    width="70px"
+                    show-overflow-tooltip
 
-            <el-table-column
-                label="新增数量"
-                prop="num"
-                width="100px"
+                >
+                </el-table-column>
+                <el-table-column
+                    label="单位"
+                    prop="unit"
+                    width="70px"
+                    show-overflow-tooltip
 
-            >
-            </el-table-column>
-            <el-table-column
-                label="单位"
-                prop="unit"
-                width="70px"
-
-            >
-            </el-table-column>
-
-            <el-table-column
-                label="货号品牌"
-                prop="productNumBrand"
-                width="200px"
-                show-overflow-tooltip
-
-            >
-            </el-table-column>
-
-            <el-table-column
-                label="供应商ID"
-                prop="supplierId"
-                width="100px"
-            >
-            </el-table-column>
-            <el-table-column
-                label="供应商名称"
-                prop="supplierName"
-                width="100px"
-
-            >
-
-            </el-table-column>
-            <el-table-column
-                label="价格"
-                prop="price"
-                width="70px"
-
-            >
-            </el-table-column>
+                >
+                </el-table-column>
 
 
+                <el-table-column
+                    label="货号品牌"
+                    prop="productNumBrand"
+                    width="200px"
+                    show-overflow-tooltip
 
-          </el-table>
+                >
+                </el-table-column>
 
+              </el-table>
+            </el-col>
+            <el-col :span="13"><div class="grid-content bg-purple">
+              <el-table
+                  ref="33"
+                  :data="prepareShowMsgDatas['oneLists']"
+                  v-if="prepareShowMsgDatas['oneLists'].length>0"
+                  stripe
+                  size="mini"
+                  height="300px"
+                  max-height="300px"
+
+                  tooltip-effect="dark"
+                  style="width: 100%;color:black;">
+                <el-table-column
+                    label="内部物料ID"
+                    prop="materialInnerId"
+                    width="100px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商物料ID"
+                    prop="materialOutId"
+                    width="100px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商物料名称"
+                    prop="materialOutName"
+                    width="200px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+
+                <el-table-column
+                    label="供应商ID"
+                    prop="supplierId"
+                    width="100px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商名称"
+                    prop="supplierName"
+                    width="100px"
+                    show-overflow-tooltip
+
+                >
+
+                </el-table-column>
+                <el-table-column
+                    label="价格"
+                    prop="price"
+                    width="70px"
+                    show-overflow-tooltip
+
+                >
+                </el-table-column>
+
+              </el-table>
+            </div>
+            </el-col>
+          </el-row>
 
           <el-divider > 无法分类列表(1.没有供应商信息（价目表和物料供应商表） 2. 一个物料多个供应商) </el-divider>
 
-          <el-table
-              ref="prepareShowMsgDatas4"
-              :data="prepareShowMsgDatas['zeroOrMoreLists']"
-              v-if="prepareShowMsgDatas['zeroOrMoreLists'].length>0"
-              border
-              stripe
-              size="mini"
-              :cell-style="{padding:'0'}"
-              height="300px"
-              tooltip-effect="dark"
-              style="width: 100%;color:black">
-            <el-table-column
-                label="内部物料ID"
-                prop="materialInnerId"
-                width="100px"
-                show-overflow-tooltip
-            >
-            </el-table-column>
-            <el-table-column
-                label="内部物料名称"
-                prop="materialInnerName"
-                width="200px"
-                show-overflow-tooltip
-            >
+          <el-row :gutter="0" style="padding-bottom: 0px;margin-bottom: -10px;text-align: center">
+            <el-col :span="11"><div class="grid-content bg-purple"></div>
+              <el-table
+                  ref="prepareShowMsgDatas4"
+                  :data="prepareShowMsgDatas['zeroOrMoreLists']"
+                  v-if="prepareShowMsgDatas['zeroOrMoreLists'].length>0"
+                  border
+                  stripe
+                  size="mini"
+                  height="300px"
+                  tooltip-effect="dark"
+                  style="width: 100%;color:black">
+                <el-table-column
+                    label="内部物料名称"
+                    prop="materialInnerName"
+                    width="200px"
+                >
 
-            </el-table-column>
+                </el-table-column>
 
-            <el-table-column
-                label="供应商物料ID"
-                prop="materialOutId"
-                show-overflow-tooltip
-                width="100px"
+                <el-table-column
+                    label="新增数量"
+                    prop="num"
+                    width="70px"
 
-            >
-            </el-table-column>
-            <el-table-column
-                label="供应商物料名称"
-                prop="materialOutName"
-                show-overflow-tooltip
-                width="200px"
+                >
+                </el-table-column>
+                <el-table-column
+                    label="单位"
+                    prop="unit"
+                    width="70px"
 
-            >
-            </el-table-column>
-
-            <el-table-column
-                label="新增数量"
-                prop="num"
-                width="100px"
-
-            >
-            </el-table-column>
-            <el-table-column
-                label="单位"
-                prop="unit"
-                width="70px"
-
-            >
-            </el-table-column>
-
-            <el-table-column
-                label="货号品牌"
-                prop="productNumBrand"
-                width="200px"
-                show-overflow-tooltip
-
-            >
-            </el-table-column>
-
-            <el-table-column
-                label="供应商ID"
-                prop="supplierId"
-                width="100px"
-            >
-            </el-table-column>
-            <el-table-column
-                label="供应商名称"
-                prop="supplierName"
-                width="100px"
-
-            >
-
-            </el-table-column>
-            <el-table-column
-                label="价格"
-                prop="price"
-                width="70px"
-
-            >
-            </el-table-column>
+                >
+                </el-table-column>
 
 
+                <el-table-column
+                    label="货号品牌"
+                    prop="productNumBrand"
+                    width="200px"
 
-          </el-table>
+                >
+                </el-table-column>
 
+              </el-table>
+            </el-col>
+            <el-col :span="13"><div class="grid-content bg-purple">
+              <el-table
+                  ref="prepareShowMsgDatas44"
+                  :data="prepareShowMsgDatas['zeroOrMoreLists']"
+                  v-if="prepareShowMsgDatas['zeroOrMoreLists'].length>0"
+                  border
+                  stripe
+                  size="mini"
+                  height="300px"
+                  tooltip-effect="dark"
+                  style="width: 100%;color:black">
+                <el-table-column
+                    label="内部物料ID"
+                    prop="materialInnerId"
+                    width="100px"
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商物料ID"
+                    prop="materialOutId"
+                    width="100px"
+
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商物料名称"
+                    prop="materialOutName"
+                    width="200px"
+
+                >
+                </el-table-column>
+
+                <el-table-column
+                    label="供应商ID"
+                    prop="supplierId"
+                    width="100px"
+                >
+                </el-table-column>
+                <el-table-column
+                    label="供应商名称"
+                    prop="supplierName"
+                    width="100px"
+
+                >
+
+                </el-table-column>
+                <el-table-column
+                    label="价格"
+                    prop="price"
+                    width="70px"
+
+                >
+                </el-table-column>
+
+
+
+              </el-table>
+            </div>
+            </el-col>
+          </el-row>
 
 
         </el-dialog>
@@ -3146,6 +3228,23 @@ export default {
     cellStyle() {
       return 'padding:0 0'
     },
+    /*canotSelectClass({row, column, rowIndex, columnIndex}){
+      console.log("canotSelectClass,:",columnIndex);
+
+      if(columnIndex===0 || columnIndex===2|| columnIndex=== 3|| columnIndex=== 7|| columnIndex===8
+          || columnIndex===9){
+        return 'hid'
+      }
+    },*/
+    /*cellStyleCanotSelect( row) {
+
+      let returnStr = 'padding:0 0;';
+      if(row.columnIndex===0 || row.columnIndex===2|| row.columnIndex=== 3|| row.columnIndex=== 7|| row.columnIndex===8
+          || row.columnIndex===9){
+        returnStr='padding:0 0;user-select:none;'
+      }
+      return returnStr
+    },*/
 
   },
   created() {
@@ -3174,6 +3273,12 @@ export default {
 </script>
 
 <style>
+/deep/ .el-table__fixed{
+  height: 100% !important;
+}
+/deep/ .el-table__fixed-right,.el-table__fixed-body-wrapper{
+  height: 100% !important;
+}
 .el-table .warning-row {
   background: #e6aaaa;
 }
@@ -3184,10 +3289,13 @@ export default {
 .el-table .hasProduction-row {
   background: #d4cbf6;
 }
-
+.hid.cell{
+  user-select: none;
+}
 </style>
 
 <style scoped>
+
 .el-dropdown-link {
   cursor: pointer;
   color: #409EFF;
@@ -3206,7 +3314,9 @@ export default {
 
 .el-table{
   border: 1px solid black;
+
 }
+
 ::v-deep .el-table tbody tr:hover > td {
   background-color: transparent;
 }
@@ -3240,5 +3350,7 @@ export default {
 /deep/ .el-transfer-panel{
   width: 450px !important;
 }
+
+
 
 </style>
