@@ -142,6 +142,19 @@
           </el-popconfirm>
         </el-form-item>
 
+
+        <el-form-item v-if="hasAuth('finance:fine:save')" style="margin-left: 0">
+          <el-dropdown   @command="expChange">
+            <el-button  icon="el-icon-download" size="mini" >
+              导出<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
+              <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-form-item>
+
       </el-form>
 
       <el-table
@@ -444,7 +457,7 @@
 
 <script>
 
-import {request, sysbaseUrl} from "@/axios";
+import {request, request2, sysbaseUrl} from "@/axios";
 
 export default {
   name: 'Fine',
@@ -504,6 +517,71 @@ export default {
     }
   },
   methods: {
+    exportCurrentList() {
+      let checkStr = this.checkedBox.join(",");
+
+      let url = '/finance/supplierFine/export?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&searchField="+this.select+
+          "&&searchStatus="+checkStr +
+          "&&searchStartDate="+this.searchStartDate +
+          "&&searchEndDate="+this.searchEndDate
+
+      ;
+      request2.post(url
+
+          ,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr}
+          ,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'供应商罚款当前页.xlsx')
+      }).catch()
+    },
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportAll() {
+      let checkStr = this.checkedBox.join(",");
+
+      let url = '/finance/supplierFine/export?'+
+          "&&searchStatus="+checkStr +
+          "&&searchStartDate="+this.searchStartDate +
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchField="+this.select
+
+
+      ;
+      request2.post(url,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr}
+          ,{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'供应商罚款全部列表.xlsx')
+      }).catch()
+    },
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
+
+    expChange(item) {
+      console.log("导出:",item)
+      if (item === 'currentList') {
+        this.exportCurrentList()
+      } else if(item === 'all'){
+        this.exportAll()
+      }
+    },
+
     handleRemove(file, id) {
       console.log("删除图片:",file)
       const url = file.url
