@@ -2,7 +2,6 @@
 
   <el-container>
     <el-main class="elMain_my" style="padding-top: 0;padding-right: 0px">
-      <!-- 入库单列表 -->
       <el-form :inline="true" class="demo-form-inline elForm_my" >
         <el-form-item>
           <el-select size="mini" style="width: 120px" v-model="select" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
@@ -18,15 +17,9 @@
 
         <el-form-item>
 
-          <!-- 客户货号 -->
-          <div v-if="selectedName === 'customerNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
-            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
-                    v-model.lazy="searchStr">
-            </input>
-          </div>
 
           <!-- id -->
-          <div v-if="selectedName === 'documentNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+          <div v-if="selectedName === 'id'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
             <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
                     v-model.lazy="searchStr">
             </input>
@@ -66,16 +59,9 @@
                 >
                 </el-option>
               </el-select>
-              <!-- 客户货号 -->
-              <div v-if="item.selectField==='customerNum'" :class=" 'el-input el-input--mini'" style="width: 200px">
-                <input   class="el-input__inner"   placeholder="请输入搜索内容"
-                         v-model.lazy="item.searchStr">
-                </input>
-              </div>
-
 
               <!-- id -->
-              <div v-if="item.selectField === 'documentNum'" :class=" 'el-input el-input--mini'" style="width: 200px">
+              <div v-if="item.selectField === 'id'" :class=" 'el-input el-input--mini'" style="width: 200px">
                 <input   class="el-input__inner"   placeholder="请输入搜索内容"
                          v-model.lazy="item.searchStr">
                 </input>
@@ -112,9 +98,9 @@
           <!-- 列表界面-日期搜索 -->
           <el-date-picker style="width: 125px;"
                           size="mini"
-                          value-format="yyyy-MM-dd"
+                          value-format="yyyy-MM"
                           v-model="searchStartDate"
-                          type="date"
+                          type="month"
                           clearable
                           placeholder="开始日期">
           </el-date-picker>
@@ -123,24 +109,23 @@
         <el-form-item>
           <el-date-picker style="width: 125px;"
                           size="mini"
-                          value-format="yyyy-MM-dd"
+                          value-format="yyyy-MM"
                           v-model="searchEndDate"
-                          type="date"
+                          type="month"
                           clearable
                           placeholder="结束日期">
           </el-date-picker>
 
         </el-form-item>
 
-
         <el-form-item >
           <el-select
               size ="mini"
-              v-model="checkedBox"
+              v-model="status"
               multiple
               collapse-tags
               style="margin-left: 0;width: 150px"
-              placeholder="请选择审核状态">
+              placeholder="请选择结账状态">
             <el-option
                 v-for="item in statusArr"
                 :key="item.val"
@@ -153,30 +138,13 @@
         <el-form-item >
           <el-select
               size ="mini"
-              v-model="takeStatus"
+              v-model="payStatus"
               multiple
               collapse-tags
               style="margin-left: 0;width: 150px"
-              placeholder="请选择单据状态">
+              placeholder="请选择付款状态">
             <el-option
-                v-for="item in takeStatusArr"
-                :key="item.val"
-                :label="item.name"
-                :value="item.val">
-            </el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item >
-          <el-select
-              size ="mini"
-              v-model="payTypeStatus"
-              multiple
-              collapse-tags
-              style="margin-left: 0;width: 150px"
-              placeholder="请选择赔鞋类型">
-            <el-option
-                v-for="item in payTypeStatusArr"
+                v-for="item in payStatusArr"
                 :key="item.val"
                 :label="item.name"
                 :value="item.val">
@@ -188,34 +156,30 @@
           <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
+        <el-form-item>
+          <el-button size="mini" icon="el-icon-plus" @click="dialogAddVisible=true" type="danger">新增</el-button>
+        </el-form-item>
 
-        <el-form-item v-if="hasAuth('finance:payShoes:save')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('finance:payShoes:save')"
+
+        <el-form-item v-if="hasAuth('finance:summary:save')">
+          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('finance:summary:save')"
                      @click="addProductConstituent()"
 
           >新增
           </el-button>
         </el-form-item>
-
-        <el-form-item v-if="hasAuth('finance:payShoes:valid')">
-          <el-popconfirm @confirm="statusPassBatch()" title="确定审核吗？">
-            <el-button size="mini" icon="el-icon-success" :disabled="this.multipleSelection.length === 0 " type="danger"
-                       slot="reference">批量审核
-            </el-button>
-          </el-popconfirm>
-        </el-form-item>
-
-        <el-form-item v-if="hasAuth('finance:payShoes:save')" style="margin-left: 0">
+<!--
+        <el-form-item v-if="hasAuth('finance:summary:save')" style="margin-left: 0">
           <el-dropdown   @command="expChange">
             <el-button  icon="el-icon-download" size="mini" >
-              导出<i class="el-icon-arrow-down el-icon--right"></i>
+              导出<i class="el-icon-arrow-down el-icon&#45;&#45;right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
               <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
-        </el-form-item>
+        </el-form-item>-->
 
       </el-form>
 
@@ -248,32 +212,35 @@
             type="selection"
             width="50">
         </el-table-column>
-        <el-table-column
-            label="编号"
-            prop="id" width="70px "
-        >
-        </el-table-column>
 
         <el-table-column
-            label="单据编号"
-            prop="documentNum"
-            width="150px"
+            label="对账单号"
+            prop="id"
+            width="70px"
             show-overflow-tooltip
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
                        @click=" edit(scope.row.id)"
-            >{{ scope.row.documentNum }}
+            >{{ scope.row.id }}
             </el-button>
           </template>
         </el-table-column>
 
         <el-table-column
-            label="罚款日期"
-            prop="payDate"
+            label="对账日期"
+            prop="summaryDate"
             width="90px"
             show-overflow-tooltip
         >
+        </el-table-column>
+
+
+        <el-table-column
+            prop="supplierId"
+            label="供应商编码"
+            width="110px"
+            show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
@@ -283,29 +250,103 @@
             show-overflow-tooltip>
         </el-table-column>
 
+        <el-table-column
+            prop="buyNetInAmount"
+            label="本期净入库金额(+)"
+            width="130px"
+            show-overflow-tooltip>
+        </el-table-column>
 
         <el-table-column
-            prop="takeStatus"
-            width="70px"
-            label="单据状态">
+            prop="payShoesAmount"
+            label="赔鞋(-)"
+            width="110px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="fineAmount"
+            label="罚款金额(-)"
+            width="110px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="testAmount"
+            label="检测费(-)"
+            width="110px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="taxSupplement"
+            label="补税点(+)"
+            width="110px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="taxDeduction"
+            label="扣税点(-)"
+            width="110px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="changeAmount"
+            label="调整(+)"
+            width="110px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="roundDown"
+            label="抹零(-)"
+            width="110px">
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.takeStatus === 0" type="success">已拿</el-tag>
-            <el-tag size="small" v-else-if="scope.row.takeStatus===1" type="warning">未拿</el-tag>
+            <div  style="height: 40px;line-height: 40px;" @dblclick=" hasAuth('produce:progress:update') && dbClickMethod(scope.row)">
+              <span  v-show="!scope.row.isOpenEdit">{{scope.row.roundDown}}</span>
+              <el-input v-show="scope.row.isOpenEdit" size="mini" style="width: 70px"
+                        :ref='"el_rd_"+scope.row.id'
+                        onkeyup="value=value.replace(/[^0-9.-]/g,'')"
+                        @keyup.native.enter="enterEdit(scope.row)"
+                        @keyup.native.esc="escEdit(scope.row)"
+                        v-model="scope.row.roundDown">
+              </el-input>
+            </div>
           </template>
+        </el-table-column>
+
+        <el-table-column
+            prop="needPayAmount"
+            label="应付本期货款"
+            width="110px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="payedAmount"
+            label="已付款金额"
+            width="110px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="remainingAmount"
+            label="剩余未付金额"
+            width="110px"
+            show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="status"
-            width="100px"
-            label="审核状态">
+            width="70px"
+            label="结账状态">
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.status === 0" type="success">已审核</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===1" type="warning">暂存</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===2" type="danger">审核中</el-tag>
-            <el-tag size="small" v-else-if="scope.row.status===3" type="danger">重新审核</el-tag>
+            <el-tag size="small" v-if="scope.row.status === 0" type="success">已结账</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===1" type="warning">未结账</el-tag>
           </template>
         </el-table-column>
-
 
 
         <el-table-column
@@ -318,37 +359,6 @@
           </template>
         </el-table-column>
 
-
-        <el-table-column
-            prop="customerNum"
-            label="客户货号"
-            width="150px"
-            show-overflow-tooltip>
-        </el-table-column>
-
-        <el-table-column
-            prop="payNumber"
-            label="罚款数量"
-            width="100px">
-        </el-table-column>
-
-        <el-table-column
-            prop="payAmount"
-            label="罚款金额"
-            width="100px">
-        </el-table-column>
-
-        <el-table-column
-            prop="payType"
-            width="70px"
-            label="赔鞋类型">
-          <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.payType === 0" type="success">大货</el-tag>
-            <el-tag size="small" v-else-if="scope.row.payType===1" type="warning">残鞋</el-tag>
-          </template>
-        </el-table-column>
-
-
         <el-table-column
             prop="action"
             label="操作"
@@ -356,56 +366,50 @@
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
-                       v-if="hasAuth('finance:payShoes:update') || (hasAuth('finance:payShoes:list') && scope.row.status != 1 )   ">{{ scope.row.status === 1 ? '编辑' : '查看' }}
+                       v-if="hasAuth('finance:summary:update') || (hasAuth('finance:summary:list') && scope.row.status != 1 )   ">{{ '编辑' }}
             </el-button>
-
-
-            <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('finance:payShoes:valid')  && (scope.row.status === 2 || scope.row.status === 3)   ">
-
-              <template>
-                <el-popconfirm @confirm="statusPass(scope.row.id)"
-                               title="确定设置审核通过吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">审核通过</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>
-
-            <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('finance:payShoes:valid')  && scope.row.status ===0  ">
-              <template>
-                <el-popconfirm @confirm="statusReturn(scope.row.id)"
-                               title="确定反审核吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">反审核</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>
-
-            <el-divider direction="vertical"
-                        v-if="hasAuth('finance:payShoes:del')  && scope.row.status ===1  "></el-divider>
-
-            <el-button style="padding: 0" type="text"
-                       v-if="hasAuth('finance:payShoes:del') && scope.row.status ===1   ">
-              <template>
-                <el-popconfirm @confirm="del(scope.row.id)"
-                               title="确定删除吗？"
-                >
-                  <el-button type="text" size="small" slot="reference">删除</el-button>
-                </el-popconfirm>
-              </template>
-            </el-button>
-
 
           </template>
         </el-table-column>
 
       </el-table>
 
-      <!-- 赔鞋弹窗 -->
+      <!-- 对账生成 -->
       <el-dialog
-          title="赔鞋信息"
+          title="对账月份选择生成"
+          :visible.sync="dialogAddVisible"
+          :before-close="handleAddClose"
+          width="30%"
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 size="mini" :inline="true"
+                 label-width="100px"
+                 :model="editAddForm"  ref="editAddForm"
+                 class="demo-editForm">
+
+          <el-form-item label="对账月份" prop="addDate" label-width="70px">
+              <el-date-picker  style="width: 130px;"
+                               value-format="yyyy-MM"
+                               v-model="editAddForm.addDate"
+                               type="month"
+                               clearable
+                               placeholder="选择日期">
+              </el-date-picker>
+
+          </el-form-item>
+
+          <el-popconfirm @confirm="addNewData()" title="确定该月份生成对账单吗？">
+            <el-button size="mini" icon="el-icon-success"  type="success"
+                       slot="reference">生成对账单
+            </el-button>
+          </el-popconfirm>
+        </el-form>
+
+      </el-dialog>
+
+      <!-- 对账弹窗 -->
+      <el-dialog
+          title="对账信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"
           fullscreen
@@ -419,67 +423,38 @@
                  :model="editForm"  ref="editForm"
                  class="demo-editForm">
 
-          <el-form-item label="编号" prop="id" >
+          <el-form-item label="对账单号" prop="id" >
             <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.id">
             </el-input>
           </el-form-item>
-          <el-form-item label="赔鞋单据编号"   prop="id" style="margin-bottom: 0">
-            <el-input style="width: 150px" :disabled="this.editForm.status!==1" v-model="editForm.documentNum">
+
+          <el-form-item label="供应商" prop="supplierName" >
+            <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.supplierName">
             </el-input>
           </el-form-item>
 
-          <el-form-item label="供应商" prop="supplierName"  label-width="60px">
-            <!-- 搜索框 -->
-            <el-autocomplete
-                style="width: 250px"
-                :disabled="this.editForm.status!==1 "
-                class="inline-input elAutocomplete_my"
-                popper-class="my-autocomplete"
-
-                v-model="editForm.supplierName"
-                :fetch-suggestions="querySearch"
-                :trigger-on-focus="false"
-                placeholder="请输入供应商"
-                @select="handleSelect"
-                @change="moveMouse"
-                @focus="searchSupplierFocus()"
-                clearable
-            >
-            </el-autocomplete>
+          <el-form-item label="对账日期" prop="summaryDate" >
+            <el-input style="width: 150px" :disabled=true placeholder="保存自动生成" v-model="editForm.summaryDate">
+            </el-input>
           </el-form-item>
 
-          <el-form-item label="赔鞋日期" prop="payDate" label-width="70px">
-            <el-date-picker :disabled="this.editForm.status!==1 " style="width: 130px;"
-                            value-format="yyyy-MM-dd"
-                            v-model="editForm.payDate"
-                            type="date"
-                            clearable
-                            placeholder="选择日期">
-            </el-date-picker>
-          </el-form-item>
 
-          <el-form-item prop="takeStatus">
-              <el-radio-group v-model="editForm.takeStatus" @change="statusChange">
-                <el-radio  :disabled="editForm.status!==0 " :label="0">已拿</el-radio>
-                <el-radio  :disabled="editForm.status!==0 " :label="1">未拿</el-radio>
+          <el-form-item prop="status">
+              <el-radio-group v-model="editForm.status"  >
+                <el-radio  :disabled=true :label="0">已结账</el-radio>
+                <el-radio   :disabled=true :label="1">未结账</el-radio>
               </el-radio-group>
-
           </el-form-item>
 
-          <el-form-item v-if="hasAuth('finance:payShoes:save')">
+          <el-form-item v-if="hasAuth('finance:summary:update')">
             <el-dropdown   @command="action">
               <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="save" v-show="hasAuth('finance:payShoes:save') && (this.editForm.status===1 )" >
+                <el-dropdown-item command="save" v-show="hasAuth('finance:summary:update') " >
                   提交单据</el-dropdown-item>
-                <el-dropdown-item command="subReturn" v-show="hasAuth('finance:payShoes:save') && (this.editForm.status===2 || this.editForm.status===3)">
-                  撤销</el-dropdown-item>
-                <el-dropdown-item command="addNew" v-show="hasAuth('finance:payShoes:save') ">
-                  新增</el-dropdown-item>
-                <el-dropdown-item command="copy" v-show="hasAuth('finance:payShoes:save') ">
-                  复制</el-dropdown-item>
+
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
@@ -487,10 +462,9 @@
           <el-form-item label="照片" label-width="40px">
             <!-- 新的缩略图-->
             <el-upload
-                :disabled="!hasAuth('finance:payShoes:update') || this.fileList.length >=1 || this.editForm.status !=0"
+                :disabled="!hasAuth('finance:summary:update') || this.fileList.length >=1 "
                 :class="{disabled:uploadDisabled}"
                 action="#"
-                drag
                 ref="upload"
                 :http-request="uploadRequest"
                 :file-list="fileList"
@@ -510,7 +484,7 @@
                     <i class="el-icon-zoom-in"></i>
                   </span>
                   <span
-                      v-if="hasAuth('finance:payShoes:update')  && editForm.status ===0"
+                      v-if="hasAuth('finance:summary:update')  "
                       class="el-upload-list__item-delete"
                       @click="handleRemove(file,editForm.id)"
                   >
@@ -529,10 +503,10 @@
         <el-divider content-position="left">明细信息</el-divider>
 
         <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails"
-                   v-show="this.editForm.status===1 ">添加
+                   >添加
         </el-button>
         <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
-                   v-show="this.editForm.status===1 " >删除
+                   >删除
         </el-button>
 
         <el-table
@@ -553,41 +527,45 @@
           </el-table-column>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column label="客户货号" align="center" width="200" prop="customerNum">
+          <el-table-column label="对账单号" align="center" width="200" >
             <template slot-scope="scope">
               <el-input
-                         :disabled="editForm.status!=1 "
-                         size="mini" v-model="editForm.rowList[scope.row.seqNum-1].customerNum"/>
+                         :disabled="true "
+                         size="mini" v-model="editForm.id"/>
             </template>
           </el-table-column>
 
-          <el-table-column label="数量" align="center" width="100" prop="payNumber">
+          <el-table-column label="付款日期" prop="payDate"  width="250">
             <template slot-scope="scope">
-              <el-input
-                  :disabled="editForm.status!=1 "
-                  size="mini" v-model="editForm.rowList[scope.row.seqNum-1].payNumber"
-                  onkeyup="value=value.replace(/[^0-9.]/g,'')"
-
-              />
+              <el-date-picker  style="width: 200px;"
+                               value-format="yyyy-MM-dd HH:mm:ss"
+                               size="mini"
+                              v-model="editForm.rowList[scope.row.seqNum-1].payDate"
+                              type="datetime"
+                              clearable
+                              placeholder="选择日期">
+              </el-date-picker>
             </template>
           </el-table-column>
 
-          <el-table-column label="金额" align="center" width="150" prop="payAmount">
+
+          <el-table-column label="付款金额" align="center" width="150" prop="payAmount">
             <template slot-scope="scope">
               <el-input
-                  :disabled="editForm.status!=1 "
                   size="mini" v-model="editForm.rowList[scope.row.seqNum-1].payAmount"
-                  onkeyup="value=value.replace(/[^0-9.]/g,'')"
+                  onkeyup="value=value.replace(/[^0-9.-]/g,'')"
 
               />
             </template>
           </el-table-column>
 
-          <el-table-column label="类型" align="center" width="300" prop="payType">
+          <el-table-column label="类型" align="center" width="500" prop="payType">
             <template slot-scope="scope">
               <el-radio-group v-model="editForm.rowList[scope.row.seqNum-1].payType">
-                <el-radio :disabled="editForm.status!=1" :label="0">大货</el-radio>
-                <el-radio :disabled="editForm.status!=1" :label="1">残鞋</el-radio>
+                <el-radio  :label="0">对公转账</el-radio>
+                <el-radio :label="1">对公承兑</el-radio>
+                <el-radio :label="2">对私转账</el-radio>
+                <el-radio :label="3">对私承兑</el-radio>
               </el-radio-group>
             </template>
           </el-table-column>
@@ -628,7 +606,7 @@ import print from "@/views/printModule/print";
 import printBatch from "@/views/printModule/printBatch";
 
 export default {
-  name: 'PayShoes',
+  name: 'Summary',
   data() {
     return {
 
@@ -643,19 +621,17 @@ export default {
 
       // 多个搜索输入框
       manySearchArr:[{
-        selectField:'customerNum',
+        selectField:'id',
         searchStr:'',
       }],
 
       tableLoad:false,
-      statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
-      checkedBox:[1,2,3,0],
 
-      takeStatusArr : [{'name':'未拿','val':1},{'name':'已拿','val':0}],
-      takeStatus:[1,0],
+      statusArr : [{'name':'未结账','val':1},{'name':'已结账','val':0}],
+      status:[1,0],
 
-      payTypeStatusArr : [{'name':'残鞋','val':1},{'name':'大货','val':0}],
-      payTypeStatus:[1,0],
+      payStatusArr : [{'name':'未结清','val':1},{'name':'已结清','val':0}],
+      payStatus:[1,0],
 
       searchStartDate: '',
       searchEndDate: '',
@@ -668,8 +644,7 @@ export default {
       selectedName: 'supplierName',// 搜索默认值
       options: [
         {value: 'supplierName', label: '供应商名称'},
-        {value: 'customerNum', label: '客户货号'},
-        {value: 'documentNum', label: '罚款单号'},
+        {value: 'id', label: '对账单号'}
 
       ],
       select: 'supplierName', // 搜索默认值
@@ -687,26 +662,32 @@ export default {
       , total: 0 // 总共多少数据
       ,
       // 表单字段
-      addOrUpdate: 'save',
+      editAddForm: {
+        addDate: new Date().format("yyyy-MM") ,
+      },
       editForm: {
-        status: 1, // 审核状态
-        takeStatus: 1, // 审核状态
+        status: 1, // 结账状态
         id: '',
-        documentNum:'',
-        payDate: new Date().format("yyyy-MM-dd") ,
+        summaryDate: new Date().format("yyyy-MM-dd") ,
         supplierId: '',
-
+        buyNetInAmount:'',
+        payShoesAmount:'',
+        fineAmount:'',
+        testAmount:'',
+        taxSupplement:'',
+        taxDeduction:'',
+        roundDown:'',
+        needPayAmount:'',
         picUrl:'',
         rowList: [{
-          customerNum:'',
-          payNumber:'',
+          payDate:new Date().format("yyyy-MM-dd") ,
+          payType:'',
           payAmount:'',
-          payType:0,//赔鞋类型
 
         }]
       },
       dialogVisible: false,
-      dialogRealDosageVisible: false,
+      dialogAddVisible: false,
       tableData: [],
       tableRealDosageData: [],
       spanArr: [],
@@ -716,17 +697,84 @@ export default {
     }
   },
   methods: {
-    exportCurrentList() {
-      let checkStr = this.checkedBox.join(",");
-      let takeStatus = this.takeStatus.join(",");
-      let payTypeStatus = this.payTypeStatus.join(",");
+    reDolayout(row){
+      row.isOpenEdit = false
+      this.$refs.multipleTable.doLayout()
+      this.$forceUpdate()
 
-      let url = '/finance/supplierPayshoes/export?currentPage='+this.currentPage+
+    },
+    escEdit(row){
+      row.roundDown = row.oldRoundDown;
+      this.reDolayout(row)
+    },
+    enterEdit(item){
+      if(item.roundDown ==='空值'){
+        this.$message({
+          message: '不能设置空值',
+          type: 'error'
+        });
+        return;
+      }
+      request.get('/finance/supplierSummary/updateRoundDown?id='+item.id+'&&roundDown='+item.roundDown).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
+
+    },
+    dbClickMethod(row){
+      console.log("dbClick:",row)
+      row.oldRoundDown = row.roundDown
+
+      console.log("双击row 之前：flag :",row.isOpenEdit)
+      row.isOpenEdit=true;
+      console.log("双击row 之后：flag :",row.isOpenEdit)
+      this.$nextTick(() => {
+        // 赋值到编辑表单
+        this.$refs.multipleTable.doLayout()
+        this.$forceUpdate()
+
+      })
+    },
+
+    addNewData(){
+
+      if(this.editAddForm.addDate==='' || this.editAddForm.addDate===undefined){
+        this.$message.error("请选择一个月份");
+        return;
+      }
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+
+
+      request.post('/finance/supplierSummary/addNewData?addDate='+this.editAddForm.addDate).then(res => {
+        load.close()
+        this.$message({
+          message: '生成成功!',
+          type: 'success'
+        });
+        this.dialogAddVisible=false;
+      }).catch(()=>{
+        load.close()
+      })
+    },
+   /* exportCurrentList() {
+      let checkStr = this.checkedBox.join(",");
+      let status = this.status.join(",");
+      let payStatus = this.payStatus.join(",");
+
+      let url = '/finance/supplierSummary/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&searchField="+this.select+
           "&&searchStatus="+checkStr +
-          "&&takeStatus="+takeStatus +
-          "&&payTypeStatus="+payTypeStatus +
+          "&&status="+status +
+          "&&payStatus="+payStatus +
           "&&searchStartDate="+this.searchStartDate +
           "&&searchEndDate="+this.searchEndDate
 
@@ -738,19 +786,18 @@ export default {
         // 这里使用blob做一个转换
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
-        this.saveFile(blob,'供应商赔鞋当前页.xlsx')
+        this.saveFile(blob,'供应商对账当前页.xlsx')
       }).catch()
     },
-    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
     exportAll() {
       let checkStr = this.checkedBox.join(",");
-      let takeStatus = this.takeStatus.join(",");
-      let payTypeStatus = this.payTypeStatus.join(",");
+      let status = this.status.join(",");
+      let payStatus = this.payStatus.join(",");
 
-      let url = '/finance/supplierPayshoes/export?'+
+      let url = '/finance/supplierSummary/export?'+
           "&&searchStatus="+checkStr +
-          "&&takeStatus="+takeStatus +
-          "&&payTypeStatus="+payTypeStatus +
+          "&&status="+status +
+          "&&payStatus="+payStatus +
           "&&searchStartDate="+this.searchStartDate +
           "&&searchEndDate="+this.searchEndDate+
           "&&searchField="+this.select
@@ -759,10 +806,9 @@ export default {
       ;
       request2.post(url,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr}
           ,{responseType:'arraybuffer'}).then(res=>{
-        // 这里使用blob做一个转换
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
-        this.saveFile(blob,'供应商赔鞋全部列表.xlsx')
+        this.saveFile(blob,'供应商对账全部列表.xlsx')
       }).catch()
     },
     // POI- 服务端写出字节流到浏览器，进行保存
@@ -788,20 +834,11 @@ export default {
         this.exportAll()
       }
     },
-
-    statusChange(currentNum){
-      console.log("radio 变化，当前值",currentNum)
-      request.get('/finance/supplierPayshoes/updateTakeStatus?id=' + this.editForm.id+"&&takeStatus="+currentNum).then(res => {
-        this.$message.success(res.data.data)
-      }).catch(error=>{
-        this.$message.error("修改失败")
-        console.log("error:",error)
-      })
-    },
+*/
     dialogOpend(){
       if(this.editForm.id !== '' && this.editForm.id !== undefined){
         console.log("打开编辑页面.锁住...",this.editForm.id);
-        request.get('/finance/supplierPayshoes/lockById?id=' + this.editForm.id)
+        request.get('/finance/supplierSummary/lockById?id=' + this.editForm.id)
       }
     },
 
@@ -847,7 +884,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 3 || index === 4) {
+        if ( index === 4) {
           const values = data.map(item => Number(item[column.property]));
           console.log("index:values:",index,values)
           if (!values.every(value => isNaN(value))) {
@@ -877,7 +914,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 9 || index === 10) {
+        if (index >=5 && index <=15) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -907,7 +944,7 @@ export default {
 
       request({
         method: 'get',
-        url: '/finance/supplierPayshoes/delPic?fileName='+file.name+"&&id="+id,
+        url: '/finance/supplierSummary/delPic?fileName='+file.name+"&&id="+id,
         headers: {'Content-Type': 'multipart/form-data'}
       }).then(res => {
         // 成功
@@ -915,6 +952,7 @@ export default {
           message: '删除成功!',
           type: 'success'
         });
+        this.editForm.status=1;
 
       })
     },
@@ -930,7 +968,7 @@ export default {
       console.log("上传的文件对象:",fileobj)
       request({
         method: 'post',
-        url: '/finance/supplierPayshoes/uploadPic?id='+this.editForm.id,
+        url: '/finance/supplierSummary/uploadPic?id='+this.editForm.id,
         headers: {'Content-Type': 'multipart/form-data'},
         data: param
       }).then(res => {
@@ -939,9 +977,10 @@ export default {
           message: '添加成功!',
           type: 'success'
         });
+        this.editForm.status=0
 
         this.$nextTick(() => {
-          request.get('/finance/supplierPayshoes/getPicturesById?id='+this.editForm.id).then(res => {
+          request.get('/finance/supplierSummary/getPicturesById?id='+this.editForm.id).then(res => {
             let data = res.data.data;
             this.fileList.push({name:data[data.length-1],url: sysbaseUrl+"/"+data[data.length-1]})
           })
@@ -965,16 +1004,6 @@ export default {
         return { "background-color": "rgba(255,235,205, 0.75)" };
       }
     },
-    statusPassBatch(){
-      let ids = this.multipleSelection;
-      request.post('/finance/supplierPayshoes/statusPassBatch',ids).then(res => {
-        this.$message({
-          message: '审核通过!',
-          type: 'success'
-        });
-        this.getList()
-      })
-    },
     searchManySelect(item,index) {
       let theObj = this.manySearchArr[index];
       theObj.searchStr = item.name;
@@ -986,7 +1015,7 @@ export default {
     },
     addSearchItem(){
       let obj = {
-        selectField:'customerNum',
+        selectField:'id',
         searchStr:'',
       }
       this.manySearchArr.push(obj)
@@ -1008,39 +1037,8 @@ export default {
         this.$refs['input_num_'+(seqNum - 1)].focus()
       }
     },
-    action(item) {
-      if(this.editForm.id === null || this.editForm.id === ''){
-        this.addOrUpdate = 'save';
-      }else{
-        this.addOrUpdate = 'update';
-      }
-      if (item === 'save') {
-        this.submitForm('editForm',this.addOrUpdate)
-      } else if(item === 'subReturn'){
-        console.log("撤销id:",this.editForm.id);
-        if(this.editForm.id != ''){
-          this.statusSubReturn(this.editForm.id)
-        }else{
-          this.$message.error("id 为空")
-        }
-      }
-      else if(item === 'addNew'){
-        this.closeBrowser();
-
-        this.addProductConstituent();
-      }
-      else if(item === 'copy'){
-        this.closeBrowser();
-
-        this.editForm.id = '';
-        this.editForm.picUrl=''
-        this.editForm.status = 1;
-        this.dialogOneImageUrl=''
-        this.fileList=[]
-
-        this.addOrUpdate = 'save';
-
-      }
+    action() {
+      this.submitForm('editForm')
     },
 
     // 设置每一行的seqNum = 游标+1
@@ -1057,21 +1055,20 @@ export default {
       })
       console.log("多选框 选中的 ", this.checkedDetail)
     },
-    // 赔鞋详细信息-添加
+    // 对账详细信息-添加
     handleAddDetails() {
       if (this.editForm.rowList == undefined) {
         console.log("editForm 初始化")
         this.editForm.rowList = [];
       }
       let obj = {};
-      obj.customerNum = "";
-      obj.payNumber = "";
+      obj.payDate = '';
       obj.payAmount = '';
       obj.payType = 0
 
       this.editForm.rowList.push(obj);
     },
-    // 赔鞋详细信息-删除
+    // 对账详细信息-删除
     handleDeleteDetails() {
       if (this.checkedDetail.length == 0) {
         if(this.editForm.rowList.length === 0){
@@ -1130,20 +1127,24 @@ export default {
     },
 
     addProductConstituent() {
-      this.addOrUpdate = 'save'
       this.editForm = {
-        status: 1, // 审核状态
-        takeStatus: 1, // 审核状态
+        status: 1, // 未结账状态
         id: '',
-        payDate: new Date().format("yyyy-MM-dd") ,
+        summaryDate: new Date().format("yyyy-MM-dd") ,
         supplierId: '',
-
+        buyNetInAmount:'',
+        payShoesAmount:'',
+        fineAmount:'',
+        testAmount:'',
+        taxSupplement:'',
+        taxDeduction:'',
+        roundDown:'',
+        needPayAmount:'',
         picUrl:'',
         rowList: [{
-          customerNum:'',
-          payNumber:'',
+          payDate:new Date().format("yyyy-MM-dd") ,
+          payType:'',
           payAmount:'',
-          payType:0,//赔鞋类型
 
         }]
       }
@@ -1178,21 +1179,14 @@ export default {
       console.log("多选框 选中的 ", this.multipleSelection)
     },
     // 表单提交
-    submitForm(formName, methodName) {
+    submitForm(formName) {
       this.$refs[formName].validate((valid) => {
 
         if (valid) {
-          if(this.editForm.documentNum==='' || this.editForm.supplierId==='' || this.editForm.payDate===''){
-            console.log("editForm",this.editForm)
-            this.$message({
-              message: '单据编号、供应商、日期不能为空',
-              type: 'error'
-            });
-            return
-          }
+
           if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
             this.$message({
-              message: '请录入至少一个赔鞋信息',
+              message: '请录入至少一个付款信息',
               type: 'error'
             });
             return
@@ -1206,25 +1200,22 @@ export default {
           for (let i = 0; i < this.editForm.rowList.length; i++) {
             let obj = this.editForm.rowList[i];
 
-            if((obj.payNumber === undefined || obj.payNumber === '') && (obj.customerNum === '')){
+            if((obj.payDate === undefined || obj.payDate === '') && (obj.payAmount === '' || obj.payAmount === undefined)){
               emptyArr.push(i+1);
               continue;
             }
-            if (obj.payNumber === undefined || obj.payNumber === '') {
+            if (obj.payDate === undefined || obj.payDate === '') {
               validateFlag = false
             }
-            if (obj.customerNum === '') {
+            if (obj.payAmount === '' || obj.payAmount === undefined ) {
               validateMaterial = false
             }
           }
-          // 移除空的数组内容
-          console.log("移除前的内容:",this.editForm.rowList)
           this.editForm.rowList = this.getNewArr(this.editForm.rowList,emptyArr);
-          console.log("移除后的内容:",this.editForm.rowList)
 
           if (validateMaterial === false) {
             this.$message({
-              message: '客户货号不能为空!',
+              message: '付款金额不能为空!',
               type: 'error'
             });
             return
@@ -1232,7 +1223,7 @@ export default {
 
           if (validateFlag === false) {
             this.$message({
-              message: '赔鞋数量不能为空!',
+              message: '付款日期不能为空!',
               type: 'error'
             });
             return
@@ -1240,11 +1231,12 @@ export default {
 
           if(this.editForm.rowList.length === 0){
             this.$message({
-              message: '详情内容不能为空!',
+              message: '请录入至少一个付款信息!',
               type: 'error'
             });
             return
           }
+
           const load = this.$loading({
             lock: true,
             text: '处理中...',
@@ -1252,21 +1244,13 @@ export default {
             background: 'rgba(0, 0, 0, 0.7)'
           });
 
-          request.post('/finance/supplierPayshoes/' + methodName, this.editForm).then(res => {
+          request.post('/finance/supplierSummary/update' , this.editForm).then(res => {
             load.close()
             this.$message({
-              message: (this.editForm.id ? '编辑' : '新增') + '成功!',
+              message: '编辑成功!',
               type: 'success'
             });
 
-            if(!this.editForm.id){
-              console.log("回显的ID：",res.data.data)
-              this.editForm.id = res.data.data;
-              this.addOrUpdate = "update"
-
-            }
-
-              this.editForm.status = 2;
           }).catch(()=>{
             load.close()
           })
@@ -1284,16 +1268,14 @@ export default {
     // 查询价目表单列表数据
     getList() {
       this.tableLoad = true;
-      let checkStr = this.checkedBox.join(",");
-      let takeStatus = this.takeStatus.join(",");
-      let payTypeStatus = this.payTypeStatus.join(",");
+      let status = this.status.join(",");
+      let payStatus = this.payStatus.join(",");
 
-      let url = '/finance/supplierPayshoes/list?currentPage='+this.currentPage+
+      let url = '/finance/supplierSummary/list?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&searchField="+this.select+
-          "&&searchStatus="+checkStr +
-          "&&takeStatus="+takeStatus +
-          "&&payTypeStatus="+payTypeStatus +
+          "&&status="+status +
+          "&&payStatus="+payStatus +
           "&&searchStartDate="+this.searchStartDate +
           "&&searchEndDate="+this.searchEndDate
 
@@ -1302,6 +1284,13 @@ export default {
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
         this.tableData = res.data.data.records
+        this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
+          item.index = index;
+          item.isOpenEdit = false
+          console.log("row:",item)
+
+        })
+
         this.total = res.data.data.total
         this.getSpanArr(this.tableData)
 
@@ -1316,11 +1305,10 @@ export default {
     },
     // 编辑页面
     edit(id) {
-      this.addOrUpdate = "update"
-      request.get('/finance/supplierPayshoes/queryById?id=' + id).then(res => {
+      request.get('/finance/supplierSummary/queryById?id=' + id).then(res => {
         let result = res.data.data
         // 查看图片
-        request.get('/finance/supplierPayshoes/getPicturesById?id='+id).then(res => {
+        request.get('/finance/supplierSummary/getPicturesById?id='+id).then(res => {
           let data = res.data.data;
           for (let i = 0; i < data.length; i++) {
             let oneFileName = data[i];
@@ -1336,73 +1324,11 @@ export default {
 
       })
     },
-
-    // 删除
-    del(id) {
-      let ids = []
-      if (id) {
-        // 单个删除
-        console.log("删除:id", id)
-
-        ids.push(id)
-      } else {
-        // 批量删除
-        ids = this.multipleSelection
-        console.log("批量删除:id", ids)
-      }
-      request.post('/finance/supplierPayshoes/del', ids).then(res => {
-        this.$message({
-          message: '删除成功!',
-          type: 'success'
-        });
-        this.getList()
-        console.log("删除后重新加载页面")
-
-      })
+    handleAddClose(done) {
+      this.dialogAddVisible=false;
+      this.$refs['editAddForm'].resetFields();
+      this.getList()
     },
-
-    // 撤销提交
-    statusSubReturn(id) {
-      request.get('/finance/supplierPayshoes/statusSubReturn?id=' + id).then(res => {
-        this.$message({
-          message: '已撤销!',
-          type: 'success'
-        });
-        this.editForm.status = 1;
-        this.getList()
-      })
-    },
-    // 状态提交
-    statusSubmit(id) {
-      request.get('/finance/supplierPayshoes/statusSubmit?id=' + id).then(res => {
-        this.$message({
-          message: '已提交!',
-          type: 'success'
-        });
-        this.getList()
-      })
-    },
-    // 状态待审核
-    statusPass(id) {
-      request.get('/finance/supplierPayshoes/statusPass?id=' + id).then(res => {
-        this.$message({
-          message: '审核通过!',
-          type: 'success'
-        });
-        this.getList()
-      })
-    },
-    // 状态反审核
-    statusReturn(id) {
-      request.get('/finance/supplierPayshoes/statusReturn?id=' + id).then(res => {
-        this.$message({
-          message: '反审核完成!',
-          type: 'success'
-        });
-        this.getList()
-      })
-    },
-
     // 关闭弹窗处理动作
     handleClose(done) {
       if(this.editForm.status === 1){
@@ -1421,7 +1347,7 @@ export default {
 
       if(this.editForm.id !== '' && this.editForm.id !== undefined){
         console.log("关闭编辑页面.打开锁...",this.editForm.id);
-        request.get('/finance/supplierPayshoes/lockOpenById?id=' + this.editForm.id)
+        request.get('/finance/supplierSummary/lockOpenById?id=' + this.editForm.id)
       }
       this.$refs['editForm'].resetFields();
       this.fileList=[]
@@ -1454,7 +1380,7 @@ export default {
     async closeBrowser(){
       if(this.editForm.id !== '' && this.editForm.id !== undefined){
         console.log("关闭编辑页面.打开锁...",this.editForm.id);
-        await request.get('/finance/supplierPayshoes/lockOpenById?id=' + this.editForm.id)
+        await request.get('/finance/supplierSummary/lockOpenById?id=' + this.editForm.id)
       }
     },
 

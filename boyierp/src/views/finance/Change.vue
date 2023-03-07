@@ -489,7 +489,7 @@
                   :disabled="editForm.status!==1 "
                   size="mini" v-model="editForm.rowList[scope.row.seqNum-1].changePrice"
                   @input="changePrice(scope.row.seqNum)"
-                  onkeyup="value=value.replace(/[^0-9.]/g,'')"
+                  onkeyup="value=value.replace(/[^0-9.-]/g,'')"
 
               />
             </template>

@@ -500,6 +500,7 @@
                 :class="{disabled:uploadDisabled}"
                 action="#"
                 ref="upload"
+                drag
                 :http-request="uploadRequest"
                 :file-list="fileList"
                 list-type="picture-card"
@@ -533,7 +534,7 @@
             </el-dialog>
           </el-form-item>
 
-          <el-form-item v-if="hasAuth('finance:taxSupplement:save')">
+          <el-form-item v-if="hasAuth('finance:taxSupplement:save')" style="margin-top: 50px">
             <el-dropdown   @command="action">
               <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>

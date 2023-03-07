@@ -381,12 +381,14 @@
                 :disabled="!hasAuth('finance:fine:update') || this.fileList.length >=1 || this.editForm.status !=0"
                 :class="{disabled:uploadDisabled}"
                 action="#"
+                drag
                 ref="upload"
                 :http-request="uploadRequest"
                 :file-list="fileList"
                 list-type="picture-card"
                 :auto-upload="true">
               <i slot="default" class="el-icon-plus"></i>
+
               <div slot="file" slot-scope="{file}">
                 <img
                     class="el-upload-list__item-thumbnail"
@@ -415,7 +417,7 @@
             </el-dialog>
           </el-form-item>
 
-          <el-form-item v-if="hasAuth('finance:fine:save')">
+          <el-form-item v-if="hasAuth('finance:fine:save')" style="margin-top: 50px">
             <el-dropdown   @command="action">
               <el-button  icon="el-icon-edit-outline" size="mini" type="success">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
