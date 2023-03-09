@@ -195,7 +195,6 @@
           element-loading-background = "rgba(255, 255, 255, .5)"
           element-loading-text = "加载中，请稍后..."
 
-          :span-method="objectSpanMethod"
           border
           fit
           height="520px"
@@ -216,13 +215,13 @@
         <el-table-column
             label="对账单号"
             prop="id"
-            width="70px"
+            width="85px"
             show-overflow-tooltip
         >
           <template slot-scope="scope">
             <el-button type="text" size="small"
                        @click=" edit(scope.row.id)"
-            >{{ scope.row.id }}
+            >{{ scope.row.summaryDate + "-" +scope.row.id }}
             </el-button>
           </template>
         </el-table-column>
@@ -230,7 +229,7 @@
         <el-table-column
             label="对账日期"
             prop="summaryDate"
-            width="90px"
+            width="70px"
             show-overflow-tooltip
         >
         </el-table-column>
@@ -239,7 +238,7 @@
         <el-table-column
             prop="supplierId"
             label="供应商编码"
-            width="110px"
+            width="85px"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -250,63 +249,79 @@
             show-overflow-tooltip>
         </el-table-column>
 
+
         <el-table-column
             prop="buyNetInAmount"
-            label="本期净入库金额(+)"
-            width="130px"
+            label="采购入库金额"
+            width="95px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+
+        <el-table-column
+            prop="buyNetInAmount"
+            label="采购退料金额"
+            width="95px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="buyNetInAmount"
+            label="本期净入库金额"
+            width="110px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="payShoesAmount"
-            label="赔鞋(-)"
-            width="110px"
+            label="赔鞋"
+            width="70px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="fineAmount"
-            label="罚款金额(-)"
-            width="110px"
+            label="罚款金额"
+            width="90px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="testAmount"
-            label="检测费(-)"
-            width="110px"
+            label="检测费"
+            width="75px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="taxSupplement"
-            label="补税点(+)"
-            width="110px"
+            label="补税点"
+            width="78px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="taxDeduction"
-            label="扣税点(-)"
-            width="110px"
+            label="扣税点"
+            width="75px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="changeAmount"
-            label="调整(+)"
-            width="110px"
+            label="调整"
+            width="65px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="roundDown"
-            label="抹零(-)"
-            width="110px">
+            label="抹零"
+            width="80px">
           <template slot-scope="scope">
             <div  style="height: 40px;line-height: 40px;" @dblclick=" hasAuth('produce:progress:update') && dbClickMethod(scope.row)">
               <span  v-show="!scope.row.isOpenEdit">{{scope.row.roundDown}}</span>
-              <el-input v-show="scope.row.isOpenEdit" size="mini" style="width: 70px"
+              <el-input v-show="scope.row.isOpenEdit" size="mini" style="width: 65px"
                         :ref='"el_rd_"+scope.row.id'
                         onkeyup="value=value.replace(/[^0-9.-]/g,'')"
                         @keyup.native.enter="enterEdit(scope.row)"
@@ -320,21 +335,21 @@
         <el-table-column
             prop="needPayAmount"
             label="应付本期货款"
-            width="110px"
+            width="100px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="payedAmount"
             label="已付款金额"
-            width="110px"
+            width="90px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="remainingAmount"
             label="剩余未付金额"
-            width="110px"
+            width="100px"
             show-overflow-tooltip>
         </el-table-column>
 
@@ -363,10 +378,15 @@
             prop="action"
             label="操作"
             fixed="right"
+            width="120px"
         >
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="edit(scope.row.id)"
                        v-if="hasAuth('finance:summary:update') || (hasAuth('finance:summary:list') && scope.row.status != 1 )   ">{{ '编辑' }}
+            </el-button>
+
+            <el-button type="text" size="small" @click="preViewPrint(scope.row)"
+                        >{{ '打印预览' }}
             </el-button>
 
           </template>
@@ -590,6 +610,27 @@
           :total="this.total">
       </el-pagination>
 
+      <!-- 打印弹窗 -->
+      <el-dialog
+          title=""
+          :visible.sync="dialogVisiblePrint"
+          width="50%"
+          class="elDialog_print_my"
+          :before-close="printClose"
+      >
+        <el-button v-if="dialogVisiblePrint"
+                   @click="printDemo"
+                   v-focus ref="printBtn"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="easyPrint">
+          <template slot-scope="func">
+            <print :tableData="printRow" :getChineseNumber="func.getChineseNumber"></print>
+          </template>
+        </vue-easy-print>
+
+      </el-dialog>
+
     </el-main>
 
   </el-container>
@@ -602,14 +643,21 @@
 import {request, request2} from "@/axios";
 import {sysbaseUrl} from "@/axios";
 import vueEasyPrint from "vue-easy-print";
-import print from "@/views/printModule/print";
+import print from "@/views/printModule/printSummary";
 import printBatch from "@/views/printModule/printBatch";
+import exportExcelCommon from "@/views/common/ExportExcelCommon";
 
 export default {
   name: 'Summary',
+  // 引入打印模块基础组件和该打印模块的模板页面
+  components: {
+    vueEasyPrint,
+    print,
+  },
   data() {
     return {
 
+      printRow:{},
       fileList: [],
       dialogOnePicVisible:false,
       dialogOneImageUrl:'',
@@ -692,11 +740,31 @@ export default {
       tableRealDosageData: [],
       spanArr: [],
       pos: '',
+      dialogVisiblePrint:false,
       multipleSelection: [] // 多选框数组
 
     }
   },
   methods: {
+
+    // 打印按钮事件
+    printDemo() {
+      this.$refs.easyPrint.print()
+    },
+    printClose(done) {
+      this.$refs.easyPrint.tableShow = false;
+      done();
+    },
+    preViewPrint(row) {
+
+      this.printRow = row;
+      if (this.$refs.easyPrint) {
+        this.$refs.easyPrint.tableData =row
+      }
+      this.dialogVisiblePrint = true
+
+    },
+
     reDolayout(row){
       row.isOpenEdit = false
       this.$refs.multipleTable.doLayout()
@@ -759,6 +827,7 @@ export default {
           message: '生成成功!',
           type: 'success'
         });
+        this.getList()
         this.dialogAddVisible=false;
       }).catch(()=>{
         load.close()
@@ -914,7 +983,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index >=5 && index <=15) {
+        if (index >=5 && index <=17) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
