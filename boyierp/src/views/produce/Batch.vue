@@ -1782,11 +1782,7 @@ export default {
           // then中填写点击确认按钮后执行的事件，例如执行删除该条数据的delect请求
           .then(() => {
             let ids = this.multipleSelection;
-            if(ids.length > 1){
-              this.$message.error("只能选择1个批次号")
-            }else{
-              this.$router.push({name:'repository:pickMaterial:list',params:{zcPickId:ids[0]}});
-            }
+            this.$router.push({name:'repository:pickMaterial:list',params:{zcPickId:ids}});
           })
           // catch中填写点击取消按钮后执行的事件，例如消息提示“已取消删除”
           .catch(() => {
