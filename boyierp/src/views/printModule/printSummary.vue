@@ -1,72 +1,83 @@
 <template>
   <!-- 打印入库单据21cm的适配宽度 -->
-  <div style="width: 650px;padding-left: 20px;padding-right: 15px">
+  <div style="width: 780px;padding-left: 20px;padding-right: 15px">
       <!-- 分页 -->
       <div  class='tab_company_out'>
-        <h3 style="font-size: 28px;margin-bottom: 5px;margin-top: 20px">博艺鞋业供应商对账单</h3>
+        <h3 style="font-size: 24px;margin-bottom: 5px;margin-top: 20px">博艺鞋业供应商对账单</h3>
 
         <table cellpadding='0' cellspacing='0' >
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px;font-size: 18px"  > 供应商名称：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" > {{tableData.supplierName}}</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" > 供应商编号：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" >{{tableData.supplierId}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"  > 供应商名称：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" > {{tableData.supplierName}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" > 供应商编号：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" >{{tableData.supplierId}}</td>
 
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px"colspan='1'> 结账期</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> {{jiezhangqiDate}}</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> 对账单号：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'>{{tableData.summaryDate+"-"+tableData.id}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 结账期</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> {{jiezhangqiDate}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> 对账单号：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'>{{tableData.summaryDate+"-"+tableData.id}}</td>
 
           </tr>
           <tr >
-            <td style="text-align: left;width: 100%;padding-left:2px;font-size: 18px"colspan='4'> 结账内容：</td>
+            <td style="text-align: left;width: 100%;padding-left:2px;font-size: 15px;height: 16px"colspan='4'> 结账内容：</td>
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px"colspan='1'> 采购入库</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> {{tableData.buyInAmount}}</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> 采购退货：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'>{{tableData.buyOutAmount}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 采购入库</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> {{tableData.buyInAmount}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> 采购退货：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'>{{tableData.buyOutAmount}}</td>
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px;font-weight: bold" colspan='1'> 货款小计</td>
-            <td style="text-align: left;width: 75%;padding-left:2px;font-size: 18px" colspan='3'> {{tableData.buyNetInAmount}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px;font-weight: bold" colspan='1'> 货款小计</td>
+            <td style="text-align: left;width: 75%;padding-left:2px;font-size: 15px;height: 16px" colspan='3'> {{tableData.buyNetInAmount}}</td>
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px"colspan='1'> 赔鞋：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> {{tableData.payShoesAmount}}</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> 检测费：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'>{{tableData.testAmount}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 赔鞋：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> {{tableData.payShoesAmount}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> 检测费：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'>{{tableData.testAmount}}</td>
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px"colspan='1'> 罚款：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> {{tableData.fineAmount}}</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> 调整：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'>{{tableData.changeAmount}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 罚款：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> {{tableData.fineAmount}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> 调整：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'>{{tableData.changeAmount}}</td>
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px"colspan='1'> 补税点：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> {{tableData.taxSupplement}}</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'> 扣税点：</td>
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px" colspan='1'>{{tableData.taxDeduction}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 补税点：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> {{tableData.taxSupplement}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> 扣税点：</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'>{{tableData.taxDeduction}}</td>
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px"colspan='1'> 抹零：</td>
-            <td style="text-align: left;width: 75%;padding-left:2px;font-size: 18px" colspan='3'> {{tableData.roundDown}}</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 抹零：</td>
+            <td style="text-align: left;width: 75%;padding-left:2px;font-size: 15px;height: 16px" colspan='3'> {{tableData.roundDown}}</td>
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 18px;font-weight: bold"colspan='1'> 扣（补）款小计</td>
-            <td style="text-align: left;width: 75%;padding-left:2px;font-size: 18px" colspan='3'>{{tableData.otherTotalAmount}} </td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px;font-weight: bold"colspan='1'> 扣（补）款小计</td>
+            <td style="text-align: left;width: 75%;padding-left:2px;font-size: 15px;height: 16px" colspan='3'>{{tableData.otherTotalAmount}} </td>
           </tr>
           <tr >
-            <td style="text-align: left;width: 50%;padding-left:2px;font-weight: bold;font-size: 22px"colspan='2'> 月应付货款：{{tableData.needPayAmount}}</td>
-            <td style="text-align: left;width: 50%;padding-left:2px;font-weight: bold;font-size: 22px" colspan='2'> 大写：{{tableData.needPayAmount<0?'负':''}}{{chineseTotal}}</td>
+            <td style="text-align: left;width: 100%;padding-left:2px;font-weight: bold;font-size: 18px"colspan='4'> 月应付货款：{{tableData.needPayAmount}}</td>
+          </tr>
+          <tr>
+            <td style="text-align: left;width: 100%;padding-left:2px;font-weight: bold;font-size: 18px" colspan='4'> 大写：{{tableData.needPayAmount<0?'负':''}}{{chineseTotal}}</td>
           </tr>
 
         </table>
 
-        <h3 style="font-size: 22px;padding-top: 20px;text-align: left">供应商代表签字：</h3>
+        <el-row :gutter="0" style="padding-top: 0px;margin-bottom: 1px">
+          <el-col :span="18"><div class="grid-content bg-purple">
+            <h3 style="font-size: 20px;padding-top: 18px;text-align: left">供应商代表签字：</h3>
+          </div>
+          </el-col>
+          <el-col :span="6"><div style="padding-top: 40px" class="grid-content bg-purple"></div>
+            <span style="font-size: 12px;text-align: left">制单人：{{$store.state.user_info.userName}}</span>
+          </el-col>
+
+        </el-row>
 
       </div>
   </div>
@@ -161,8 +172,8 @@ table tr td {
   border: 1px solid #000;
   border-bottom: none;
   border-right: none;
-  height: 44px;
-  line-height: 44px;
+  height: 30px;
+  line-height: 30px;
 }
 table tr td:last-of-type,
 table tr th:last-of-type {
