@@ -2,7 +2,7 @@ import axios from "axios";
 import router from "@/router";
 import Element from "element-ui"
 
-const sysbaseUrl="http://192.168.8.27:8081"
+const sysbaseUrl="http://localhost:8081"
 // const sysbaseUrl="http://192.168.8.252:8081"
 
 

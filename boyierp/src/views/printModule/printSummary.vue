@@ -14,17 +14,17 @@
 
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 结账期</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 结账期：</td>
             <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> {{jiezhangqiDate}}</td>
             <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> 对账单号：</td>
             <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'>{{tableData.summaryDate+"-"+tableData.id}}</td>
 
           </tr>
           <tr >
-            <td style="text-align: left;width: 100%;padding-left:2px;font-size: 15px;height: 16px"colspan='4'> 结账内容：</td>
+            <td style="text-align: left;width: 100%;padding-left:2px;font-size: 15px;height: 16px"colspan='4'> 结账内容</td>
           </tr>
           <tr >
-            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 采购入库</td>
+            <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px"colspan='1'> 采购入库：</td>
             <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> {{tableData.buyInAmount}}</td>
             <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'> 采购退货：</td>
             <td style="text-align: left;width: 25%;padding-left:2px;font-size: 15px;height: 16px" colspan='1'>{{tableData.buyOutAmount}}</td>
@@ -118,8 +118,6 @@ export default {
     },
 
   },
-  created() {
-  }
 };
 </script>
 
