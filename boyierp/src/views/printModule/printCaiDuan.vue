@@ -61,9 +61,7 @@
             <td width="5%" style="text-align: center;font-size: 18px">{{tableData.rowList[page-1].size47==0?"":tableData.rowList[page-1].size47}}</td>
 
           </tr>
-          <tr>
-            <td colspan="16"></td>
-          </tr>
+
 
           <tr>
             <td colspan="4" style="text-align: center;font-size: 18px">皮料名称</td>

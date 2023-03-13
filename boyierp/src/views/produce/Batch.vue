@@ -827,7 +827,7 @@
 
       <el-dialog
           :visible.sync="dialogQueryVisible"
-          width="65%"
+          width="75%"
           title="查询进度表"
           top="0vh"
           :before-close="handleCloseQuery"
@@ -857,10 +857,24 @@
           </el-form-item>
 
           <el-form-item>
+            <el-switch
+                style="display: block;margin-top: 8px"
+                v-model="showSendNoBack"
+                active-color="#13ce66"
+                inactive-color="#ff4949"
+                active-text="筛选外发未回"
+                inactive-text="不筛选">
+            </el-switch>
+          </el-form-item>
+
+          <el-form-item>
             <el-button size="mini" icon="el-icon-search" @click="searchQuery()" type="success">查询</el-button>
           </el-form-item>
 
         </el-form>
+        <el-divider> 全部批次号: &nbsp;&nbsp;&nbsp;&nbsp; </el-divider>
+
+        <div>{{this.totalBatchId}}</div>
 
         <el-divider> 进度表 </el-divider>
         <el-table
@@ -879,6 +893,8 @@
             :header-cell-style="{borderColor:'black'}"
             show-summary
             :summary-method="getSummaries"
+            :span-method="objectSpanMethodProgress"
+
 
         >
           <el-table-column
@@ -890,28 +906,21 @@
           <el-table-column
               prop="batchId"
               label="生产序号"
-              width="100px"
-              show-overflow-tooltip>
-          </el-table-column>
-
-          <el-table-column
-              prop="costOfLabourTypeName"
-              label="部门"
-              width="70px"
+              width="80px"
               show-overflow-tooltip>
           </el-table-column>
 
           <el-table-column
               prop="productNum"
               label="公司货号"
-              width="100px"
+              width="90px"
               show-overflow-tooltip>
           </el-table-column>
 
           <el-table-column
               prop="productBrand"
               label="品牌"
-              width="100px"
+              width="90px"
               show-overflow-tooltip>
           </el-table-column>
           <el-table-column
@@ -936,14 +945,52 @@
           <el-table-column
               prop="mergeBatchNumber"
               label="批次号数量"
+              width="85px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="costOfLabourTypeName"
+              label="部门"
+              width="60px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="supplierName"
+              label="供应商名称"
               width="100px"
               show-overflow-tooltip>
           </el-table-column>
 
           <el-table-column
+              prop="materialName"
+              label="外加工工序物料"
+              width="130px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="sendForeignProductDate"
+              label="外发时间"
+              width="145px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="backForeignProductDate"
+              label="收回时间"
+              width="145px"
+              show-overflow-tooltip>
+          </el-table-column>
+          <el-table-column
               prop="outDate"
               label="出库日期"
-              width="150px"
+              width="145px"
               show-overflow-tooltip>
           </el-table-column>
 
@@ -1299,6 +1346,8 @@ export default {
       showDetailNum:false,
       showProgress:false,
 
+      showSendNoBack:false,
+
       editSupplierName:'',
 
       dialogVisiblePrint: false,
@@ -1402,8 +1451,13 @@ export default {
       tableData: [],
       tableQueryData: [],
       tableDelayData: [],
+      totalBatchId: [],
 
       spanArr: [],
+      pos: '',
+      posProgress: '',
+
+      spanArrProgress: [],
       multipleSelection: [] ,// 多选框数组
 
       // shift 多选
@@ -1467,7 +1521,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 7 ) {
+        if (index === 6 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
@@ -1491,7 +1545,7 @@ export default {
     },
     accept(row){
       console.log("accept:row",row)
-      request.post('/produce/batchProgress/accept?id='+row.id).then(res => {
+      request.post('/produce/batchProgress/accept?id='+row.produceBatchProgressId).then(res => {
         this.$message.info("接收成功");
         this.getQueryList()
       })
@@ -1613,6 +1667,39 @@ export default {
         }
       }
     },
+    // 同ID的，单元格合并，数据库配合返回根据ID排序
+    getSpanArrProgress(data) {
+      this.spanArrProgress = []
+      for (var i = 0; i < data.length; i++) {
+        if (i === 0) {
+          this.spanArrProgress.push(1);
+          this.posProgress = 0
+        } else {
+          // 判断这一条和上一条id是否相同
+          if (data[i].batchId === data[i - 1].batchId) {
+            this.spanArrProgress[this.posProgress] += 1;
+            this.spanArrProgress.push(0);
+          } else {
+            this.spanArrProgress.push(1);
+            this.posProgress = i;
+          }
+        }
+      }
+    },
+    // 同ID的，单元格合并，数据库配合返回根据ID排序
+    objectSpanMethodProgress({row, column, rowIndex, columnIndex}) {
+      if ( (columnIndex >=0 && columnIndex <=7 ) ||  (columnIndex >=12 && columnIndex <=14 )) {
+        const _row = this.spanArrProgress[rowIndex];
+        console.log("columnIndex:"+columnIndex +",row:"+_row)
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+
+    },
+
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
       if (columnIndex === 1 || columnIndex === 2|| columnIndex === 3 || columnIndex === 4 || columnIndex === 5||columnIndex === 6 || columnIndex === 7 || columnIndex===8) {
@@ -2447,11 +2534,15 @@ export default {
       this.getList()
     },
     getQueryList() {
-      let url = '/produce/batch/progressList'
+      let url = '/produce/batch/progressList?showSendNoBack='+this.showSendNoBack
       request.post(url,{searchQueryStartDateStr:this.searchQueryStartDateStr
       ,searchQueryOutDateStr:this.searchQueryOutDateStr},null).then(res => {
         this.tableQueryData = res.data.data['progressData']
         this.tableDelayData = res.data.data['delayData']
+        this.totalBatchId = res.data.data['totalBatchId']
+
+        this.getSpanArrProgress(this.tableQueryData)
+
         this.$nextTick(() => {
           this.$refs['multipleQueryTable'].doLayout();
         })
@@ -2576,6 +2667,7 @@ export default {
       this.dialogQueryVisible=false;
       this.tableDelayData = ''
       this.tableQueryData = ''
+      this.totalBatchId = ''
     },
     handleClosePrepare(done) {
       this.dialogCalNumVisible=false;
