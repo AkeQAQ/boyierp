@@ -78,8 +78,9 @@
             <td colspan="2" style="text-align: center;font-size: 16px">{{row.dosage}}</td>
             <td colspan="3" style="text-align: center;font-size: 18px">{{row.needNum}}</td>
             <td colspan="3" style="text-align: center;font-size: 16px"></td>
-            <td colspan="4"  style="text-align: center;font-size: 16px" v-if="index===0" rowspan='3'></td>
-
+            <td colspan="4" style="text-align: center;font-size: 16px;font-weight: bold" v-if="row.comment!=null && row.comment !=='' && row.comment.length < 11">{{row.comment}}</td>
+            <td colspan="4" style="text-align: center;font-size: 10px ;font-weight: bold" v-if="row.comment!=null && row.comment !=='' && row.comment.length >= 11">{{row.comment}}</td>
+            <td colspan="4" style="text-align: center;font-size: 13px ;font-weight: bold" v-if="row.comment===null || row.comment ===''"></td>
           </tr>
 
         </table>
