@@ -1340,6 +1340,7 @@ export default {
   },
   data() {
     return {
+      allTotalNum:'',
       oneMaterialPrices:[],
 
       showDelay:false,
@@ -1522,21 +1523,7 @@ export default {
           return;
         }
         if (index === 6 ) {
-          const values = data.map(item => Number(item[column.property]));
-          if (!values.every(value => isNaN(value))) {
-            sums[index] = values.reduce((prev, curr) => {
-              const value = Number(curr);
-              if (!isNaN(value)) {
-                return prev + curr;
-              } else {
-                return prev;
-              }
-            }, 0);
-            sums[index] = sums[index].toFixed(2);
-          } else {
-            sums[index] = 'N/A';
-          }
-
+          sums[index] = this.allTotalNum;
         }
 
       });
@@ -2540,7 +2527,7 @@ export default {
         this.tableQueryData = res.data.data['progressData']
         this.tableDelayData = res.data.data['delayData']
         this.totalBatchId = res.data.data['totalBatchId']
-
+        this.allTotalNum = res.data.data['allTotalNum']
         this.getSpanArrProgress(this.tableQueryData)
 
         this.$nextTick(() => {
@@ -2668,6 +2655,7 @@ export default {
       this.tableDelayData = ''
       this.tableQueryData = ''
       this.totalBatchId = ''
+      this.allTotalNum = ''
     },
     handleClosePrepare(done) {
       this.dialogCalNumVisible=false;

@@ -251,7 +251,7 @@
 
 
         <el-table-column
-            prop="buyNetInAmount"
+            prop="buyInAmount"
             label="采购入库金额"
             width="95px"
             show-overflow-tooltip>
@@ -259,7 +259,7 @@
 
 
         <el-table-column
-            prop="buyNetInAmount"
+            prop="buyOutAmount"
             label="采购退料金额"
             width="95px"
             show-overflow-tooltip>
