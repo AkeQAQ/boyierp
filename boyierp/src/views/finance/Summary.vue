@@ -20,14 +20,14 @@
 
           <!-- id -->
           <div v-if="selectedName === 'id'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
-            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 150px"  placeholder="请输入搜索内容"
                     v-model.lazy="searchStr">
             </input>
           </div>
 
           <!-- 列表界面-供应商搜索 -->
           <el-autocomplete size="mini" v-if="selectedName==='supplierName'"
-                           style="width: 200px"
+                           style="width: 150px"
                            popper-class="my-autocomplete"
 
                            clearable
@@ -61,14 +61,14 @@
               </el-select>
 
               <!-- id -->
-              <div v-if="item.selectField === 'id'" :class=" 'el-input el-input--mini'" style="width: 200px">
+              <div v-if="item.selectField === 'id'" :class=" 'el-input el-input--mini'" style="width: 150px">
                 <input   class="el-input__inner"   placeholder="请输入搜索内容"
                          v-model.lazy="item.searchStr">
                 </input>
               </div>
 
               <el-autocomplete size="mini" v-if="item.selectField==='supplierName'"
-                               style="width: 200px"
+                               style="width: 150px"
                                popper-class="my-autocomplete"
 
                                clearable
@@ -93,6 +93,7 @@
           <el-button slot="reference" type="info" style="padding: 0 0 ;margin-top: 20px;margin-left: -10px" size="mini" icon="el-icon-arrow-down" circle></el-button>
 
         </el-popover>
+
         <el-form-item>
 
           <!-- 列表界面-日期搜索 -->
@@ -114,6 +115,32 @@
                           type="month"
                           clearable
                           placeholder="结束日期">
+          </el-date-picker>
+
+        </el-form-item>
+
+
+        <el-form-item>
+
+          <!-- 列表界面-日期搜索 -->
+          <el-date-picker style="width: 135px;"
+                          size="mini"
+                          value-format="yyyy-MM-dd"
+                          v-model="searchStartSettleDate"
+                          type="date"
+                          clearable
+                          placeholder="结账开始日期">
+          </el-date-picker>
+        </el-form-item>
+
+        <el-form-item>
+          <el-date-picker style="width: 135px;"
+                          size="mini"
+                          value-format="yyyy-MM-dd"
+                          v-model="searchEndSettleDate"
+                          type="date"
+                          clearable
+                          placeholder="结账结束日期">
           </el-date-picker>
 
         </el-form-item>
@@ -161,15 +188,7 @@
         </el-form-item>
 
 
-        <el-form-item v-if="hasAuth('finance:summary:save')">
-          <el-button size="mini" icon="el-icon-plus" type="primary" v-if="hasAuth('finance:summary:save')"
-                     @click="addProductConstituent()"
-
-          >新增
-          </el-button>
-        </el-form-item>
-<!--
-        <el-form-item v-if="hasAuth('finance:summary:save')" style="margin-left: 0">
+        <el-form-item v-if="hasAuth('finance:summary:list')" style="margin-left: 0">
           <el-dropdown   @command="expChange">
             <el-button  icon="el-icon-download" size="mini" >
               导出<i class="el-icon-arrow-down el-icon&#45;&#45;right"></i>
@@ -179,7 +198,7 @@
               <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
-        </el-form-item>-->
+        </el-form-item>
 
       </el-form>
 
@@ -363,7 +382,12 @@
           </template>
         </el-table-column>
 
-
+        <el-table-column
+            prop="settleDate"
+            label="结账日期"
+            width="90px"
+            show-overflow-tooltip>
+        </el-table-column>
         <el-table-column
             width="80px"
             label="有无照片">
@@ -460,9 +484,9 @@
 
 
           <el-form-item prop="status">
-              <el-radio-group v-model="editForm.status"  >
-                <el-radio  :disabled=true :label="0">已结账</el-radio>
-                <el-radio   :disabled=true :label="1">未结账</el-radio>
+              <el-radio-group v-model="editForm.status"  @change="statusChange">
+                <el-radio  :disabled="!hasAuth('finance:summary:valid')" :label="0">已结账</el-radio>
+                <el-radio   :disabled="!hasAuth('finance:summary:valid')" :label="1">未结账</el-radio>
               </el-radio-group>
           </el-form-item>
 
@@ -684,6 +708,8 @@ export default {
       searchStartDate: '',
       searchEndDate: '',
 
+      searchStartSettleDate: '',
+      searchEndSettleDate: '',
 
       //选中的从表数据
       checkedDetail: [],
@@ -746,7 +772,15 @@ export default {
     }
   },
   methods: {
-
+    statusChange(currentNum){
+      console.log("radio 变化，当前值",currentNum)
+      request.get('/finance/supplierSummary/updateStatus?id=' + this.editForm.id+"&&status="+currentNum).then(res => {
+        this.$message.success(res.data.data)
+      }).catch(error=>{
+        this.$message.error("修改失败")
+        console.log("error:",error)
+      })
+    },
     // 打印按钮事件
     printDemo() {
       this.$refs.easyPrint.print()
@@ -833,19 +867,19 @@ export default {
         load.close()
       })
     },
-   /* exportCurrentList() {
-      let checkStr = this.checkedBox.join(",");
+    exportCurrentList() {
       let status = this.status.join(",");
       let payStatus = this.payStatus.join(",");
 
       let url = '/finance/supplierSummary/export?currentPage='+this.currentPage+
           "&&pageSize="+this.pageSize+
           "&&searchField="+this.select+
-          "&&searchStatus="+checkStr +
           "&&status="+status +
           "&&payStatus="+payStatus +
           "&&searchStartDate="+this.searchStartDate +
-          "&&searchEndDate="+this.searchEndDate
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchStartSettleDate="+this.searchStartSettleDate+
+          "&&searchEndSettleDate="+this.searchEndSettleDate
 
       ;
       request2.post(url
@@ -855,29 +889,28 @@ export default {
         // 这里使用blob做一个转换
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
-        this.saveFile(blob,'供应商对账当前页.xlsx')
+        this.saveFile(blob,'供应商对账单当前页.xlsx')
       }).catch()
     },
     exportAll() {
-      let checkStr = this.checkedBox.join(",");
       let status = this.status.join(",");
       let payStatus = this.payStatus.join(",");
 
       let url = '/finance/supplierSummary/export?'+
-          "&&searchStatus="+checkStr +
+          "searchField="+this.select+
           "&&status="+status +
           "&&payStatus="+payStatus +
           "&&searchStartDate="+this.searchStartDate +
           "&&searchEndDate="+this.searchEndDate+
-          "&&searchField="+this.select
-
+          "&&searchStartSettleDate="+this.searchStartSettleDate+
+          "&&searchEndSettleDate="+this.searchEndSettleDate
 
       ;
       request2.post(url,{'manySearchArr':this.manySearchArr,'searchStr':this.searchStr}
           ,{responseType:'arraybuffer'}).then(res=>{
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
 
-        this.saveFile(blob,'供应商对账全部列表.xlsx')
+        this.saveFile(blob,'供应商对账单全部列表.xlsx')
       }).catch()
     },
     // POI- 服务端写出字节流到浏览器，进行保存
@@ -903,7 +936,7 @@ export default {
         this.exportAll()
       }
     },
-*/
+
     dialogOpend(){
       if(this.editForm.id !== '' && this.editForm.id !== undefined){
         console.log("打开编辑页面.锁住...",this.editForm.id);
@@ -1195,33 +1228,6 @@ export default {
       }
     },
 
-    addProductConstituent() {
-      this.editForm = {
-        status: 1, // 未结账状态
-        id: '',
-        summaryDate: new Date().format("yyyy-MM-dd") ,
-        supplierId: '',
-        buyNetInAmount:'',
-        payShoesAmount:'',
-        fineAmount:'',
-        testAmount:'',
-        taxSupplement:'',
-        taxDeduction:'',
-        roundDown:'',
-        needPayAmount:'',
-        picUrl:'',
-        rowList: [{
-          payDate:new Date().format("yyyy-MM-dd") ,
-          payType:'',
-          payAmount:'',
-
-        }]
-      }
-      this.dialogOneImageUrl=''
-      this.fileList=[]
-
-      this.dialogVisible = true
-    },
 
     // 分页方法
     handleSizeChange(val) {
@@ -1346,7 +1352,9 @@ export default {
           "&&status="+status +
           "&&payStatus="+payStatus +
           "&&searchStartDate="+this.searchStartDate +
-          "&&searchEndDate="+this.searchEndDate
+          "&&searchEndDate="+this.searchEndDate+
+          "&&searchStartSettleDate="+this.searchStartSettleDate+
+          "&&searchEndSettleDate="+this.searchEndSettleDate
 
       ;
       request.post(url,

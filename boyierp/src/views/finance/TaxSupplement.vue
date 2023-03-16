@@ -481,7 +481,7 @@
           <el-form-item label="照片" label-width="100px">
             <!-- 新的缩略图-->
             <el-upload
-                :disabled="!hasAuth('finance:taxSupplement:update') || this.fileList.length >=1 || this.editForm.status !=1"
+                :disabled="!hasAuth('finance:taxSupplement:update') || this.fileList.length >=1 || this.editForm.id==='' || this.editForm.status ===0"
                 :class="{disabled:uploadDisabled}"
                 action="#"
                 ref="upload"
@@ -504,7 +504,7 @@
                     <i class="el-icon-zoom-in"></i>
                   </span>
                   <span
-                      v-if="hasAuth('finance:taxSupplement:update')  && editForm.status ===1"
+                      v-if="hasAuth('finance:taxSupplement:update')  && editForm.status !==0"
                       class="el-upload-list__item-delete"
                       @click="handleRemove(file,editForm.id)"
                   >
