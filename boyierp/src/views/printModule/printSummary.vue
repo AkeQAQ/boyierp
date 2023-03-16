@@ -69,11 +69,14 @@
         </table>
 
         <el-row :gutter="0" style="padding-top: 0px;margin-bottom: 1px">
-          <el-col :span="18"><div class="grid-content bg-purple">
+          <el-col :span="16"><div class="grid-content bg-purple">
             <h3 style="font-size: 20px;padding-top: 18px;text-align: left">供应商代表签字：</h3>
           </div>
           </el-col>
-          <el-col :span="6"><div style="padding-top: 40px" class="grid-content bg-purple"></div>
+          <el-col :span="5"><div style="padding-top: 40px" class="grid-content bg-purple"></div>
+            <span style="font-size: 12px;text-align: left">打印日期：{{new Date().toLocaleDateString()}} </span>
+          </el-col>
+          <el-col :span="3"><div style="padding-top: 40px" class="grid-content bg-purple"></div>
             <span style="font-size: 12px;text-align: left">制单人：{{$store.state.user_info.userName}}</span>
           </el-col>
 

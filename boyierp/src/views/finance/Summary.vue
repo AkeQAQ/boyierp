@@ -319,7 +319,7 @@
             label="抹零"
             width="80px">
           <template slot-scope="scope">
-            <div  style="height: 40px;line-height: 40px;" @dblclick=" hasAuth('produce:progress:update') && dbClickMethod(scope.row)">
+            <div  style="height: 40px;line-height: 40px;" @dblclick=" hasAuth('finance:summary:update') && dbClickMethod(scope.row)">
               <span  v-show="!scope.row.isOpenEdit">{{scope.row.roundDown}}</span>
               <el-input v-show="scope.row.isOpenEdit" size="mini" style="width: 65px"
                         :ref='"el_rd_"+scope.row.id'
