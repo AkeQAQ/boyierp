@@ -579,9 +579,9 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="付款日期" prop="payDate"  width="250">
+          <el-table-column label="付款日期" prop="payDate"  width="200">
             <template slot-scope="scope">
-              <el-date-picker  style="width: 200px;"
+              <el-date-picker  style="width: 180px;"
                                value-format="yyyy-MM-dd HH:mm:ss"
                                size="mini"
                               v-model="editForm.rowList[scope.row.seqNum-1].payDate"
@@ -593,7 +593,7 @@
           </el-table-column>
 
 
-          <el-table-column label="付款金额" align="center" width="150" prop="payAmount">
+          <el-table-column label="付款金额" align="center" width="120" prop="payAmount">
             <template slot-scope="scope">
               <el-input
                   size="mini" v-model="editForm.rowList[scope.row.seqNum-1].payAmount"
@@ -608,10 +608,29 @@
               <el-radio-group v-model="editForm.rowList[scope.row.seqNum-1].payType">
                 <el-radio  :label="0">对公转账</el-radio>
                 <el-radio :label="1">对公承兑</el-radio>
-                <el-radio :label="2">对私转账</el-radio>
-                <el-radio :label="3">对私承兑</el-radio>
+                <el-radio :disabled="editForm.rowList[scope.row.seqNum-1].documentNum!==''&& editForm.rowList[scope.row.seqNum-1].documentNum!==null" :label="2">对私转账</el-radio>
+                <el-radio :disabled="editForm.rowList[scope.row.seqNum-1].documentNum!==''&&editForm.rowList[scope.row.seqNum-1].documentNum!==null" :label="3">对私承兑</el-radio>
               </el-radio-group>
             </template>
+          </el-table-column>
+
+          <el-table-column label="发票号" align="center" prop="documentNum" width="200" >
+            <template slot-scope="scope">
+              <el-autocomplete size="mini" clearable style="width: 180px"
+                               popper-class="my-autocomplete"
+                               :disabled="editForm.rowList[scope.row.seqNum-1].payType ===2 || editForm.rowList[scope.row.seqNum-1].payType ===3"
+                               class="inline-input"
+                               v-model="editForm.rowList[scope.row.seqNum - 1].documentNum"
+                               :fetch-suggestions="tableSearch"
+                               placeholder="请输入内容"
+                               :trigger-on-focus="false"
+                               @select="tableSelectSearch($event,editForm.rowList[scope.row.seqNum - 1])"
+                               @change="tableMoveMouse($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
+                               @focus="loadDocumentAll(editForm.supplierId)"
+              >
+              </el-autocomplete>
+            </template>
+
           </el-table-column>
 
         </el-table>
@@ -727,7 +746,6 @@ export default {
       searchField: '',
       restaurants: [],// 搜索框列表数据存放
       restaurants2: [], //
-      restaurants3: [], //用于增量表格的搜索框内容
       restaurantsCustomer: [], //
 
       // 分页字段
@@ -772,6 +790,50 @@ export default {
     }
   },
   methods: {
+    loadDocumentAll(supplierId) {
+      request.post('/finance/supplierTaxSupplement/loadDocumentAll?supplierId='+supplierId).then(res => {
+        this.restaurants2 = res.data.data
+        console.log("restaurants2:",this.restaurants2)
+      })
+    },
+    tableMoveMouse(selectItem, rowObj,index) {
+      console.log("tableMoveMouse", selectItem, rowObj)
+      try {
+        if(this.restaurants2===null || this.restaurants2.length ===0){
+          rowObj.documentNum = "";
+        }
+        // foreach 只能抛出异常结束
+        this.restaurants2.forEach(item => {
+          if (selectItem === item.documentNum) {
+            rowObj.documentNum = item.documentNum;
+            throw new Error();
+          } else {
+            rowObj.documentNum = "";
+          }
+
+        })
+      } catch (err) {
+      }
+    },
+    tableSelectSearch(selectItem, param) {
+      param.documentNum = selectItem.obj.documentNum;
+      console.log("selectItem:",selectItem)
+      console.log("param:",param)
+
+    },
+    createFilter2(queryString) {
+      return (restaurant) => {
+        return (restaurant.obj.documentNum.toLowerCase().indexOf(queryString.toLowerCase()) != -1)
+      };
+    },
+    tableSearch(queryString, cb) {
+      var restaurants = this.restaurants2;
+      var results = queryString ? restaurants.filter(this.createFilter2(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    // 查询搜索框列表数据
+
     statusChange(currentNum){
       console.log("radio 变化，当前值",currentNum)
       request.get('/finance/supplierSummary/updateStatus?id=' + this.editForm.id+"&&status="+currentNum).then(res => {
@@ -1167,6 +1229,7 @@ export default {
       obj.payDate = '';
       obj.payAmount = '';
       obj.payType = 0
+      obj.documentNum=''
 
       this.editForm.rowList.push(obj);
     },
@@ -1269,11 +1332,16 @@ export default {
 
           let validateFlag = true;
           let validateMaterial = true;
+          let validateDocumentNum = true;
 
           console.log(this.editForm.rowList)
           let emptyArr = []; // 存放空内容 的 下标。
+
           for (let i = 0; i < this.editForm.rowList.length; i++) {
             let obj = this.editForm.rowList[i];
+            if((obj.payType===0 || obj.payType===1 ) && (obj.documentNum ==='' || obj.documentNum===null || obj.documentNum===undefined)){
+              validateDocumentNum = false;
+            }
 
             if((obj.payDate === undefined || obj.payDate === '') && (obj.payAmount === '' || obj.payAmount === undefined)){
               emptyArr.push(i+1);
@@ -1285,6 +1353,7 @@ export default {
             if (obj.payAmount === '' || obj.payAmount === undefined ) {
               validateMaterial = false
             }
+
           }
           this.editForm.rowList = this.getNewArr(this.editForm.rowList,emptyArr);
 
@@ -1303,6 +1372,14 @@ export default {
             });
             return
           }
+          if (validateDocumentNum === false) {
+            this.$message({
+              message: '选择了对公类型，发票号不能为空',
+              type: 'error'
+            });
+            return
+          }
+
 
           if(this.editForm.rowList.length === 0){
             this.$message({
@@ -1311,6 +1388,8 @@ export default {
             });
             return
           }
+
+          // 假如有记录选择了对公，但是内容是空值，则提醒
 
           const load = this.$loading({
             lock: true,
@@ -1470,6 +1549,7 @@ export default {
   created() {
     this.getList()
     this.loadSupplierAll()
+    this.loadDocumentAll();
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
 

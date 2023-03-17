@@ -195,6 +195,7 @@
           v-loading = "tableLoad"
           element-loading-background = "rgba(255, 255, 255, .5)"
           element-loading-text = "加载中，请稍后..."
+          :span-method="objectSpanMethod"
 
           border
           fit
@@ -297,14 +298,22 @@
         </el-table-column>
 
 
+
         <el-table-column
             prop="payStatus"
             width="100px"
             label="付款状态">
           <template slot-scope="scope">
-            <el-tag size="small" v-if="scope.row.payStatus === 0" type="success">已付</el-tag>
-            <el-tag size="small" v-else-if="scope.row.payStatus===1" type="warning">未付</el-tag>
+            <el-tag size="small" v-if="scope.row.lostAmount <= 0" type="success">已结清</el-tag>
+            <el-tag size="small" v-else type="warning">未结清</el-tag>
           </template>
+        </el-table-column>
+
+
+        <el-table-column
+            prop="payAmount"
+            width="100px"
+            label="付款金额">
         </el-table-column>
 
         <el-table-column
@@ -459,11 +468,12 @@
             </template>
 
           </el-form-item>
+<!--
 
           <el-form-item label="付款状态" prop="payStatus" >
             <el-radio-group v-model="editForm.payStatus" >
-              <el-radio  :disabled="editForm.status!==0 " :label="0">已付</el-radio>
-              <el-radio  :disabled="editForm.status!==0  " :label="1">未付</el-radio>
+              <el-radio  :disabled="editForm.status!==0 " :label="0">已结清</el-radio>
+              <el-radio  :disabled="editForm.status!==0  " :label="1">未结清</el-radio>
             </el-radio-group>
 
           </el-form-item>
@@ -477,6 +487,7 @@
                             placeholder="选择日期">
             </el-date-picker>
           </el-form-item>
+-->
 
           <el-form-item label="照片" label-width="100px">
             <!-- 新的缩略图-->
@@ -581,7 +592,7 @@ export default {
       tableLoad:false,
       statusArr : [{'name':'暂存','val':1},{'name':'审核中','val':2},{'name':'已审核','val':0},{'name':'重新审核','val':3}],
       checkedBox:[1,2,3,0],
-      payStatusArr : [{'name':'未付','val':1},{'name':'已付','val':0}],
+      payStatusArr : [{'name':'未结清','val':1},{'name':'已结清','val':0}],
       payStatus:[1,0],
 
       searchStartDate: '',
@@ -630,25 +641,19 @@ export default {
     }
   },
   methods: {
-    calendarChange(dates){
-      if(dates===null){
-        return;
+    // 同ID的，单元格合并，数据库配合返回根据ID排序
+    objectSpanMethod({row, column, rowIndex, columnIndex}) {
+      if ( (columnIndex >=0 && columnIndex<=11) || (columnIndex===14)) {
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
       }
-      request.get('/finance/supplierTaxSupplement/updatePayDate?id=' + this.editForm.id+"&&payDate="+dates).then(res => {
-        this.$message.success(res.data.data)
-      }).catch(error=>{
-        this.$message.error("修改失败")
-        console.log("error:",error)
-      })
+
     },
-    statusChange(currentNum){
-      request.get('/finance/supplierTaxSupplement/updatePayStatus?id=' + this.editForm.id+"&&payStatus="+currentNum).then(res => {
-        this.$message.success(res.data.data)
-      }).catch(error=>{
-        this.$message.error("修改失败")
-        console.log("error:",error)
-      })
-    },
+
     changePoint(seq){
       if(this.editForm.documentAmount !== ''){
         this.editForm.taxSupplementAmount = (this.editForm.taxPoint *  this.editForm.documentAmount).toFixed(2)
@@ -938,22 +943,21 @@ export default {
             });
             return
           }
-          console.log("payDate:",this.editForm.payDate)
-
+/*
           if(this.editForm.payStatus===0 && (this.editForm.payDate===''|| this.editForm.payDate===null) ){
             this.$message({
-              message: '已付必须填写付款日期',
+              message: '已结清必须填写付款日期',
               type: 'error'
             });
             return
           }
           if(this.editForm.payDate!==''&&this.editForm.payDate!==null && this.editForm.payStatus===1){
             this.$message({
-              message: '未付不能填写付款日期',
+              message: '未结清不能填写付款日期',
               type: 'error'
             });
             return
-          }
+          }*/
 
           const load = this.$loading({
             lock: true,
