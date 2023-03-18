@@ -636,7 +636,10 @@ export default {
       dialogVisible: false,
       tableData: [],
       spanArr: [],
-      multipleSelection: [] // 多选框数组
+      multipleSelection: [] ,// 多选框数组
+
+      documentAmount: 0,
+      suiAmount:0,
 
     }
   },
@@ -754,22 +757,11 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 6|| index ===8) {
-          const values = data.map(item => Number(item[column.property]));
-          if (!values.every(value => isNaN(value))) {
-            sums[index] = values.reduce((prev, curr) => {
-              const value = Number(curr);
-              if (!isNaN(value)) {
-                return prev + curr;
-              } else {
-                return prev;
-              }
-            }, 0);
-            sums[index] = sums[index].toFixed(2);
-          } else {
-            sums[index] = 'N/A';
-          }
-
+        if (index === 6) {
+          sums[index] = this.documentAmount
+        }
+        if ( index ===8) {
+          sums[index] = this.suiAmount
         }
 
       });
@@ -1012,8 +1004,12 @@ export default {
       request.post(url,
           {'manySearchArr':this.manySearchArr,'searchStr':this.searchStr},
           null).then(res => {
-        this.tableData = res.data.data.records
-        this.total = res.data.data.total
+        this.tableData = res.data.data['pageData'].records
+        this.total = res.data.data['pageData'].total
+
+        this.documentAmount = res.data.data['documentAmount']
+        this.suiAmount = res.data.data['suiAmount']
+
         this.getSpanArr(this.tableData)
 
         this.tableLoad = false;

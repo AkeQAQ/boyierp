@@ -200,7 +200,12 @@
           </el-dropdown>
         </el-form-item>
 
+        <el-form-item v-if="hasAuth('finance:summaryFilter:list')">
+          <el-button  size="mini" icon="el-icon-plus" @click="addFilters()" >添加过滤名单</el-button>
+        </el-form-item>
       </el-form>
+
+
 
 
 
@@ -418,6 +423,83 @@
 
       </el-table>
 
+      <!-- 过滤名单 -->
+      <el-dialog
+          title="过滤名单列表"
+          :visible.sync="dialogFilterVisible"
+          width="50%"
+
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 size="mini" :inline="true"
+                 label-width="100px"
+
+                 class="demo-editForm">
+
+          <el-form-item>
+            <el-button size="medium"  plain v-show="hasAuth('finance:summaryFilter:list') "
+                        type="primary"   @click="submitFilterForm"
+            >保存
+            </el-button>
+          </el-form-item>
+
+
+        </el-form>
+        <el-divider content-position="left">过滤列表</el-divider>
+
+        <el-button  type="primary" icon="el-icon-plus" size="mini" @click="handleAddFilter"
+        >添加
+        </el-button>
+        <el-button   type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteFilter"
+        >删除
+        </el-button>
+
+        <el-table
+            :data="editFilterForm"
+            :row-class-name="rowClassName"
+            ref="tbFilter"
+            height="300"
+            size="mini"
+            :cell-style="cellStyle"
+            fit
+            @selection-change="handleFilterSelectionChange"
+
+        >
+          <el-table-column type="selection" width="80" align="center"   >
+          </el-table-column>
+          <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
+
+          <el-table-column label="供应商编码" align="center" prop="supplierId" width="210" >
+            <template slot-scope="scope">
+              <el-autocomplete
+                  style="width: 180px"
+                  class="inline-input elAutocomplete_my"
+                  popper-class="my-autocomplete"
+
+                  v-model="editFilterForm[scope.row.seqNum-1].supplierId"
+                  :fetch-suggestions="querySearch"
+                  :trigger-on-focus="false"
+                  placeholder="请输入供应商"
+                  @select="tableSupplierSelectSearch($event,editFilterForm[scope.row.seqNum - 1])"
+                  @change="tableSupplierMoveMouse($event,editFilterForm[scope.row.seqNum - 1],scope.row.seqNum - 1)"
+                  @focus="searchSupplierFocus()"
+                  clearable
+              >
+              </el-autocomplete>
+            </template>
+
+          </el-table-column>
+
+          <el-table-column label="供应商名称" align="center" prop="supplierName " width="200">
+            <template slot-scope="scope">
+              <el-input :disabled=true v-model="editFilterForm[scope.row.seqNum-1].supplierName"></el-input>
+            </template>
+
+          </el-table-column>
+
+        </el-table>
+
+      </el-dialog>
       <!-- 对账生成 -->
       <el-dialog
           title="对账月份选择生成"
@@ -496,7 +578,7 @@
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="save" v-show="hasAuth('finance:summary:update') " >
+                <el-dropdown-item command="save" v-show="hasAuth('finance:summary:update') && this.editForm.status===0 " >
                   提交单据</el-dropdown-item>
 
               </el-dropdown-menu>
@@ -546,10 +628,10 @@
         </el-form>
         <el-divider content-position="left">明细信息</el-divider>
 
-        <el-button type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails"
+        <el-button v-if="this.editForm.status===0" type="primary" icon="el-icon-plus" size="mini" @click="handleAddDetails"
                    >添加
         </el-button>
-        <el-button type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
+        <el-button  v-if="this.editForm.status===0" type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteDetails"
                    >删除
         </el-button>
 
@@ -732,6 +814,7 @@ export default {
 
       //选中的从表数据
       checkedDetail: [],
+      checkedFilterDetail: [],
 
       // 搜索字段
       selectedName: 'supplierName',// 搜索默认值
@@ -757,7 +840,12 @@ export default {
       editAddForm: {
         addDate: new Date().format("yyyy-MM") ,
       },
-      editForm: {
+      editFilterForm :[{
+        id:'',
+        supplierId:'',
+        supplierName:''
+      }],
+       editForm: {
         status: 1, // 结账状态
         id: '',
         summaryDate: new Date().format("yyyy-MM-dd") ,
@@ -780,6 +868,8 @@ export default {
       },
       dialogVisible: false,
       dialogAddVisible: false,
+      dialogFilterVisible: false,
+
       tableData: [],
       tableRealDosageData: [],
       spanArr: [],
@@ -790,6 +880,13 @@ export default {
     }
   },
   methods: {
+    addFilters(){
+      request.post('/finance/summaryFilters/list').then(res => {
+        this.editFilterForm = res.data.data;
+        this.dialogFilterVisible=true
+
+      })
+    },
     loadDocumentAll(supplierId) {
       request.post('/finance/supplierTaxSupplement/loadDocumentAll?supplierId='+supplierId).then(res => {
         this.restaurants2 = res.data.data
@@ -809,6 +906,25 @@ export default {
             throw new Error();
           } else {
             rowObj.documentNum = "";
+          }
+
+        })
+      } catch (err) {
+      }
+    },
+    tableSupplierMoveMouse(selectItem, rowObj,index) {
+      console.log("tableMoveMouse", selectItem, rowObj)
+      try {
+        // foreach 只能抛出异常结束
+        this.restaurants.forEach(item => {
+          if (selectItem === item.id) {
+            rowObj.supplierId = item.id;
+            rowObj.supplierName = item.name;
+
+            throw new Error();
+          } else {
+            rowObj.supplierId = "";
+            rowObj.supplierName = "";
           }
 
         })
@@ -1204,10 +1320,22 @@ export default {
     action() {
       this.submitForm('editForm')
     },
+    action2() {
+      this.submitFilterForm()
+    },
 
     // 设置每一行的seqNum = 游标+1
     rowClassName({row, rowIndex}) {
       row.seqNum = rowIndex + 1;
+    },
+    handleFilterSelectionChange(val) {
+      console.log("多选框 val ", val)
+      this.checkedFilterDetail = []
+
+      val.forEach(theId => {
+        this.checkedFilterDetail.push(theId.seqNum)
+      })
+      console.log("多选框 选中的 ", this.checkedFilterDetail)
     },
     //单选框选中数据
     handleDetailSelectionChange(val) {
@@ -1218,6 +1346,15 @@ export default {
         this.checkedDetail.push(theId.seqNum)
       })
       console.log("多选框 选中的 ", this.checkedDetail)
+    },
+    handleAddFilter() {
+      if (this.editFilterForm == undefined) {
+        console.log("editForm 初始化")
+        this.editFilterForm = [];
+      }
+      let obj = {};
+      obj.supplierId = '';
+      this.editFilterForm.push(obj);
     },
     // 对账详细信息-添加
     handleAddDetails() {
@@ -1232,6 +1369,19 @@ export default {
       obj.documentNum=''
 
       this.editForm.rowList.push(obj);
+    },
+    handleDeleteFilter() {
+      if (this.checkedFilterDetail.length == 0) {
+        if(this.editFilterForm.length === 0){
+          this.$message({
+            message: '没有记录可删除!',
+            type: 'error'
+          });
+        }
+      }else {
+        this.editFilterForm = this.getNewArr(this.editFilterForm,this.checkedFilterDetail);
+      }
+      this.checkedFilterDetail=[]
     },
     // 对账详细信息-删除
     handleDeleteDetails() {
@@ -1259,6 +1409,13 @@ export default {
       return test
     },
 
+    tableSupplierSelectSearch(selectItem, param) {
+      console.log("每个表格项选中：", selectItem, param);
+      param.supplierId = selectItem.id;
+      param.supplierName = selectItem.name;
+
+
+    },
     handleSelect(item) {
       this.editForm.supplierId = item.id
       this.editForm.supplierName = item.name
@@ -1315,6 +1472,25 @@ export default {
         }
       })
       console.log("多选框 选中的 ", this.multipleSelection)
+    },
+    submitFilterForm() {
+          const load = this.$loading({
+            lock: true,
+            text: '处理中...',
+            spinner: 'el-icon-loading',
+            background: 'rgba(0, 0, 0, 0.7)'
+          });
+
+          request.post('/finance/summaryFilters/save' , this.editFilterForm).then(res => {
+            load.close()
+            this.$message({
+              message: '保存成功!',
+              type: 'success'
+            });
+
+          }).catch(()=>{
+            load.close()
+          })
     },
     // 表单提交
     submitForm(formName) {
