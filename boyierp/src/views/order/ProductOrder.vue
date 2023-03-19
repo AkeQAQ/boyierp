@@ -1248,13 +1248,24 @@
 
           <el-table-column label="新增备料数量" align="center" width="120" prop="addNum">
             <template slot-scope="scope">
+              <div :class="'el-input el-input--mini'">
+                <input  class="el-input__inner"
+                        :ref='"input_num_"+scope.row.seqNum'
+                        @keyup.up="numUp(scope.row.seqNum)"
+                        @keyup.down="numDown(scope.row.seqNum)"
+
+                        oninput="value=value.replace(/[^0-9.-]/g,'')"
+                        v-model.lazy="prepareList[scope.row.seqNum-1].addNum">
+                </input>
+              </div>
+<!--
               <el-input size="mini"
                         :ref='"input_num_"+scope.row.seqNum'
                         @keyup.up.native="numUp(scope.row.seqNum)"
                         @keyup.down.native="numDown(scope.row.seqNum)"
 
                         oninput="value=value.replace(/[^0-9.-]/g,'')"
-                        v-model="prepareList[scope.row.seqNum-1].addNum"/>
+                        v-model="prepareList[scope.row.seqNum-1].addNum"/>-->
             </template>
           </el-table-column>
 
@@ -1674,11 +1685,20 @@
 
           <el-table-column label="新增备料数量" align="center" width="120" prop="addNums">
             <template slot-scope="scope">
-              <el-input size="mini"
+              <div :class="'el-input el-input--mini'">
+                <input  class="el-input__inner"
+                        :ref='"input2_num_"+scope.row.seqNum'
+                        @keyup.up="numUp2(scope.row.seqNum)"
+                        @keyup.down="numDown2(scope.row.seqNum)"
+                        v-model.lazy="prepareBatchList[scope.row.seqNum-1].addNums"
+                >
+                </input>
+              </div>
+<!--              <el-input size="mini"
                         :ref='"input2_num_"+scope.row.seqNum'
                         @keyup.up.native="numUp2(scope.row.seqNum)"
                         @keyup.down.native="numDown2(scope.row.seqNum)"
-                        v-model="prepareBatchList[scope.row.seqNum-1].addNums"/>
+                        v-model="prepareBatchList[scope.row.seqNum-1].addNums"/>-->
             </template>
           </el-table-column>
 
@@ -3179,13 +3199,26 @@ export default {
       })
     },
     handleClosePrepare(done) {
-      this.prepareList = []
-      this.dialogCalNumVisible=false;
-      this.getList()
+
+
+      this.$confirm('确认关闭？')
+          .then(_ => {
+            this.prepareList = []
+            this.dialogCalNumVisible=false;
+            this.getList()
+            done();
+          })
+          .catch(_ => {});
     },
     handleCloseBatchPrepare(done) {
-      this.dialogPrepareBatchVisible=false;
-      this.getList()
+      this.$confirm('确认关闭？')
+          .then(_ => {
+            this.prepareBatchList=[]
+            this.dialogPrepareBatchVisible=false;
+            this.getList()
+            done();
+          })
+          .catch(_ => {});
     },
     // 关闭弹窗处理动作
     handleClose(done) {

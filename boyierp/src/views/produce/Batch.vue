@@ -33,6 +33,12 @@
             </input>
           </div>
 
+          <div v-if="selectedName === 'orderNum'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+            <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                    v-model.lazy="searchStr">
+            </input>
+          </div>
+
 
         </el-form-item>
 
@@ -53,6 +59,25 @@
               </el-select>
 
               <div :class=" 'el-input el-input--mini'" v-if="item.selectField === 'batchId'" style="width: 200px">
+                <input  class="el-input__inner"   placeholder="请输入搜索内容"
+                        v-model.lazy="item.searchStr">
+                </input>
+              </div>
+
+              <div :class=" 'el-input el-input--mini'" v-if="item.selectField === 'productNum'" style="width: 200px">
+                <input  class="el-input__inner"   placeholder="请输入搜索内容"
+                        v-model.lazy="item.searchStr">
+                </input>
+              </div>
+
+              <div :class=" 'el-input el-input--mini'" v-if="item.selectField === 'productBrand'" style="width: 200px">
+                <input  class="el-input__inner"   placeholder="请输入搜索内容"
+                        v-model.lazy="item.searchStr">
+                </input>
+              </div>
+
+
+              <div :class=" 'el-input el-input--mini'" v-if="item.selectField === 'orderNum'" style="width: 200px">
                 <input  class="el-input__inner"   placeholder="请输入搜索内容"
                         v-model.lazy="item.searchStr">
                 </input>
@@ -1415,7 +1440,9 @@ export default {
       options: [
         {value: 'batchId', label: '生产序号'},
         {value: 'productNum', label: '工厂货号'},
-        {value: 'productBrand', label: '品牌'}
+        {value: 'productBrand', label: '品牌'},
+        {value: 'orderNum', label: '订单号'}
+
 
       ],
       select: 'batchId', // 搜索默认值
