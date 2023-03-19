@@ -690,6 +690,8 @@ export default {
         headers: {'Content-Type': 'multipart/form-data'}
       }).then(res => {
         // 成功
+        this.editForm.picUrl=''
+
         this.$message({
           message: '删除成功!',
           type: 'success'
@@ -723,6 +725,8 @@ export default {
           request.get('/finance/supplierTaxDeduction/getPicturesById?id='+this.editForm.id).then(res => {
             let data = res.data.data;
             this.fileList.push({name:data[data.length-1],url: sysbaseUrl+"/"+data[data.length-1]})
+            this.editForm.picUrl=data[data.length-1]
+
           })
         })
 

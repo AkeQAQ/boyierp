@@ -892,6 +892,36 @@
             </el-switch>
           </el-form-item>
 
+
+          <el-form-item>
+            <el-switch
+                style="display: block;margin-top: 8px"
+                v-model="showHasEndDate"
+                active-color="#13ce66"
+                inactive-color="#ff4949"
+                active-text="筛选有货期的"
+                inactive-text="不筛选">
+            </el-switch>
+          </el-form-item>
+
+          <el-form-item>
+            <!-- 列表界面-供应商搜索 -->
+            <el-autocomplete size="mini"
+                             style="width: 200px"
+                             popper-class="my-autocomplete"
+
+                             clearable
+                             class="inline-input"
+                             v-model="searchProgressSupStr"
+                             :fetch-suggestions="querySearch"
+                             :trigger-on-focus="false"
+                             placeholder="请输入供应商"
+                             @select="searchProgressSelect"
+                             @focus="searchSupplierFocus()"
+            >
+            </el-autocomplete>
+          </el-form-item>
+
           <el-form-item>
             <el-button size="mini" icon="el-icon-search" @click="searchQuery()" type="success">查询</el-button>
           </el-form-item>
@@ -1373,6 +1403,7 @@ export default {
       showProgress:false,
 
       showSendNoBack:false,
+      showHasEndDate:false,
 
       editSupplierName:'',
 
@@ -1449,6 +1480,8 @@ export default {
       searchStr: '',
       searchStrList: [],
       searchField: '',
+
+      searchProgressSupStr: '',
 
       // 分页字段
       currentPage: 1 // 当前页
@@ -2285,6 +2318,9 @@ export default {
     searchSelect(item) {
       this.searchStr = item.name
     },
+    searchProgressSelect(item) {
+      this.searchProgressSupStr = item.name
+    },
 
     handleChange(value, direction, movedKeys) {
       console.log(value, direction, movedKeys);
@@ -2548,9 +2584,10 @@ export default {
       this.getList()
     },
     getQueryList() {
-      let url = '/produce/batch/progressList?showSendNoBack='+this.showSendNoBack
+      let url = '/produce/batch/progressList?showSendNoBack='+this.showSendNoBack+'&&showHasEndDate='+this.showHasEndDate
       request.post(url,{searchQueryStartDateStr:this.searchQueryStartDateStr
-      ,searchQueryOutDateStr:this.searchQueryOutDateStr},null).then(res => {
+      ,searchQueryOutDateStr:this.searchQueryOutDateStr,supplierName:this.searchProgressSupStr},null
+      ).then(res => {
         this.tableQueryData = res.data.data['progressData']
         this.tableDelayData = res.data.data['delayData']
         this.totalBatchId = res.data.data['totalBatchId']
@@ -2683,6 +2720,7 @@ export default {
       this.tableQueryData = ''
       this.totalBatchId = ''
       this.allTotalNum = ''
+      this.searchProgressSupStr=''
     },
     handleClosePrepare(done) {
       this.dialogCalNumVisible=false;
