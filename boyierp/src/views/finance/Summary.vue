@@ -183,26 +183,25 @@
           <el-button size="mini" icon="el-icon-search" @click="search()" type="success">搜索</el-button>
         </el-form-item>
 
-        <el-form-item>
-          <el-button size="mini" icon="el-icon-plus" @click="dialogAddVisible=true" type="danger">新增</el-button>
-        </el-form-item>
 
 
         <el-form-item v-if="hasAuth('finance:summary:list')" style="margin-left: 0">
           <el-dropdown   @command="expChange">
-            <el-button  icon="el-icon-download" size="mini" >
-              导出<i class="el-icon-arrow-down el-icon&#45;&#45;right"></i>
+            <el-button  icon="el-icon-more" size="mini" >
+              其他操作<i class="el-icon-arrow-down el-icon&#45;&#45;right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item v-if="hasAuth('finance:summary:update')" command="save">生成月份对账单</el-dropdown-item>
+              <el-dropdown-item v-if="hasAuth('finance:summaryFilter:list')" command="addFilters">添加过滤名单</el-dropdown-item>
+              <el-dropdown-item v-if="hasAuth('finance:summary:update')" command="refresh">月份刷新</el-dropdown-item>
+
               <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
               <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
+
             </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
 
-        <el-form-item v-if="hasAuth('finance:summaryFilter:list')">
-          <el-button  size="mini" icon="el-icon-plus" @click="addFilters()" >添加过滤名单</el-button>
-        </el-form-item>
       </el-form>
 
 
@@ -500,6 +499,40 @@
         </el-table>
 
       </el-dialog>
+
+      <!-- 对账刷新 -->
+      <el-dialog
+          title="对账月份刷新"
+          :visible.sync="dialogRefreshVisible"
+          :before-close="handleRefreshClose"
+          width="30%"
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 size="mini" :inline="true"
+                 label-width="100px"
+                 :model="editRefreshForm"  ref="editRefreshForm"
+                 class="demo-editForm">
+
+          <el-form-item label="对账月份" prop="addDate" label-width="70px">
+            <el-date-picker  style="width: 130px;"
+                             value-format="yyyy-MM"
+                             v-model="editRefreshForm.addDate"
+                             type="month"
+                             clearable
+                             placeholder="选择日期">
+            </el-date-picker>
+
+          </el-form-item>
+
+          <el-popconfirm @confirm="refreshData()" title="确定该月份刷新对账单吗？">
+            <el-button size="mini" icon="el-icon-success"  type="success"
+                       slot="reference">刷新对账单
+            </el-button>
+          </el-popconfirm>
+        </el-form>
+
+      </el-dialog>
+
       <!-- 对账生成 -->
       <el-dialog
           title="对账月份选择生成"
@@ -568,7 +601,7 @@
           <el-form-item prop="status">
               <el-radio-group v-model="editForm.status"  @change="statusChange">
                 <el-radio  :disabled="!hasAuth('finance:summary:valid')" :label="0">已结账</el-radio>
-                <el-radio   :disabled="!hasAuth('finance:summary:valid')" :label="1">未结账</el-radio>
+                <el-radio   :disabled="!hasAuth('finance:summary:valid') || (editForm.rowList!=null && editForm.rowList.length>0 )" :label="1">未结账</el-radio>
               </el-radio-group>
           </el-form-item>
 
@@ -834,8 +867,11 @@ export default {
       // 分页字段
       currentPage: 1 // 当前页
       , pageSize: 50 // 一页多少条
-      , total: 0 // 总共多少数据
-      ,
+      , total: 0, // 总共多少数据
+      // 表单字段
+      editRefreshForm: {
+        addDate: new Date().format("yyyy-MM") ,
+      },
       // 表单字段
       editAddForm: {
         addDate: new Date().format("yyyy-MM") ,
@@ -869,6 +905,7 @@ export default {
       dialogVisible: false,
       dialogAddVisible: false,
       dialogFilterVisible: false,
+      dialogRefreshVisible: false,
 
       tableData: [],
       tableRealDosageData: [],
@@ -1018,6 +1055,32 @@ export default {
 
       })
     },
+    refreshData(){
+
+      if(this.editRefreshForm.addDate==='' || this.editRefreshForm.addDate===undefined){
+        this.$message.error("请选择一个月份");
+        return;
+      }
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+
+      request.post('/finance/supplierSummary/refreshData?addDate='+this.editRefreshForm.addDate).then(res => {
+        load.close()
+        let d = res.data.data;
+        this.$message({
+          message: d,
+          type: 'success'
+        });
+        this.getList()
+        this.dialogRefreshVisible=false;
+      }).catch(()=>{
+        load.close()
+      })
+    },
 
     addNewData(){
 
@@ -1112,7 +1175,14 @@ export default {
         this.exportCurrentList()
       } else if(item === 'all'){
         this.exportAll()
+      }else if(item === 'save'){
+        this.dialogAddVisible=true
+      }else if(item === 'addFilters'){
+        this.addFilters()
+      }else if(item === 'refresh'){
+        this.dialogRefreshVisible=true
       }
+
     },
 
     dialogOpend(){
@@ -1498,13 +1568,13 @@ export default {
 
         if (valid) {
 
-          if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
+          /*if (this.editForm.rowList === undefined || this.editForm.rowList.length === 0) {
             this.$message({
               message: '请录入至少一个付款信息',
               type: 'error'
             });
             return
-          }
+          }*/
 
           let validateFlag = true;
           let validateMaterial = true;
@@ -1557,13 +1627,13 @@ export default {
           }
 
 
-          if(this.editForm.rowList.length === 0){
+         /* if(this.editForm.rowList.length === 0){
             this.$message({
               message: '请录入至少一个付款信息!',
               type: 'error'
             });
             return
-          }
+          }*/
 
           // 假如有记录选择了对公，但是内容是空值，则提醒
 
@@ -1655,6 +1725,11 @@ export default {
         })
 
       })
+    },
+    handleRefreshClose(done) {
+      this.dialogRefreshVisible=false;
+      this.$refs['editRefreshForm'].resetFields();
+      this.getList()
     },
     handleAddClose(done) {
       this.dialogAddVisible=false;
