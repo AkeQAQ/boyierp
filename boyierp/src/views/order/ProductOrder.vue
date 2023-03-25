@@ -573,6 +573,14 @@
             </div>
           </el-form-item>
 
+          <el-form-item label="颜色" prop="productColor" style="margin-bottom: 10px">
+            <div :class="'el-input el-input--mini'">
+              <input  class="el-input__inner" style="width: 150px"
+                      v-model.lazy="editOrderNumForm.productColor">
+              </input>
+            </div>
+          </el-form-item>
+
           <el-form-item v-if="hasAuth('order:productOrder:save')">
             <el-button type="primary"  @click="updateOrderNumSubmit()">
               提交修改
@@ -2104,7 +2112,8 @@ export default {
       editOrderNumForm: {
         id: '',
         orderNum:'',
-        orderNumber:''
+        orderNumber:'',
+        productColor:''
       },
       editMergeOrdersForm: {
         orders: '',
