@@ -251,6 +251,14 @@
         </el-table-column>
 
         <el-table-column
+            label="楦号"
+            prop="shoeLast"
+            width="80px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+
+        <el-table-column
             label="客户货号"
             prop="customerNum"
             width="70px"
@@ -2406,7 +2414,7 @@ export default {
           sums[index] = '求和';
           return;
         }
-        if (index === 6 ) {
+        if (index === 7 ) {
           const values = data.map(item => Number(item[column.property]));
           if (!values.every(value => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {

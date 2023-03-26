@@ -87,6 +87,147 @@
 
     </div>
 
+    <el-divider content-position="left">楦型成本价</el-divider>
+
+    <div style="margin-left: 130px">
+      <el-container>
+        <el-main class="elMain_my" style="padding-top: 0;padding-right: 0px">
+          <el-form :inline="true" class="demo-form-inline elForm_my" >
+            <el-form-item>
+              <el-select size="mini" style="width: 120px" v-model="selectFieldShoeLast" filterable @change="searchFieldChange" placeholder="请选择搜索字段">
+                <el-option
+                    v-for="item in optionsShoeLast"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+
+            <el-form-item>
+
+              <!-- 楦号 -->
+              <div v-if="selectedNameShoeLast === 'shoeLast'" :class=" 'el-input el-input--mini'" style="margin: 0 0">
+                <input  @keyup.enter="search()" class="el-input__inner" style="width: 200px"  placeholder="请输入搜索内容"
+                        v-model.lazy="searchStrShoeLast">
+                </input>
+              </div>
+
+            </el-form-item>
+
+            <el-form-item>
+              <el-button size="mini" icon="el-icon-search" @click="getShoeLastData()" type="success">搜索</el-button>
+            </el-form-item>
+
+            <el-form-item  style="margin-left: 0">
+              <el-dropdown   @command="expChange">
+                <el-button  icon="el-icon-download" size="mini" >
+                  导出<i class="el-icon-arrow-down el-icon--right"></i>
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="all">导出当前条件全部</el-dropdown-item>
+                  <el-dropdown-item command="currentList">导出当前页</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </el-form-item>
+
+          </el-form>
+        </el-main>
+
+      </el-container>
+      <el-table
+          ref="multipleTable"
+          :data="tableData"
+          border
+          stripe
+          size="mini"
+          :cell-style="{padding:'0'}"
+
+          tooltip-effect="dark"
+          style="width: 100%;color:black">
+        <el-table-column
+            label="物料ID"
+            prop="id"
+            width="120">
+        </el-table-column>
+
+
+        <el-table-column
+            label="物料名称"
+            prop="name"
+            width="180"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            label="楦型号"
+            prop="shoeLast"
+            width="180" show-overflow-tooltip>
+        </el-table-column>
+
+
+        <el-table-column
+            label="楦数量"
+            prop="shoeLastTotalNum"
+            width="100"
+        >
+        </el-table-column>
+
+        <el-table-column
+            label="采购总金额"
+            prop="shoeLastTotalAmount"
+            width="100"
+        >
+        </el-table-column>
+        <el-table-column
+            label="订单数量"
+            prop="orderNumber"
+            width="100">
+        </el-table-column>
+
+        <el-table-column
+            label="楦费用/订单数量平均成本"
+            prop="avgPrice"
+            width="180"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            label="最近订单时间"
+            prop="shoeLastTime"
+            width="180"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            label="物料状态"
+            prop="status"
+            width="87px"
+        >
+          <template slot-scope="scope">
+            <el-tag size="small" v-if="scope.row.status === null" type="success">可用</el-tag>
+            <el-tag size="small" v-else-if="scope.row.status===-1" type="warning">禁用</el-tag>
+          </template>
+        </el-table-column>
+
+      </el-table>
+
+      <!-- 分页组件 -->
+      <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="this.currentPage"
+          :page-sizes="[15, 30, 50, 1000]"
+          :page-size="this.pageSize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="this.total">
+      </el-pagination>
+    </div>
+
+    <el-divider></el-divider>
+
+
   </div>
 
 
@@ -94,12 +235,29 @@
 
 <script>
 
-import {request} from "@/axios";
+import {request, request2} from "@/axios";
 
 export default {
   name: "daMaterialEchart",
   data(){
     return{
+      selectFieldShoeLast:'shoeLast',
+      selectedNameShoeLast: 'shoeLast',// 搜索默认值
+      optionsShoeLast: [
+        {value: 'shoeLast', label: '楦号'},
+
+      ],
+      selectShoeLast: 'shoeLast', // 搜索默认值
+      searchStrShoeLast: '',
+      searchStrShoeLastList: [],
+      searchShoeLastField: '',
+
+      tableData:[],
+      currentPage: 1 // 当前页
+      , pageSize: 15 // 一页多少条
+      , total: 0, // 总共多少数据
+
+
       // 1. 车间进度表
       dataMap:{},
 
@@ -124,9 +282,119 @@ export default {
 
       searchStartDate: new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 180).format("yyyy-MM-dd"),
       searchEndDate: new Date().format("yyyy-MM-dd"),
+
     }
   },
   methods: {
+    exportCurrentList() {
+
+      request2.post('/analysis/exportShoeLastData?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchField="+this.selectShoeLast,
+          {'searchStr':this.searchStrShoeLast},{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'楦型统计数据当前页.xlsx')
+      }).catch()
+    },
+    // 导出列表数据- 服务端写出字节流到浏览器，进行保存
+    exportAll() {
+
+      request2.post('/analysis/exportShoeLastData?'+
+          "searchField="+this.selectShoeLast,
+          {'searchStr':this.searchStrShoeLast},{responseType:'arraybuffer'}).then(res=>{
+        // 这里使用blob做一个转换
+        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+
+        this.saveFile(blob,'楦型统计数据全部列表.xlsx')
+      }).catch()
+    },
+    // POI- 服务端写出字节流到浏览器，进行保存
+    saveFile(data,name){
+      try {
+        const blobUrl = window.URL.createObjectURL(data)
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        a.download = name
+        a.href = blobUrl
+        a.click()
+
+      } catch (e) {
+        alert('保存文件出错')
+      }
+    },
+
+    searchFieldChange(item) {
+      console.log("搜索字段改变:", item)
+      this.selectedNameShoeLast = item
+    },
+// 分页方法
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`);
+      this.pageSize = val
+      this.getShoeLastData()
+
+    },
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`);
+      this.currentPage = val
+      this.getShoeLastData()
+
+    },
+    expChange(item) {
+      console.log("导出:",item)
+      if (item === 'currentList') {
+        this.exportCurrentList()
+      } else if(item === 'all'){
+        this.exportAll()
+      }
+    },
+    // 查询角色表单列表数据
+    getShoeLastData() {
+
+      request.post('/analysis/getShoeLastData?currentPage='+this.currentPage+
+          "&&pageSize="+this.pageSize+
+          "&&total="+this.total+
+          "&&searchField="+this.selectShoeLast,
+          {'searchStr':this.searchStrShoeLast},
+          null).then(res => {
+        this.tableData = res.data.data.records
+        this.total = res.data.data.total
+      })
+    },
+    getSummaries(param) {
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0 ) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index === 7 ) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+
+        }
+
+      });
+
+      return sums;
+    },
+
     dataFormatter(obj){
       var pList = this.materialNamesLists;
       var temp;
@@ -568,6 +836,7 @@ export default {
     this.getData5()
     this.getAllSupplierGroup();
     this.getAllMaterialGroup();
+    this.getShoeLastData();
 
   }
 }
