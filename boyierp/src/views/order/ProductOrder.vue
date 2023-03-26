@@ -2115,7 +2115,9 @@ export default {
         productColor:'',
         orderNumber:'',
         productRegion:'',
-        orderType:0
+        orderType:0,
+        shoeLast:'',
+        endDate:''
       },
       editOrderNumForm: {
         id: '',
@@ -2965,6 +2967,8 @@ export default {
       else if(item === 'copy'){
         this.editForm.id = '';
         this.editForm.status = 1;
+        this.editForm.endDate=null
+        this.editForm.shoeLast=null
         this.addOrUpdate = 'save';
       }
     },
