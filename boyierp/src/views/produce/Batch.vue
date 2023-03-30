@@ -535,7 +535,7 @@
                                  :popper-append-to-body="true"
                                  :ref='"el_auto_"+item.produceBatchId'
                                  @focus="searchSupplierFocus()"
-                                 @select="searchSupplierSelect($event,item)"
+                                 @select="searchSupplierSelect($event,item,scope.row)"
                                  @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
@@ -566,7 +566,7 @@
                                  :popper-append-to-body="true"
                                  :ref='"el_auto_m_"+item.produceBatchId'
                                  @focus="searchMmaterialFocus()"
-                                 @select="searchMaterialSelect($event,item)"
+                                 @select="searchMaterialSelect($event,item,scope.row)"
                                  @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
@@ -591,7 +591,7 @@
                                  type="datetime"
                                  clearable
                                  placeholder="开始日期"
-                                 @change="searchSendDate($event,item)"
+                                 @change="searchSendDate($event,item,scope.row)"
                                  @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
@@ -616,7 +616,7 @@
                                  type="datetime"
                                  clearable
                                  placeholder="开始日期"
-                                 @change="searchBackDate($event,item)"
+                                 @change="searchBackDate($event,item,scope.row)"
                                  @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
@@ -641,7 +641,7 @@
                                  type="datetime"
                                  clearable
                                  placeholder="开始日期"
-                                 @change="searchOutDate($event,item)"
+                                 @change="searchOutDate($event,item,scope.row)"
                                  @keyup.native.enter="enterEdit(item,scope.row)"
                                  @keyup.native.esc="escEdit(item,scope.row,index)"
                                  @keyup.native.down="addProgress(scope.row)"
@@ -2255,6 +2255,13 @@ export default {
         });
         return;
       }
+      if(item.materialId ===null && (item.materialName!==null && item.materialName!=='' )){
+        this.$message({
+          message: '物料ID为空,请用下拉框选择!!',
+          type: 'error'
+        });
+        return;
+      }
         // 选择就修改供应商名称
         request.post('/produce/batchProgress/updateProgress',row.progresses).then(res => {
           this.$message({
@@ -2277,21 +2284,36 @@ export default {
       row.costOfLabourTypeId = item.id
       this.$refs['el_auto_type_'+row.produceBatchId].focus()
     },
-    searchSupplierSelect(item,row) {
+    searchSupplierSelect(item,row,all) {
       console.log("下拉框选中：",item)
       row.supplierName = item.name
       row.supplierId = item.id
-      this.$refs['el_auto_'+row.produceBatchId].focus()
+
+      // 选择就修改供应商名称
+      request.post('/produce/batchProgress/updateProgress',all.progresses).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
     },
     searchQueryMaterialSelect(item) {
       console.log("下拉框选中：",item)
       this.searchQueryMaterialName = item.name
     },
-    searchMaterialSelect(item,row) {
+    searchMaterialSelect(item,row,all) {
       console.log("下拉框选中：",item)
       row.materialName = item.name
       row.materialId = item.id
-      this.$refs['el_auto_m_'+row.produceBatchId].focus()
+
+      request.post('/produce/batchProgress/updateProgress',all.progresses).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
     },
     searchMaterialSelectDelay(item,row) {
       console.log("下拉框选中：",item)
@@ -2299,17 +2321,42 @@ export default {
       row.materialId = item.id
       this.$refs['el_auto_m_delay_'+row.produceBatchId].focus()
     },
-    searchSendDate(item,row) {
+    searchSendDate(item,row,all) {
       console.log("日期下拉框选中：",item)
       row.sendForeignProductDate = item
+
+      request.post('/produce/batchProgress/updateProgress',all.progresses).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
     },
-    searchBackDate(item,row) {
+    searchBackDate(item,row,all) {
       console.log("日期下拉框选中：",item)
       row.backForeignProductDate = item
+
+      request.post('/produce/batchProgress/updateProgress',all.progresses).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
     },
-    searchOutDate(item,row) {
+    searchOutDate(item,row,all) {
       console.log("日期下拉框选中：",item)
       row.outDate = item
+
+
+      request.post('/produce/batchProgress/updateProgress',all.progresses).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
     },
     searchDate(item,row) {
       console.log("日期下拉框选中：",item)
