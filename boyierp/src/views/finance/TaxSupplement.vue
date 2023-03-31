@@ -272,6 +272,14 @@
         </el-table-column>
 
         <el-table-column
+            label="不含税开票金额"
+            prop="documentNoTaxAmount"
+            width="105px"
+            show-overflow-tooltip
+        >
+        </el-table-column>
+
+        <el-table-column
             label="税点"
             prop="taxPoint"
             width="70px"
@@ -401,9 +409,9 @@
           top="0vh"
 
       >
-        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center;"
                  size="mini"
-                 label-width="100px"
+                 label-width="110px"
                  :model="editForm"  ref="editForm"
                  class="demo-editForm">
 
@@ -455,6 +463,14 @@
 
           <el-form-item label="开票金额" prop="documentAmount" >
             <el-input style="width: 200px" :disabled="this.editForm.status!==1 "  v-model="editForm.documentAmount"
+                      onkeyup="value=value.replace(/[^0-9.]/g,'')"
+
+            >
+            </el-input>
+          </el-form-item>
+
+          <el-form-item label="不含税开票金额" prop="documentNoTaxAmount" >
+            <el-input style="width: 200px" :disabled="this.editForm.status!==1 "  v-model="editForm.documentNoTaxAmount"
                       onkeyup="value=value.replace(/[^0-9.]/g,'')"
                       @input="changeAmount()"
 
@@ -642,6 +658,7 @@ export default {
         taxSupplementAmount:'',
         taxPoint:'',
         documentAmount:'',
+        documentNoTaxAmount:'',
         payStatus:1,
         payDate: '',
 
@@ -652,6 +669,8 @@ export default {
       multipleSelection: [] ,// 多选框数组
 
       documentAmount: 0,
+      documentNoTaxAmount: 0,
+
       suiAmount:0,
 
     }
@@ -727,7 +746,7 @@ export default {
 
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
-      if ( (columnIndex >=0 && columnIndex<=11) || (columnIndex===14)) {
+      if ( (columnIndex >=0 && columnIndex<=12) || (columnIndex===15)) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -739,13 +758,13 @@ export default {
     },
 
     changePoint(seq){
-      if(this.editForm.documentAmount !== ''){
-        this.editForm.taxSupplementAmount = (this.editForm.taxPoint *  this.editForm.documentAmount).toFixed(2)
+      if(this.editForm.documentNoTaxAmount !== ''){
+        this.editForm.taxSupplementAmount = (this.editForm.taxPoint *  this.editForm.documentNoTaxAmount).toFixed(2)
       }
     },
     changeAmount(seq){
       if(this.editForm.taxPoint !== ''){
-        this.editForm.taxSupplementAmount = (this.editForm.taxPoint *  this.editForm.documentAmount).toFixed(2)
+        this.editForm.taxSupplementAmount = (this.editForm.taxPoint *  this.editForm.documentNoTaxAmount).toFixed(2)
       }
     },
     handleRemove(file, id) {
@@ -842,6 +861,8 @@ export default {
         }
         if (index === 6) {
           sums[index] = this.documentAmount
+        }if (index === 7) {
+          sums[index] = this.documentNoTaxAmount
         }
         if ( index ===8) {
           sums[index] = this.suiAmount
@@ -972,6 +993,7 @@ export default {
         taxSupplementAmount:'',
         taxPoint:'',
         documentAmount:'',
+        documentNoTaxAmount:'',
         payStatus:1,
         payDate: '',
       }
@@ -1091,6 +1113,7 @@ export default {
         this.total = res.data.data['pageData'].total
 
         this.documentAmount = res.data.data['documentAmount']
+        this.documentNoTaxAmount = res.data.data['documentNoTaxAmount']
         this.suiAmount = res.data.data['suiAmount']
 
         this.getSpanArr(this.tableData)
