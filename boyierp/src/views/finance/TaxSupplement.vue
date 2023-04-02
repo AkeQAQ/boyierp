@@ -864,7 +864,7 @@ export default {
         }if (index === 7) {
           sums[index] = this.documentNoTaxAmount
         }
-        if ( index ===8) {
+        if ( index ===9) {
           sums[index] = this.suiAmount
         }
 
