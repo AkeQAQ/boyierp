@@ -129,10 +129,13 @@
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:valid')" command="batchRevalid">批量反审核</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:del')" command="batchDel">批量删除</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:push')" command="pushOrder">下推采购订单</el-dropdown-item>
-              <el-dropdown-item  v-if="hasAuth('produce:batch:list')" command="queryProgress">查询进度表</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('repository:pickMaterial:save')" command="batchZCPick">针车领料</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:list')" command="batchPrintCaiDuan">裁断批量打印</el-dropdown-item>
               <el-dropdown-item :disabled="this.multipleSelection.length === 0 " v-if="hasAuth('produce:batch:list')" command="batchPrintZhenChe">针车批量打印</el-dropdown-item>
+              <el-dropdown-item v-if="hasAuth('produce:zcGroup:list')" command="addZcGroup">添加针车组别</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('produce:batch:list')" command="queryProgress">裁断进度表</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('produce:batch:list')" command="queryZCProgress">针车进度表</el-dropdown-item>
+
 
             </el-dropdown-menu>
 
@@ -145,8 +148,8 @@
               v-model="showDetailNum"
               active-color="#13ce66"
               inactive-color="#ff4949"
-              active-text="显示码数"
-              inactive-text="不显示码数">
+              active-text="码数"
+              inactive-text="">
           </el-switch>
         </el-form-item>
 
@@ -156,8 +159,19 @@
               v-model="showProgress"
               active-color="#13ce66"
               inactive-color="#ff4949"
-              active-text="显示进度表"
-              inactive-text="不显示进度表">
+              active-text="裁断进度表"
+              inactive-text="">
+          </el-switch>
+        </el-form-item>
+
+        <el-form-item>
+          <el-switch
+              style="display: block"
+              v-model="zcShowProgress"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-text="针车进度表"
+              inactive-text="">
           </el-switch>
         </el-form-item>
 
@@ -167,8 +181,8 @@
               v-model="showDelay"
               active-color="#13ce66"
               inactive-color="#ff4949"
-              active-text="显示延期"
-              inactive-text="不显示延期">
+              active-text="物料延期"
+              inactive-text="">
           </el-switch>
         </el-form-item>
 
@@ -457,7 +471,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="进度表信息" v-if="showProgress">
+        <el-table-column label="裁断进度表信息" v-if="showProgress">
 
           <el-table-column
               label="操作"
@@ -667,6 +681,138 @@
 
         </el-table-column>
 
+        <el-table-column label="针车进度表信息" v-if="zcShowProgress">
+
+          <el-table-column
+              label="操作"
+              width="70px"
+          >
+
+            <template slot-scope="scope">
+              <div v-if="scope.row.zcProgresses.length===0  && scope.row.status ===0  && hasAuth('produce:zcProgress:update')" style="height: 40px;line-height: 40px;" @dblclick="addZCProgress(scope.row)" >双击新增</div>
+              <div  v-for="(item,index) in scope.row.zcProgresses" style="height: 40px;line-height: 40px;">
+                <el-button style="padding: 0" type="text"
+                           v-if="hasAuth('produce:zcProgress:update') &&item.id!=null && item.isAccept!=0   ">
+                  <template>
+                    <el-popconfirm @confirm="delZCProgress(item)"
+                                   title="确定删除吗？"
+                    >
+                      <el-button type="text" size="small" slot="reference" @click.stop="">删除</el-button>
+                    </el-popconfirm>
+                  </template>
+                </el-button>
+              </div>
+
+            </template>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="zcGroupName"
+              label="组别名称"
+              width="110px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.zcProgresses" style="height: 40px;line-height: 40px;" @dblclick="item.isAccept===1&& hasAuth('produce:zcProgress:update') &&  dbClickZCMethod(item)">
+                <span  v-if="!item.isOpenEdit">{{item.zcGroupName}}</span>
+                <el-autocomplete v-if="item.isOpenEdit"  size="mini"
+
+                                 style="width: 90px"
+                                 popper-class="my-autocomplete"
+                                 clearable
+                                 class="inline-input"
+                                 v-model="item.zcGroupName"
+                                 :fetch-suggestions="querySearch4"
+                                 placeholder="组别"
+                                 :trigger-on-focus="false"
+                                 :popper-append-to-body="true"
+                                 @focus="searchZCGroupFocus()"
+                                 @select="searchZCGroupSelect($event,item,scope.row)"
+                                 @keyup.native.esc="escZCEdit(item,scope.row,index)"
+                >
+                </el-autocomplete>
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="sendDate"
+              label="发包时间"
+              width="200px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.zcProgresses" style="height: 40px;line-height: 40px;" @dblclick="item.isAccept===1&& hasAuth('produce:zcProgress:update') &&  dbClickZCMethod(item)">
+                <span  v-if="!item.isOpenEdit">{{item.sendDate}}</span>
+                <el-date-picker  v-if="item.isOpenEdit" style="width: 180px"
+                                 size="mini"
+                                 value-format="yyyy-MM-dd HH:mm:ss"
+                                 v-model="item.sendDate"
+                                 type="datetime"
+                                 clearable
+                                 placeholder="开始日期"
+                                 @change="searchZCSendDate($event,item,scope.row)"
+                >
+                </el-date-picker>
+              </div>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="outDate"
+              label="出库时间"
+              width="200px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.zcProgresses" style="height: 40px;line-height: 40px;" @dblclick="item.isAccept===1&& hasAuth('produce:zcProgress:update') && dbClickZCMethod(item)">
+                <span  v-if="!item.isOpenEdit">{{item.outDate}}</span>
+                <el-date-picker  v-if="item.isOpenEdit" style="width: 180px"
+                                 size="mini"
+                                 value-format="yyyy-MM-dd HH:mm:ss"
+                                 v-model="item.outDate"
+                                 type="datetime"
+                                 clearable
+                                 placeholder="开始日期"
+                                 @change="searchZCOutDate($event,item,scope.row)"
+                                 @keyup.native.esc="escZCEdit(item,scope.row,index)"
+                >
+                </el-date-picker>
+              </div>
+            </template>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="comment"
+              label="备注"
+              width="140px"
+          >
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.zcProgresses" style="height: 40px;line-height: 40px;" @dblclick="item.isAccept===1&& hasAuth('produce:zcProgress:update') &&  dbClickZCMethod(item)">
+                <span  v-if="!item.isOpenEdit">{{item.comment}}</span>
+                <el-input v-if="item.isOpenEdit"  size="mini" style="width: 125px"
+                          @keyup.native.enter="enterZCEdit(item,scope.row)"
+                          v-model="item.comment">
+                </el-input>
+              </div>
+            </template>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="isAccept"
+              label="是否被接收"
+              width="100px">
+            <template slot-scope="scope">
+              <div v-for="(item,index) in scope.row.zcProgresses" style="height: 40px;line-height: 40px;" >
+                <el-tag size="small" v-if=" (item.outDate !=null && item.outDate!='' && item.outDate!=undefined) && item.isAccept === 0" type="success">已接收</el-tag>
+                <el-tag size="small" v-else-if="(item.outDate !=null && item.outDate!='' && item.outDate!=undefined) && item.isAccept===1" type="danger">未接收</el-tag>
+              </div>
+            </template>
+          </el-table-column>
+
+
+        </el-table-column>
+
         <el-table-column label="延期原因" v-if="showDelay" >
 
           <el-table-column
@@ -849,6 +995,171 @@
         </el-table-column>
 
       </el-table>
+
+
+      <el-dialog
+          :visible.sync="dialogZCQueryVisible"
+          width="75%"
+          title="针车进度表"
+          top="0vh"
+          :before-close="handleZCCloseQuery"
+      >
+        <el-form :inline="true" class="demo-form-inline elForm_my" style="padding: 0 0" >
+          <el-form-item>
+            <!-- 列表界面-日期搜索 -->
+            <el-date-picker style="width: 160px;"
+                            size="mini"
+                            value-format="yyyy-MM-dd"
+                            v-model="searchQueryStartDateStr"
+                            type="date"
+                            clearable
+                            placeholder="起始日期">
+            </el-date-picker>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button size="mini" icon="el-icon-search" @click="getZCQueryList()" type="success">查询</el-button>
+          </el-form-item>
+
+        </el-form>
+
+        <el-divider> 全部批次号: &nbsp;&nbsp;&nbsp;&nbsp; </el-divider>
+
+
+        <div >
+          <span v-for="item in totalBatchIdZCSet">{{item}} &nbsp;&nbsp;</span>
+        </div>
+        <el-divider> 进度表 </el-divider>
+        <el-table
+            @filter-change="filterChange"
+
+            :row-style="rowClass"
+            ref="multipleZCQueryTable"
+            :data="tableZCQueryData"
+            element-loading-background = "rgba(255, 255, 255, .5)"
+            element-loading-text = "加载中，请稍后..."
+            border
+            fit
+            height="520px"
+            size="mini"
+            tooltip-effect="dark"
+            style="width: 100%;color:black"
+            :cell-style="{padding:'0',borderColor:'black'}"
+            :header-cell-style="{borderColor:'black'}"
+            show-summary
+            :summary-method="getZCSummaries"
+
+        >
+          <el-table-column
+              prop="orderNum"
+              label="订单号"
+              width="80px"
+
+              show-overflow-tooltip>
+          </el-table-column>
+          <el-table-column
+              prop="batchId"
+              label="生产序号"
+              width="100px"
+              column-key="batchIdKey"
+              :filters=batchIdFileterArr
+              :filter-method="filterHandler"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="productNum"
+              label="公司货号"
+              width="90px"
+              column-key="productNumKey"
+              :filters=productNumFileterArr
+              :filter-method="filterHandler"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="productBrand"
+              label="品牌"
+              width="90px"
+              column-key="productBrandKey"
+              :filters=productBrandFileterArr
+              :filter-method="filterHandler"
+              show-overflow-tooltip>
+          </el-table-column>
+          <el-table-column
+              prop="orderType"
+              label="订单类型"
+              width="70px"
+          >
+            <template slot-scope="scope">
+              <el-tag size="small" v-if="scope.row.orderType === 0" type="success">订单</el-tag>
+              <el-tag size="small" v-else-if="scope.row.orderType===1" type="warning">回单</el-tag>
+              <el-tag size="small" v-else-if="scope.row.orderType===2" type="danger">取消</el-tag>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+              prop="endDate"
+              label="货期"
+              width="100px"
+              column-key="endDateKey"
+              :filters=endDateFileterArr
+              :filter-method="filterHandler"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="mergeBatchNumber"
+              label="批次号数量"
+              width="85px"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="groupName"
+              label="组名"
+              width="100px"
+              column-key="groupNameKey"
+              :filters=groupNameFileterArr
+              :filter-method="filterHandler"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="sendDate"
+              label="发包时间"
+              width="145px"
+              column-key="sendDateKey"
+              :filters=sendDateFileterArr
+              :filter-method="filterHandler"
+              show-overflow-tooltip>
+          </el-table-column>
+
+          <el-table-column
+              prop="outDate"
+              label="出库日期"
+              width="145px"
+              column-key="outDateKey"
+              :filters=outDateFileterArr
+              :filter-method="filterHandler"
+              show-overflow-tooltip>
+          </el-table-column>
+
+
+          <el-table-column
+              prop="isAccept"
+              label="是否被接收"
+              width="100px">
+            <template slot-scope="scope">
+              <el-tag size="small" v-if=" (scope.row.outDate !=null && scope.row.outDate!='' && scope.row.outDate!=undefined) && scope.row.isAccept === 0" type="success">已接收</el-tag>
+              <el-tag size="small" v-else-if="(scope.row.outDate !=null && scope.row.outDate!='' && scope.row.outDate!=undefined) && scope.row.isAccept===1" type="danger">未接收</el-tag>
+            </template>
+          </el-table-column>
+
+        </el-table>
+      </el-dialog>
 
       <el-dialog
           :visible.sync="dialogQueryVisible"
@@ -1366,6 +1677,63 @@
 
       </el-dialog>
 
+      <el-dialog
+          title="针车组别"
+          :visible.sync="dialogGroupVisible"
+          width="50%"
+
+      >
+        <el-form style="width: 100%;margin-bottom: -20px;margin-top: -30px;align-items: center"
+                 size="mini" :inline="true"
+                 label-width="100px"
+
+                 class="demo-editForm">
+
+          <el-form-item>
+            <el-button size="medium"  plain v-show="hasAuth('produce:zcGroup:list') "
+                       type="primary"   @click="submitGroupForm"
+            >保存
+            </el-button>
+          </el-form-item>
+
+
+        </el-form>
+        <el-divider content-position="left">列表</el-divider>
+
+        <el-button  type="primary" icon="el-icon-plus" size="mini" @click="handleAddGroup"
+        >添加
+        </el-button>
+<!--        <el-button   type="danger" icon="el-icon-delete" size="mini" @click="handleDeleteGroup"
+        >删除
+        </el-button>-->
+
+        <el-table
+            :data="editGroupForm"
+            :row-class-name="rowClassName"
+            ref="tbGroup"
+            height="300"
+            size="mini"
+            :cell-style="cellStyle"
+            fit
+            @selection-change="handleGroupSelectionChange"
+
+        >
+          <el-table-column type="selection" width="80" align="center"   >
+          </el-table-column>
+          <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
+
+
+          <el-table-column label="组别名称" align="center" prop="groupName " width="200">
+            <template slot-scope="scope">
+              <el-input  v-model="editGroupForm[scope.row.seqNum-1].groupName"></el-input>
+            </template>
+
+          </el-table-column>
+
+        </el-table>
+
+      </el-dialog>
+
     </el-main>
 
   </el-container>
@@ -1395,12 +1763,38 @@ export default {
   },
   data() {
     return {
+
+      flagIsFilterHanlder:false,
+      flagIsChangeFieldSearch:false,
+      batchIdFileterArr:[],
+
+      productNumFileterArr:[],
+
+      productBrandFileterArr:[],
+
+      endDateFileterArr:[],
+
+      groupNameFileterArr:[],
+
+      sendDateFileterArr:[],
+
+      outDateFileterArr:[],
+
+      editGroupForm :[{
+        id:'',
+        groupName:''
+      }],
+      dialogGroupVisible: false,
+      checkedGroupDetail: [],
+
+
       allTotalNum:'',
       oneMaterialPrices:[],
 
       showDelay:false,
       showDetailNum:false,
       showProgress:false,
+      zcShowProgress:false,
 
       showSendNoBack:false,
       showHasEndDate:false,
@@ -1504,6 +1898,8 @@ export default {
       dialogVisible: false,
 
       dialogQueryVisible: false,
+      dialogZCQueryVisible: false,
+
       searchQueryOutDateStr:'',
       searchQueryMaterialName:'',
       searchQueryStartDateStr:new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 60).format("yyyy-MM-dd"),
@@ -1513,10 +1909,15 @@ export default {
       tableQueryData: [],
       tableDelayData: [],
       totalBatchId: [],
+      totalBatchIdZCSet:new Set(),
+      tableZCQueryData: [],
 
       spanArr: [],
       pos: '',
       posProgress: '',
+
+
+      spanZCArrProgress: [],
 
       spanArrProgress: [],
       multipleSelection: [] ,// 多选框数组
@@ -1528,6 +1929,7 @@ export default {
       restaurants: [],// 搜索框列表数据存放
       restaurants2: [],// 搜索框列表数据存放
       restaurants3: [],// 搜索框列表数据存放
+      restaurants4: [],// 搜索框列表数据存放
 
     }
   },
@@ -1572,7 +1974,64 @@ export default {
 
       return sums;
     },
+    filterHandler(value, row, column) {
 
+      this.flagIsFilterHanlder = true;
+      // 假如是true，代表已经结束。重新赋值
+      if(this.flagIsChangeFieldSearch){
+        this.flagIsChangeFieldSearch = false;
+        this.totalBatchIdZCSet=new Set()
+      }
+      const property = column['property'];
+
+      console.log("filter过滤row{},column:{}",row,column)
+      let flag = row[property] === value;
+      if(flag){
+        this.totalBatchIdZCSet.add(row['batchId'])
+      }
+
+      return flag;
+    },
+    filterChange(filters){
+      // 说明过滤器全部重置了，
+      /*if(!this.flagIsFilterHanlder){
+        this.totalBatchIdZCSet = new Set();
+      }*/
+      console.log("搜索条件变动")
+      this.flagIsChangeFieldSearch = true;
+      this.flagIsFilterHanlder = false;
+    },
+    getZCSummaries(param) {
+      console.log("param:",param)
+      const {columns, data} = param;
+      const sums = [];
+      columns.forEach((column, index) => {
+        if (index === 0 ) {
+          sums[index] = '求和';
+          return;
+        }
+        if (index ===6) {
+          const values = data.map(item => Number(item[column.property]));
+          if (!values.every(value => isNaN(value))) {
+            sums[index] = values.reduce((prev, curr) => {
+              const value = Number(curr);
+              if (!isNaN(value)) {
+                return prev + curr;
+              } else {
+                return prev;
+              }
+            }, 0);
+            sums[index] = sums[index].toFixed(2);
+          } else {
+            sums[index] = 'N/A';
+          }
+
+        }
+
+      });
+
+      return sums;
+    },
     getSummaries(param) {
       console.log("param:",param)
       const {columns, data} = param;
@@ -1612,9 +2071,27 @@ export default {
       })
 
     },
+    addZCProgress(row){
+
+      console.log("当前行:,当前用户：",row,this.$store.state.user_info)
+      row.zcProgresses.push({isOpenEdit:true,produceBatchId:row.id})
+
+    },
     dbClickMethodDelay(row){
       row.oldMaterialName = row.materialName
       row.oldDate = row.date
+
+      console.log("双击row 之前：flag :",row.isOpenEdit)
+      row.isOpenEdit=true;
+      console.log("双击row 之后：flag :",row.isOpenEdit)
+      this.$refs.multipleTable.doLayout()
+    },
+    dbClickZCMethod(row){
+      console.log("dbClick:",row)
+      row.oldSendDate = row.sendDate
+      row.oldOutDate = row.outDate
+      row.oldZcGroupName = row.zcGroupName
+      row.oldZcGroupId = row.zcGroupId
 
       console.log("双击row 之前：flag :",row.isOpenEdit)
       row.isOpenEdit=true;
@@ -1648,10 +2125,19 @@ export default {
         this.restaurants = res.data.data
       })
     },
+    loadZCGroupAll() {
+      request.post('/produce/zcGroup/getSearchAllData').then(res => {
+        this.restaurants4 = res.data.data
+      })
+    },
 
     searchMmaterialFocus(){
       console.log("物料搜索框聚焦")
       this.loadMaterialAll()
+    },
+    searchZCGroupFocus(){
+      console.log("供应商搜索框聚焦")
+      this.loadZCGroupAll()
     },
     searchSupplierFocus(){
       console.log("供应商搜索框聚焦")
@@ -1675,6 +2161,12 @@ export default {
     querySearch2(queryString, cb) {
       var restaurants = this.restaurants2;
       var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    querySearch4(queryString, cb) {
+      var restaurants = this.restaurants4;
+      var results = queryString ? restaurants.filter(this.createFilter2(queryString)) : restaurants;
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
@@ -1734,6 +2226,37 @@ export default {
       }
     },
     // 同ID的，单元格合并，数据库配合返回根据ID排序
+    getZCSpanArrProgress(data) {
+      this.spanZCArrProgress = []
+      for (var i = 0; i < data.length; i++) {
+        if (i === 0) {
+          this.spanZCArrProgress.push(1);
+          this.posProgress = 0
+        } else {
+          // 判断这一条和上一条id是否相同
+          if (data[i].batchId === data[i - 1].batchId) {
+            this.spanZCArrProgress[this.posProgress] += 1;
+            this.spanZCArrProgress.push(0);
+          } else {
+            this.spanZCArrProgress.push(1);
+            this.posProgress = i;
+          }
+        }
+      }
+    },
+    objectZCSpanMethodProgress({row, column, rowIndex, columnIndex}) {
+      if ( (columnIndex >=0 && columnIndex <=7 ) ||  (columnIndex >=12 && columnIndex <=14 )) {
+        const _row = this.spanZCArrProgress[rowIndex];
+        console.log("columnIndex:"+columnIndex +",row:"+_row)
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+
+    },
+    // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethodProgress({row, column, rowIndex, columnIndex}) {
       if ( (columnIndex >=0 && columnIndex <=7 ) ||  (columnIndex >=12 && columnIndex <=14 )) {
         const _row = this.spanArrProgress[rowIndex];
@@ -1749,54 +2272,9 @@ export default {
 
     // 同ID的，单元格合并，数据库配合返回根据ID排序
     objectSpanMethod({row, column, rowIndex, columnIndex}) {
-      if (columnIndex === 1 || columnIndex === 2|| columnIndex === 3 || columnIndex === 4 || columnIndex === 5||columnIndex === 6 || columnIndex === 7 || columnIndex===8) {
-        const _row = this.spanArr[rowIndex];
-        const _col = _row > 0 ? 1 : 0;
-        return {
-          rowspan: _row,
-          colspan: _col
-        }
-      }
-      if((this.showDetailNum && this.showProgress && this.showDelay) && (
-          (  columnIndex === 25 || columnIndex === 26 ||
-              columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30 || columnIndex === 31
-          ||columnIndex === 32 || columnIndex === 33 || columnIndex === 34 || columnIndex === 35 || columnIndex === 36)
-      )){
-        const _row = this.spanArr[rowIndex];
-        const _col = _row > 0 ? 1 : 0;
-        return {
-          rowspan: _row,
-          colspan: _col
-        }
-      }
-      if((this.showDetailNum && this.showProgress && !this.showDelay) && (
-          (  columnIndex === 25 || columnIndex === 26 ||
-              columnIndex === 27 || columnIndex === 28 || columnIndex === 29 || columnIndex === 30 || columnIndex === 31
-              ||columnIndex === 32)
-      )){
-        const _row = this.spanArr[rowIndex];
-        const _col = _row > 0 ? 1 : 0;
-        return {
-          rowspan: _row,
-          colspan: _col
-        }
-      }
-       if ( (this.showDetailNum && !this.showProgress && this.showDelay) && (
-           columnIndex === 25 || columnIndex === 26 || columnIndex === 27 || columnIndex === 28  )) {
-        const _row = this.spanArr[rowIndex];
-        const _col = _row > 0 ? 1 : 0;
-        return {
-          rowspan: _row,
-          colspan: _col
-        }
-      }
-      // 此条件，不需要合并其他的
-      /*if ( (this.showDetailNum && !this.showProgress && !this.showDelay)) {
 
-      }*/
-      if((!this.showDetailNum && this.showProgress && this.showDelay)&& (
-          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18
-          ||columnIndex === 19 ||columnIndex === 20  || columnIndex === 21 || columnIndex === 22)){
+      // 订单号-核算信息
+      if (columnIndex >= 1 && columnIndex <= 8) {
         const _row = this.spanArr[rowIndex];
         const _col = _row > 0 ? 1 : 0;
         return {
@@ -1804,30 +2282,83 @@ export default {
           colspan: _col
         }
       }
-      if((!this.showDetailNum && this.showProgress && !this.showDelay)&& (
-          columnIndex === 11 ||columnIndex === 12||columnIndex === 13 ||columnIndex === 14 ||columnIndex === 15  ||columnIndex === 16  ||columnIndex === 17 ||columnIndex === 18
-          )){
-        const _row = this.spanArr[rowIndex];
-        const _col = _row > 0 ? 1 : 0;
-        return {
-          rowspan: _row,
-          colspan: _col
-        }
-      }
-      if((!this.showDetailNum && !this.showProgress && this.showDelay)&& (
-          columnIndex === 11 ||columnIndex === 12 || columnIndex === 13 || columnIndex === 14 )){
-        const _row = this.spanArr[rowIndex];
-        const _col = _row > 0 ? 1 : 0;
-        return {
-          rowspan: _row,
-          colspan: _col
-        }
+      // 9,10 是生产序号，针车领料编号。不合并
+
+      /**
+       * 码数11-24（不合并） 24-11+1=14
+       裁断25-32（合并）8
+       针车33-38（合并）6
+       延期39-42（合并）4
+       操作43（不合并）*/
+      let start =11;
+      let end =10;
+
+      if(this.showDetailNum && this.showProgress && this.showDelay && this.zcShowProgress){
+        start = start + 14
+        end = start+ 8+6+4
+      }else if(this.showDetailNum && this.showProgress && this.showDelay && !this.zcShowProgress){
+        start = start + 14
+        end = start+ 8+4
       }
 
-      // 此条件，不需要合并其他的
-      /*if((!this.showDetailNum && !this.showProgress && !this.showDelay)){
+      else if(this.showDetailNum && this.showProgress && !this.showDelay && this.zcShowProgress){
+        start = start + 14
+        end = start+ 8+6
+      }else if(this.showDetailNum && this.showProgress && !this.showDelay && !this.zcShowProgress){
+        start = start + 14
+        end = start+ 8
+      }
 
-      }*/
+      else if(this.showDetailNum && !this.showProgress && this.showDelay && this.zcShowProgress){
+        start = start + 14
+        end = start + 4+6
+      }else if(this.showDetailNum && !this.showProgress && this.showDelay && !this.zcShowProgress){
+        start = start + 14
+        end = start +4
+      }
+
+      else if(this.showDetailNum && !this.showProgress && !this.showDelay && this.zcShowProgress){
+        start = start + 14
+        end = start +6
+      }else if(this.showDetailNum && !this.showProgress && !this.showDelay && !this.zcShowProgress){
+        start = start + 14
+        end = start
+      }
+
+      else if(!this.showDetailNum && this.showProgress && this.showDelay && this.zcShowProgress){
+        end = start + 8 +4+6
+      }else if(!this.showDetailNum && this.showProgress && this.showDelay && !this.zcShowProgress){
+        end = start+8+4
+      }
+
+      else if(!this.showDetailNum && this.showProgress && !this.showDelay && this.zcShowProgress){
+        end = start + 8 +6
+      }else if(!this.showDetailNum && this.showProgress && !this.showDelay && !this.zcShowProgress){
+        end = start+8
+      }
+
+      else if(!this.showDetailNum && !this.showProgress && this.showDelay && this.zcShowProgress){
+        end = start  +4+6
+      }else if(!this.showDetailNum && !this.showProgress && this.showDelay && !this.zcShowProgress){
+        end = start +4
+      }
+
+      else if(!this.showDetailNum && !this.showProgress && !this.showDelay && this.zcShowProgress){
+        end = start   +6
+      }else if(!this.showDetailNum && !this.showProgress && !this.showDelay && !this.zcShowProgress){
+        end = start
+      }
+
+      console.log("start :{},end:{}",start,end)
+      if( columnIndex >= start && columnIndex < end ){
+        const _row = this.spanArr[rowIndex];
+        const _col = _row > 0 ? 1 : 0;
+        return {
+          rowspan: _row,
+          colspan: _col
+        }
+      }
+
 
     },
 
@@ -1850,6 +2381,7 @@ export default {
         this.origin = index.index; // 没按住记录起点
       }
     },
+
     queryProgress(){
       this.dialogQueryVisible = true;
     },
@@ -1999,7 +2531,79 @@ export default {
       }
       else if(item ==='batchPrintZhenChe'){
         this.batchPrintZC()
+      }else if(item === 'addZcGroup'){
+        this.addZcGroup()
+      }else if(item ==='queryZCProgress'){
+        this.dialogZCQueryVisible = true;
       }
+
+    },
+    addZcGroup(){
+      request.post('/produce/zcGroup/list').then(res => {
+        this.editGroupForm = res.data.data;
+        this.dialogGroupVisible=true
+
+      })
+    },
+    handleGroupSelectionChange(val) {
+      console.log("多选框 val ", val)
+      this.checkedGroupDetail = []
+
+      val.forEach(theId => {
+        this.checkedGroupDetail.push(theId.seqNum)
+      })
+      console.log("多选框 选中的 ", this.checkedGroupDetail)
+    },
+    getNewArr(arr,delIndexArr){
+      let test = []
+      test = arr.filter((item, index) =>{
+        return !delIndexArr.includes(index+1)}
+      )
+      return test
+    },
+    handleDeleteGroup() {
+      if (this.checkedGroupDetail.length == 0) {
+        if(this.editGroupForm.length === 0){
+          this.$message({
+            message: '没有记录可删除!',
+            type: 'error'
+          });
+        }
+      }else {
+        this.editGroupForm = this.getNewArr(this.editGroupForm,this.checkedGroupDetail);
+      }
+      this.checkedGroupDetail=[]
+    },
+    handleAddGroup() {
+      if (this.editGroupForm == undefined) {
+        console.log("editForm 初始化")
+        this.editGroupForm = [];
+      }
+      let obj = {};
+      obj.groupName = '';
+      this.editGroupForm.push(obj);
+    },
+    submitGroupForm() {
+      const load = this.$loading({
+        lock: true,
+        text: '处理中...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+
+      request.post('/produce/zcGroup/save' , this.editGroupForm).then(res => {
+        load.close()
+        this.$message({
+          message: '保存成功!',
+          type: 'success'
+        });
+        request.post('/produce/zcGroup/list').then(res => {
+          this.editGroupForm = res.data.data;
+        })
+
+      }).catch(()=>{
+        load.close()
+      })
     },
     importExcel() {
       console.log("this.fileList",this.fileList)
@@ -2207,6 +2811,22 @@ export default {
         this.reDolayout(progress)
       }
 
+    }
+    ,
+    escZCEdit(progress,row,index){
+      console.log("esc tuichu")
+      if(progress.id ===null || progress.id===undefined){
+        row.zcProgresses.splice(index,1);
+      }else{
+        progress.sendDate = progress.oldSendDate
+        progress.outDate = progress.oldOutDate
+        progress.zcGroupName = progress.oldZcGroupName
+        progress.zcGroupId = progress.oldZcGroupId
+
+
+        this.reDolayout(progress)
+      }
+
     },
     escEdit(progress,row,index){
       console.log("escEdit-progress:,progress.id ===undefined",progress,progress.id ===undefined)
@@ -2244,6 +2864,18 @@ export default {
         });
         this.getList()
       })
+
+    },
+    enterZCEdit(item,row){
+      // 选择就修改供应商名称
+      request.post('/produce/batchZCProgress/updateProgress',row.zcProgresses).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
+
 
     },
     enterEdit(item,row){
@@ -2298,6 +2930,21 @@ export default {
         this.getList()
       })
     },
+
+    searchZCGroupSelect(item,row,all) {
+      console.log("下拉框选中：",item)
+      row.zcGroupName = item.name
+      row.zcGroupId = item.id
+
+      // 选择就修改供应商名称
+      request.post('/produce/batchZCProgress/updateProgress',all.zcProgresses).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
+    },
     searchQueryMaterialSelect(item) {
       console.log("下拉框选中：",item)
       this.searchQueryMaterialName = item.name
@@ -2321,6 +2968,18 @@ export default {
       row.materialId = item.id
       this.$refs['el_auto_m_delay_'+row.produceBatchId].focus()
     },
+    searchZCSendDate(item,row,all) {
+      console.log("日期下拉框选中：",item)
+      row.sendDate = item
+
+      request.post('/produce/batchZCProgress/updateProgress',all.zcProgresses).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
+    },
     searchSendDate(item,row,all) {
       console.log("日期下拉框选中：",item)
       row.sendForeignProductDate = item
@@ -2338,6 +2997,19 @@ export default {
       row.backForeignProductDate = item
 
       request.post('/produce/batchProgress/updateProgress',all.progresses).then(res => {
+        this.$message({
+          message: '修改成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
+    },
+    searchZCOutDate(item,row,all) {
+      console.log("日期下拉框选中：",item)
+      row.outDate = item
+
+
+      request.post('/produce/batchZCProgress/updateProgress',all.zcProgresses).then(res => {
         this.$message({
           message: '修改成功!',
           type: 'success'
@@ -2630,6 +3302,79 @@ export default {
       this.currentPage = 1
       this.getList()
     },
+    getZCQueryList() {
+      let url = '/produce/batch/zcProgressList'
+      request.post(url,{searchQueryStartDateStr:this.searchQueryStartDateStr},null
+      ).then(res => {
+        this.tableZCQueryData = res.data.data['progressData']
+
+        let batchIdSet = new Set();
+        let productNumSet = new Set();
+        let productBrandSet = new Set();
+        let endDateSet = new Set();
+        let groupNameSet = new Set();
+        let sendDateSet = new Set();
+        let outDateSet = new Set();
+
+        this.tableZCQueryData.forEach((item, index) => {// 遍历索引,赋值给data数据
+          item.index = index;
+          batchIdSet.add(item.batchId);
+          productNumSet.add(item.productNum);
+          productBrandSet.add(item.productBrand);
+          endDateSet.add(item.endDate);
+          groupNameSet.add(item.groupName);
+          sendDateSet.add(item.sendDate);
+          outDateSet.add(item.outDate);
+
+        })
+
+        let tmpSortArr = Array.from(batchIdSet).sort(this.$globalFun.numSeq);
+        this.batchIdFileterArr = [];
+        tmpSortArr.forEach(row =>{
+          this.batchIdFileterArr.push({'text':row,'value':row})
+
+        })
+        this.productNumFileterArr = [];
+        productNumSet.forEach(row =>{
+          this.productNumFileterArr.push({'text':row,'value':row})
+        })
+
+        this.productBrandFileterArr = [];
+        productBrandSet.forEach(row =>{
+          this.productBrandFileterArr.push({'text':row,'value':row})
+        })
+
+
+        let tmpSortArrEndDate = Array.from(endDateSet).sort(this.$globalFun.numSeq);
+        this.endDateFileterArr = [];
+        tmpSortArrEndDate.forEach(row =>{
+          this.endDateFileterArr.push({'text':row,'value':row})
+        })
+
+        this.groupNameFileterArr = [];
+        groupNameSet.forEach(row =>{
+          this.groupNameFileterArr.push({'text':row,'value':row})
+        })
+        let tmpSortArrSendDate = Array.from(sendDateSet).sort(this.$globalFun.numSeq);
+
+        this.sendDateFileterArr = [];
+        tmpSortArrSendDate.forEach(row =>{
+          this.sendDateFileterArr.push({'text':row,'value':row})
+        })
+
+        let tmpSortArrOutDate = Array.from(outDateSet).sort(this.$globalFun.numSeq);
+
+        this.outDateFileterArr = [];
+        tmpSortArrOutDate.forEach(row =>{
+          this.outDateFileterArr.push({'text':row,'value':row})
+        })
+        this.$nextTick(() => {
+          this.$refs['multipleZCQueryTable'].doLayout();
+        })
+      }).catch(error=>{
+        console.log("error:",error)
+      })
+    },
     getQueryList() {
       let url = '/produce/batch/progressList?showSendNoBack='+this.showSendNoBack+'&&showHasEndDate='+this.showHasEndDate
       request.post(url,{searchQueryStartDateStr:this.searchQueryStartDateStr
@@ -2717,6 +3462,17 @@ export default {
 
       })
     },
+    delZCProgress(item) {
+      console.log("del obj:",item)
+      request.post('/produce/batchZCProgress/del', item.id).then(res => {
+        this.$message({
+          message: '删除成功!',
+          type: 'success'
+        });
+        this.getList()
+
+      })
+    },
     // 删除
     del(id) {
       let ids = []
@@ -2768,6 +3524,11 @@ export default {
       this.totalBatchId = ''
       this.allTotalNum = ''
       this.searchProgressSupStr=''
+    },
+    handleZCCloseQuery(done) {
+      this.dialogZCQueryVisible=false;
+      this.tableZCQueryData = []
+      this.totalBatchId = ''
     },
     handleClosePrepare(done) {
       this.dialogCalNumVisible=false;
