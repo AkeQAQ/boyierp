@@ -392,9 +392,9 @@
 
       </el-table>
 
-      <!-- 供应商补税点弹窗 -->
+      <!-- 供应商扣税点弹窗 -->
       <el-dialog
-          title="供应商补税点信息"
+          title="供应商扣税点信息"
           :visible.sync="dialogVisible"
           :before-close="handleClose"
           width="30%"
@@ -1036,10 +1036,10 @@ export default {
       this.$refs[formName].validate((valid) => {
 
         if (valid) {
-          if( this.editForm.supplierId==='' || this.editForm.documentDate===''   || this.editForm.documentAmount===''){
+          if( this.editForm.supplierId==='' || this.editForm.documentDate===''   ){
             console.log("editForm",this.editForm)
             this.$message({
-              message: '供应商、日期、金额不能为空',
+              message: '供应商、日期不能为空',
               type: 'error'
             });
             return

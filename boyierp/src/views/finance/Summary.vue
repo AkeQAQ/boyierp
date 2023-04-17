@@ -783,7 +783,7 @@
         </el-button>
         <vue-easy-print tableShow ref="easyPrint">
           <template slot-scope="func">
-            <print :tableData="printRow" :getChineseNumber="func.getChineseNumber"></print>
+            <print :tableData="printRow"  :getChineseNumber="func.getChineseNumber"></print>
           </template>
         </vue-easy-print>
 
@@ -1804,7 +1804,18 @@ export default {
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
 
-  },
+  }// 自定义指令，，insert在DOM加入的时候才生效
+  , directives: {
+    // 声明自定义指令v-focus
+    focus: {
+      // v-foucs指令的钩子函数
+      inserted: function (el, binding) {
+        console.log("聚焦...")
+        el.focus();
+      },
+    },
+  }
+
 
 }
 

@@ -4,7 +4,7 @@
     <div v-for="page in pages" :key="page">
       <!-- 分页 -->
       <div  class='tab_company_out'>
-        <h3 style="font-size: 20px;margin-bottom: 0px;margin-top: 20px">及  时  库  存</h3>
+        <h3 style="font-size: 20px;margin-bottom: 0px;padding-top: 20px">及  时  库  存</h3>
 
         <table cellpadding='0' cellspacing='0' >
           <tr>

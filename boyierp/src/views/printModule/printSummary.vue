@@ -1,9 +1,9 @@
 <template>
   <!-- 打印入库单据21cm的适配宽度 -->
-  <div style="width: 780px;padding-left: 20px;padding-right: 15px">
+  <div style="width: 780px;padding-left: 20px;padding-right: 15px;  ">
       <!-- 分页 -->
       <div  class='tab_company_out'>
-        <h3 style="font-size: 24px;margin-bottom: 5px;margin-top: 20px">博艺鞋业供应商对账单</h3>
+        <h3 style="font-size: 24px;margin-bottom: 5px;padding-top: 20px">博艺鞋业供应商对账单</h3>
 
         <table cellpadding='0' cellspacing='0' >
           <tr >
@@ -92,7 +92,15 @@ export default {
   name: "printSummary",
   // 制作打印模版组件时，props区域尽量保留。
   props: {
-
+    onePageRow: {
+      type: Number,
+      default: 1
+    },
+    // 是否插入空白行
+    blankLines: {
+      type: Boolean,
+      default: true
+    },
     getChineseNumber: Function, // 求数字的中文写法，从easyPrint组件传入
     tableData: {
       needPayAmount:''
@@ -103,7 +111,10 @@ export default {
     td:{}
   },
   computed: {
-    jiezhangqiDate(){
+    pages() {
+      return 1;
+    },
+      jiezhangqiDate(){
       let summaryDate = this.tableData.summaryDate;
       let split =summaryDate.split("-");
       return split[0]+'年'+split[1]+'月'
@@ -124,7 +135,10 @@ export default {
 };
 </script>
 
+
 <style scoped>
+
+
 * {
   padding: 0;
   margin: 0;
@@ -134,10 +148,9 @@ export default {
 }
 .tab_company_out {
   text-align: center;
-  width: 100%;
-  margin: 0;
 
-  page-break-after: always;
+  height: 500px;
+
 }
 h3 {
   font-size: 14px;
@@ -187,9 +200,7 @@ table tr th {
   line-height: 28px;
   font-size: 12px;
 }
-table tr th:nth-child(2) {
-  width: 0;
-}
+
 .lu {
   display: inline-block;
   padding-top: 10px;
