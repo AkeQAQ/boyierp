@@ -986,7 +986,7 @@ import {request} from "@/axios";
 // 引入打印基础组件，和打印模块print页面
 import vueEasyPrint from "vue-easy-print";
 import print from "@/views/printModule/EAprint";
-import printBatch from "@/views/printModule/printBatch";
+import printBatch from "@/views/printModule/EAprintBatch";
 
 import exportExcelCommon from"../../common/ExportExcelCommon"
 import {request2} from "@/axios";
