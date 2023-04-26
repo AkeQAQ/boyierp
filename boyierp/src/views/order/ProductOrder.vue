@@ -339,6 +339,36 @@
 
         </el-table-column>
 
+        <el-table-column
+            prop="mBom"
+            label="物料BOM"
+            width="140px"
+        >
+          <template slot-scope="scope">
+            <div  style="height: 40px;line-height: 40px;" @dblclick=" (hasAuth('produce:productConstituent:valid') && scope.row.status ===0 && scope.row.orderType !==2 ) && dbClickMethod(scope.row)">
+              <span  v-if="!scope.row.isOpenEdit">{{scope.row.materialBomName}}</span>
+
+              <el-autocomplete v-if="scope.row.isOpenEdit"  size="mini"
+                               style="width: 130px"
+                               clearable
+                               popper-class="my-autocomplete"
+                               class="inline-input"
+
+                               v-model="scope.row.materialBomName"
+                               :fetch-suggestions="querySearch"
+                               placeholder="请输入搜索内容"
+                               :ref='"el_mbom_"+scope.row.id'
+                               :trigger-on-focus="false"
+                               :popper-append-to-body="true"
+                               @select="searchMBomSelect($event,scope.row)"
+                               @clear="clear(scope.row)"
+                               @focus="loadProductNumAll()"
+
+              >
+              </el-autocomplete>
+            </div>
+          </template>
+        </el-table-column>
 
         <el-table-column
             prop="created"
@@ -2156,10 +2186,58 @@ export default {
       origin:-1,  // 变量起点
       pin:false, // 默认不按住
 
+      restaurants: [],// 搜索框列表数据存放
+
     }
   },
 
   methods: {
+    loadProductNumAll() {
+      request.post('/produce/productConstituent/getSearchAllData').then(res => {
+        this.restaurants = res.data.data
+      })
+    },
+    clear(row){
+      request.get('/order/productOrder/updateMbom?id='+row.id+"&&mBomId=-1").then(res => {
+        this.$message({
+          message: '清空成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
+    },
+    searchMBomSelect(item,row) {
+      console.log("下拉框选中：item{},row:{}",item,row)
+
+      // 选择就修改
+      request.get('/order/productOrder/updateMbom?id='+row.id+"&&mBomId="+item.id).then(res => {
+        this.$message({
+          message: res.data.data,
+          type: 'success'
+        });
+        this.getList()
+      })
+    },
+    querySearch(queryString, cb) {
+      let restaurants = this.restaurants;
+      let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    createFilter(queryString) {
+      return (restaurant) => {
+        return (restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) != -1) ;
+      };
+    },
+    dbClickMethod(row){
+      console.log("dbClick:",row)
+      row.oldMaterialBomId = row.materialBomId
+      row.oldMaterialBomName = row.materialBomName
+
+      row.isOpenEdit=true;
+      this.$refs.multipleTable.doLayout()
+    },
+
     queryPrices(materialId){
       if(materialId==null || materialId == '' ){
         this.$message.error("请确保有物料编码和用料信息")
@@ -3115,6 +3193,7 @@ export default {
 
         this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
           item.index = index;
+          item.isOpenEdit=false;
         })
 
           this.total = res.data.data.total
