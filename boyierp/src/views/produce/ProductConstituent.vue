@@ -217,7 +217,7 @@
         <el-table-column
             label="公司货号"
             prop="productNum"
-            width="210px"
+            width="110px"
             show-overflow-tooltip
         >
         </el-table-column>
@@ -225,13 +225,20 @@
         <el-table-column
             prop="productBrand"
             label="品牌"
-            width="310px"
+            width="110px"
             show-overflow-tooltip>
         </el-table-column>
 
         <el-table-column
             prop="productColor"
             label="颜色"
+            width="100px"
+            show-overflow-tooltip>
+        </el-table-column>
+
+        <el-table-column
+            prop="designer"
+            label="设计师"
             width="100px"
             show-overflow-tooltip>
         </el-table-column>
@@ -521,6 +528,16 @@
             </div>
           </el-form-item>
 
+          <el-form-item label="设计师" prop="designer" style="margin-bottom: 10px" label-width="60px">
+            <div  :class=" [(this.editForm.status!=1 )? 'el-input el-input--mini is-disabled' :'el-input el-input--mini']" style="margin: 0 0">
+              <input  class="el-input__inner" style="width: 100px"
+                      :disabled="editForm.status!=1"
+
+                      v-model.lazy="editForm.designer">
+              </input>
+            </div>
+          </el-form-item>
+
 
           <el-form-item v-if="hasAuth('produce:productConstituent:save')">
             <el-dropdown   @command="action">
@@ -616,10 +633,10 @@
           </el-table-column>
           <el-table-column label="序号" align="center" prop="seqNum" width="50"></el-table-column>
 
-          <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="320" prop="materialId">
+          <el-table-column style="padding: 0 0;" label="物料编码" align="center" width="160" prop="materialId">
             <template slot-scope="scope">
               <el-autocomplete
-                                style="width: 300px"
+                                style="width: 140px"
                                 popper-class="my-autocomplete"
                                 size="mini" clearable
                                :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.canChange )"
@@ -639,9 +656,9 @@
 
           </el-table-column>
 
-          <el-table-column label="物料名称" align="center" prop="materialName" width="250">
+          <el-table-column label="物料名称" align="center" prop="materialName" width="200">
             <template slot-scope="scope">
-              <el-input size="mini" :disabled="true" style="width: 240px"
+              <el-input size="mini" :disabled="true" style="width: 190px"
                         v-model="editForm.rowList[scope.row.seqNum-1].materialName"></el-input>
             </template>
           </el-table-column>
@@ -713,10 +730,49 @@
 
           </el-table-column>
 
-          <el-table-column label="备注" align="center" prop="content" width="250">
+          <el-table-column label="备注" align="center" prop="content" width="200">
             <template slot-scope="scope">
-              <el-input size="mini" style="width: 240px"
+              <el-input size="mini" style="width: 190px"
                         v-model="editForm.rowList[scope.row.seqNum-1].content" :disabled="editForm.status!=1  && !( specialAddFlag  )"
+              ></el-input>
+            </template>
+          </el-table-column>
+
+          <el-table-column style="padding: 0 0;" label="供应商" align="center" width="120" prop="supplierName">
+            <template slot-scope="scope">
+              <el-autocomplete
+                  style="width: 100px"
+                  popper-class="my-autocomplete"
+                  size="mini" clearable
+                  :disabled="editForm.status!=1  && !( specialAddFlag && scope.row.canChange )"
+                  class="inline-input"
+                  v-model="editForm.rowList[scope.row.seqNum - 1].supplierName"
+                  :fetch-suggestions="tableSearchSupplier"
+                  placeholder="请输入内容"
+                  :trigger-on-focus="false"
+
+                  @select="tableSelectSearchSupplier($event,editForm.rowList[scope.row.seqNum - 1])"
+                  @change="tableMoveMouseSupplier($event,editForm.rowList[scope.row.seqNum - 1],scope.row.seqNum - 1)"
+                  @focus="loadSupplierAll();addNext(scope.row.seqNum)"
+
+              >
+              </el-autocomplete>
+            </template>
+
+          </el-table-column>
+
+          <el-table-column label="特殊要求1" align="center" prop="specialContent1" width="200">
+            <template slot-scope="scope">
+              <el-input size="mini" style="width: 190px"
+                        v-model="editForm.rowList[scope.row.seqNum-1].specialContent1" :disabled="editForm.status!=1  && !( specialAddFlag  )"
+              ></el-input>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="特殊要求2" align="center" prop="specialContent2" width="200">
+            <template slot-scope="scope">
+              <el-input size="mini" style="width: 190px"
+                        v-model="editForm.rowList[scope.row.seqNum-1].specialContent2" :disabled="editForm.status!=1  && !( specialAddFlag  )"
               ></el-input>
             </template>
           </el-table-column>
@@ -857,6 +913,7 @@ export default {
       restaurants2: [], //
       restaurants3: [], //用于增量表格的搜索框内容
       restaurantsCustomer: [], //
+      restaurantsSupplier: [], //用于增量表格的搜索框内容
 
       // 分页字段
       currentPage: 1 // 当前页
@@ -869,7 +926,8 @@ export default {
         id:'',
         productNum:'',
         productBrand:'',
-        productColor:''
+        productColor:'',
+        designer:''
       },
       editForm: {
         status: 1, // 编辑表单初始默认值
@@ -1223,6 +1281,11 @@ export default {
         this.restaurants3 = res.data.data
       })
     },
+    loadSupplierAll() {
+      request.post('/baseData/supplier/getSearchAllData').then(res => {
+        this.restaurantsSupplier = res.data.data
+      })
+    },
     loadCustomerAll() {
       request.post('/baseData/customer/getSearchAllData').then(res => {
         this.restaurantsCustomer = res.data.data
@@ -1237,6 +1300,13 @@ export default {
     tableSearch(queryString, cb) {
       let restaurants = this.restaurants3;
       let results = queryString ? restaurants.filter(this.createFilter2(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
+    },
+    // 查询搜索框列表数据
+    tableSearchSupplier(queryString, cb) {
+      let restaurants = this.restaurantsSupplier;
+      let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
       // 调用 callback 返回建议列表的数据
       cb(results);
     },
@@ -1292,6 +1362,24 @@ export default {
       } catch (err) {
       }
     },
+    tableMoveMouseSupplier(selectItem, rowObj,index) {
+      try {
+        // foreach 只能抛出异常结束
+        this.restaurantsSupplier.forEach(item => {
+          if (selectItem === item.id) {
+            rowObj.supplierId = item.id;
+            rowObj.supplierName = item.obj.name
+            throw new Error();
+          } else {
+            rowObj.supplierName = "";
+            rowObj.supplierId = '';
+
+          }
+
+        })
+      } catch (err) {
+      }
+    },
     tableMoveMouse(selectItem, rowObj,index) {
       console.log("tableMoveMouse", selectItem, rowObj)
       try {
@@ -1333,6 +1421,11 @@ export default {
       console.log("rowList：", this.editForm.rowList);
 
     },
+    tableSelectSearchSupplier(selectItem, param) {
+      param.supplierId = selectItem.id;
+      param.supplierName = selectItem.name
+
+    },
 
     addProductConstituent() {
       this.addOrUpdate = 'save'
@@ -1344,6 +1437,7 @@ export default {
         productColor: '',
         picUrl:'',
         videoUrl:'',
+        designer:'',
         rowList: [{
           materialName:'',
           unit:'',
@@ -1353,6 +1447,10 @@ export default {
           dosage:'',
           canChange: true,
           content:'',
+          supplierId:'',
+          supplierName:'',
+          specialContent1:'',
+          specialContent2:'',
 
         }]
       }
@@ -1713,6 +1811,7 @@ export default {
     this.loadMaterialAll()
     this.loadTableSearchMaterialDetailAll()
     this.loadCustomerAll();
+    this.loadSupplierAll();
 
   },mounted() {
     window.addEventListener( 'beforeunload', e => this.closeBrowser() );
