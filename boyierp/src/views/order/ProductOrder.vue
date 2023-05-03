@@ -371,6 +371,36 @@
         </el-table-column>
 
         <el-table-column
+            prop="tBom"
+            label="工艺BOM"
+            width="140px"
+        >
+          <template slot-scope="scope">
+            <div  style="height: 40px;line-height: 40px;" @dblclick=" (hasAuth('produce:technologyBOM:valid') && scope.row.status ===0 && scope.row.orderType !==2 ) && dbClickTBomMethod(scope.row)">
+              <span  v-if="!scope.row.isOpenEditTBom">{{scope.row.technologyBomName}}</span>
+
+              <el-autocomplete v-if="scope.row.isOpenEditTBom"  size="mini"
+                               style="width: 130px"
+                               clearable
+                               popper-class="my-autocomplete"
+                               class="inline-input"
+                               v-model="scope.row.technologyBomName"
+                               :fetch-suggestions="querySearchTbom"
+                               placeholder="请输入搜索内容"
+                               :ref='"el_tbom_"+scope.row.id'
+                               :trigger-on-focus="false"
+                               :popper-append-to-body="true"
+                               @select="searchTBomSelect($event,scope.row)"
+                               @clear="clearT(scope.row)"
+                               @focus="loadTbomAll()"
+
+              >
+              </el-autocomplete>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column
             prop="created"
             label="创建日期"
             width="150px"
@@ -2187,11 +2217,17 @@ export default {
       pin:false, // 默认不按住
 
       restaurants: [],// 搜索框列表数据存放
+      restaurants2: [],// 搜索框列表数据存放
 
     }
   },
 
   methods: {
+    loadTbomAll() {
+      request.post('/produce/technologyBOM/getSearchAllData').then(res => {
+        this.restaurants2 = res.data.data
+      })
+    },
     loadProductNumAll() {
       request.post('/produce/productConstituent/getSearchAllData').then(res => {
         this.restaurants = res.data.data
@@ -2201,6 +2237,26 @@ export default {
       request.get('/order/productOrder/updateMbom?id='+row.id+"&&mBomId=-1").then(res => {
         this.$message({
           message: '清空成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
+    },
+    clearT(row){
+      request.get('/order/productOrder/updateTbom?id='+row.id+"&&tBomId=-1").then(res => {
+        this.$message({
+          message: '清空成功!',
+          type: 'success'
+        });
+        this.getList()
+      })
+    },
+    searchTBomSelect(item,row) {
+
+      // 选择就修改
+      request.get('/order/productOrder/updateTbom?id='+row.id+"&&tBomId="+item.id).then(res => {
+        this.$message({
+          message: res.data.data,
           type: 'success'
         });
         this.getList()
@@ -2217,6 +2273,12 @@ export default {
         });
         this.getList()
       })
+    },
+    querySearchTbom(queryString, cb) {
+      let restaurants = this.restaurants2;
+      let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+      // 调用 callback 返回建议列表的数据
+      cb(results);
     },
     querySearch(queryString, cb) {
       let restaurants = this.restaurants;
@@ -2235,6 +2297,14 @@ export default {
       row.oldMaterialBomName = row.materialBomName
 
       row.isOpenEdit=true;
+      this.$refs.multipleTable.doLayout()
+    },
+    dbClickTBomMethod(row){
+      console.log("dbClick:",row)
+      row.oldTBomId = row.technologyBomId
+      row.oldTBomName = row.technologyBomName
+
+      row.isOpenEditTBom=true;
       this.$refs.multipleTable.doLayout()
     },
 
@@ -3194,6 +3264,7 @@ export default {
         this.tableData.forEach((item, index) => {// 遍历索引,赋值给data数据
           item.index = index;
           item.isOpenEdit=false;
+          item.isOpenEditTBom=false;
         })
 
           this.total = res.data.data.total
