@@ -275,6 +275,7 @@
 
               <el-dropdown-item v-if="hasAuth('repository:buyIn:save')" command="orderBatchPick">订单一键领料</el-dropdown-item>
               <el-dropdown-item command="batchPrint">批量打印</el-dropdown-item>
+              <el-dropdown-item  v-if="hasAuth('repository:buyIn:save')" command="exportNoPrice">打印未报价</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
@@ -950,6 +951,28 @@
 
       </el-dialog>
 
+
+      <!-- 打印未报价弹窗 -->
+      <el-dialog
+          title=""
+          :visible.sync="dialogNoPriceVisiblePrint"
+          width="55%"
+          style="padding-top: 0"
+          :before-close="printNoPriceClose"
+      >
+        <el-button v-if="dialogNoPriceVisiblePrint"
+                   @click="printDemoNoPrice"
+                   v-focus ref="printBtnNoPrice"
+                   size="mini" icon="el-icon-printer" type="primary">打印
+        </el-button>
+        <vue-easy-print tableShow ref="easyPrintNoPrice">
+          <template slot-scope="func">
+            <printNoPriceForeignMaterial :tableData="noPriceForeignData" :getChineseNumber="func.getChineseNumber"></printNoPriceForeignMaterial>
+          </template>
+        </vue-easy-print>
+
+      </el-dialog>
+
       <!--价目列表 分页组件 -->
       <el-pagination
 
@@ -987,6 +1010,7 @@ import {request} from "@/axios";
 import vueEasyPrint from "vue-easy-print";
 import print from "@/views/printModule/print";
 import printBatch from "@/views/printModule/printBatch";
+import printNoPriceForeignMaterial from "@/views/printModule/printNoPriceForeignMaterial";
 
 import exportExcelCommon from"../common/ExportExcelCommon"
 import {request2} from "@/axios";
@@ -998,7 +1022,9 @@ export default {
     vueEasyPrint,
     print,
     printBatch,
-    exportExcelCommon
+    exportExcelCommon,
+    printNoPriceForeignMaterial,
+
   },
   data() {
     return {
@@ -1251,6 +1277,10 @@ export default {
       dialogVisiblePrint: false,
       dialogVisibleBatchPrint: false,
       dialogPickVisible: false,
+      dialogNoPriceVisiblePrint: false,
+      noPriceForeignData:[],
+
+
       tableData: [],
       spanArr: [],
       pos: '',
@@ -1430,6 +1460,9 @@ export default {
     // 打印按钮事件
     printDemo() {
       this.$refs.easyPrint.print()
+    },
+    printDemoNoPrice() {
+      this.$refs.easyPrintNoPrice.print()
     },
     printBatchDemo() {
       this.$refs.easyBatchPrint.print()
@@ -2080,6 +2113,11 @@ export default {
       this.$refs.easyPrint.tableShow = false;
       done();
     },
+    printNoPriceClose(done) {
+
+      this.$refs.easyPrintNoPrice.tableShow = false;
+      done();
+    },
     // 关闭打印弹窗弹窗处理动作
     printBatchClose(done) {
 
@@ -2134,7 +2172,30 @@ export default {
         this.orderBatchPick()
       } else if(item === 'batchPrint'){
         this.batchPrint()
+      }else if(item === 'exportNoPrice'){
+        this.exportNoPrice()
       }
+
+    },
+    exportNoPrice(){
+      request.get('/repository/buyIn/getNoPriceLists').then(res => {
+        let datas = res.data.data;
+        if (datas) {
+          console.log("打印时的easyPrint：", this.$refs.easyPrintNoPrice)
+          console.log("打印时的noPriceForeignData：", this.noPriceForeignData)
+          this.noPriceForeignData=datas;
+          if (this.$refs.easyPrintNoPrice) {
+            this.$refs.easyPrintNoPrice.tableData = this.datas
+          }
+          this.dialogNoPriceVisiblePrint = true
+        } else {
+          this.$message({
+            message: '没有内容!',
+            type: 'error'
+          });
+        }
+      })
+
     },
     expChange(item) {
       console.log("导出:",item)
